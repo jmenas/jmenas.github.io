@@ -1,0 +1,247 @@
+<manifest alg="2" build="2015.0.2.310" opt="true" iceEnabled="true" iceMarkupVersion="2" exportTarget="other" domain="adventure.com" resolutions="1x" timestamp="1447879140094">
+  <folder name="assets">
+    <file name="checklist.pdf" crc="4259746127" seo="true" mt="1447850001000"/>
+  </folder>
+  <folder name="css">
+    <file name="site_global.css" crc="4052507572"/>
+    <file name="index.css" crc="395816329" ref="index"/>
+  </folder>
+  <folder name="scripts">
+    <file name="jquery-1.8.3.min.js" crc="196614522" ref="index"/>
+    <file name="museutils.js" crc="275725342" ref="index"/>
+    <file name="jquery.musepolyfill.bgsize.js" crc="185257658" ref="index"/>
+    <file name="jquery.musemenu.js" crc="4042164668" ref="index"/>
+    <file name="pie.js" crc="3827607177" ref="index"/>
+    <file name="jquery.watch.js" crc="3999102769" ref="index"/>
+    <file name="jquery.scrolleffects.js" crc="206645848" ref="index"/>
+    <file name="webpro.js" crc="3883484123" ref="index"/>
+    <file name="musewpslideshow.js" crc="360574455" ref="index"/>
+    <file name="jquery.museoverlay.js" crc="342093292" ref="index"/>
+    <file name="touchswipe.js" crc="4218319045" ref="index"/>
+    <file name="html5shiv.js" crc="4241844378" ref="index"/>
+  </folder>
+  <folder name="images">
+    <file name="u991-4.png" crc="228382741" ref="index"/>
+    <file name="u988-4.png" crc="271649766" ref="index"/>
+    <file name="blank.gif" crc="4208392903" ref="index"/>
+    <file name="u998.png" crc="6171062" ref="index"/>
+    <file name="u998-r.png" crc="4144446614" ref="index"/>
+    <file name="u1011.png" crc="331007078" ref="index"/>
+    <file name="u1011-r.png" crc="4013378011" ref="index"/>
+    <file name="u1003.png" crc="41882483" ref="index"/>
+    <file name="u1003-r.png" crc="4223052435" ref="index"/>
+    <file name="u100-4.png" crc="176401371" ref="index"/>
+    <file name="u149-4.png" crc="4024407454" ref="index"/>
+    <file name="title_screen-u141-fr.png" crc="148990640" ref="index"/>
+    <file name="wood_pattern.jpg" crc="4068077889" ref="index"/>
+    <file name="u179-4.png" crc="366414603" ref="index"/>
+    <file name="u172-4.png" crc="3871814882" ref="index"/>
+    <file name="u176-4.png" crc="341411787" ref="index"/>
+    <file name="u171-4.png" crc="337949728" ref="index"/>
+    <file name="u177-4.png" crc="216371105" ref="index"/>
+    <file name="u174-4.png" crc="4189636301" ref="index"/>
+    <file name="u178-4.png" crc="451345894" ref="index"/>
+    <file name="u191-4.png" crc="4088032651" ref="index"/>
+    <file name="u209-4.png" crc="4216301944" ref="index"/>
+    <file name="brochure-u193-fr.png" crc="58660054" ref="index"/>
+    <file name="u197-4.png" crc="112635518" ref="index"/>
+    <file name="u199-4.png" crc="56140450" ref="index"/>
+    <file name="u200-4.png" crc="115876908" ref="index"/>
+    <file name="u205-4.png" crc="4270321280" ref="index"/>
+    <file name="u201-4.png" crc="3856523657" ref="index"/>
+    <file name="compass.png" crc="4106616593" ref="index"/>
+    <file name="compass-u879-r-fr.png" crc="527314596" ref="index"/>
+    <file name="ax.png" crc="4191639608" ref="index"/>
+    <file name="ax-u881-r-fr.png" crc="4240377056" ref="index"/>
+    <file name="binoculars.png" crc="4230277914" ref="index"/>
+    <file name="binoculars-u883-r-fr.png" crc="303394182" ref="index"/>
+    <file name="camera.png" crc="112863436" ref="index"/>
+    <file name="camera-u885-r-fr.png" crc="403345649" ref="index"/>
+    <file name="hampster.png" crc="57849745" ref="index"/>
+    <file name="hampster-u877-r-fr.png" crc="97794090" ref="index"/>
+    <file name="latern.png" crc="4181848545" ref="index"/>
+    <file name="latern-u887-r-fr.png" crc="332197213" ref="index"/>
+    <file name="knife.png" crc="13938119" ref="index"/>
+    <file name="knife-u875-r-fr.png" crc="483439582" ref="index"/>
+    <file name="shovel.png" crc="476164288" ref="index"/>
+    <file name="shovel-u838-r-fr.png" crc="3893482002" ref="index"/>
+    <file name="icepick.png" crc="4078432098" ref="index"/>
+    <file name="icepick-u827-r-fr.png" crc="3909130737" ref="index"/>
+    <file name="firstaid.png" crc="3881331529" ref="index"/>
+    <file name="firstaid-u825-r-fr.png" crc="4024352513" ref="index"/>
+    <file name="flashlight.png" crc="284885518" ref="index"/>
+    <file name="flashlight-u826-r-fr.png" crc="4290128411" ref="index"/>
+    <file name="shoes.png" crc="70374314" ref="index"/>
+    <file name="shoes-u830-r-fr.png" crc="3889258351" ref="index"/>
+    <file name="kettle.png" crc="4125616833" ref="index"/>
+    <file name="kettle-u828-r-fr.png" crc="216919560" ref="index"/>
+    <file name="map-u829-r-fr.png" crc="3828471441" ref="index"/>
+    <file name="net.png" crc="60819818" ref="index"/>
+    <file name="net-u834-r-fr.png" crc="534524530" ref="index"/>
+    <file name="matches.png" crc="3773796547" ref="index"/>
+    <file name="matches-u831-r-fr.png" crc="508359279" ref="index"/>
+    <file name="raft.png" crc="511365911" ref="index"/>
+    <file name="raft-u833-r-fr.png" crc="410676188" ref="index"/>
+    <file name="milk.png" crc="3830585818" ref="index"/>
+    <file name="milk-u835-r-fr.png" crc="243286131" ref="index"/>
+    <file name="rope.png" crc="4022826984" ref="index"/>
+    <file name="rope-u837-r-fr.png" crc="4216230369" ref="index"/>
+    <file name="pocketknife.png" crc="113317247" ref="index"/>
+    <file name="pocketknife-u836-r-fr.png" crc="4092485001" ref="index"/>
+    <file name="u856-4.png" crc="4084276474" ref="index"/>
+    <file name="u1021-4.png" crc="4084276474" ref="index"/>
+    <file name="u1024-4.png" crc="4084276474" ref="index"/>
+    <file name="u260-4.png" crc="3861578379" ref="index"/>
+    <file name="u269-4.png" crc="536009193" ref="index"/>
+    <file name="u259-4.png" crc="68696468" ref="index"/>
+    <file name="u340-4.png" crc="3906421911" ref="index"/>
+    <file name="u349-4.png" crc="4206774186" ref="index"/>
+    <file name="u350-4.png" crc="354507802" ref="index"/>
+    <file name="u355-4.png" crc="3777776837" ref="index"/>
+    <file name="u356-4.png" crc="109749240" ref="index"/>
+    <file name="atgatt2.png" crc="309140465" ref="index"/>
+    <file name="u1129-4.png" crc="3924202236" ref="index"/>
+    <file name="u1130-4.png" crc="449759144" ref="index"/>
+    <file name="u1131-4.png" crc="297165486" ref="index"/>
+    <file name="u1132-4.png" crc="3915693391" ref="index"/>
+    <file name="u1125-4.png" crc="4222089755" ref="index"/>
+    <file name="u1126-4.png" crc="184718998" ref="index"/>
+    <file name="u1127-4.png" crc="4255785687" ref="index"/>
+    <file name="u1128-4.png" crc="488438883" ref="index"/>
+    <file name="map02.jpg" crc="4092122229" ref="index"/>
+    <file name="u1100-4.png" crc="4174785808" ref="index"/>
+    <file name="u1101-4.png" crc="4184057556" ref="index"/>
+    <file name="u1104-4.png" crc="4155023916" ref="index"/>
+    <file name="u1105-4.png" crc="4118624592" ref="index"/>
+    <file name="cloud-u1178-fr.png" crc="4041838988" ref="index"/>
+    <file name="map-u829-fr.png" crc="122071394" ref="index"/>
+    <file name="u1165-4.png" crc="335131241" ref="index"/>
+    <file name="compass02.png" crc="4134158377" ref="index"/>
+    <file name="map03-u263-fr.png" crc="22395198" ref="index"/>
+    <file name="sun.png" crc="383740130" ref="index"/>
+    <file name="gps.png" crc="3967837771" ref="index"/>
+    <file name="cloud-u1186-fr.png" crc="300877285" ref="index"/>
+    <file name="cloud-u1185-fr.png" crc="289692150" ref="index"/>
+    <file name="compass_outline.png" crc="3956609380" ref="index"/>
+    <file name="u1201-4.png" crc="3944386632" ref="index"/>
+    <file name="u1200-4.png" crc="3922548646" ref="index"/>
+    <file name="map_outline-u1272-fr.png" crc="330987231" ref="index"/>
+    <file name="u1198-4.png" crc="267996861" ref="index"/>
+    <file name="u1164-4.png" crc="389042304" ref="index"/>
+    <file name="sun_outline.png" crc="210995633" ref="index"/>
+    <file name="u1199-4.png" crc="168499810" ref="index"/>
+    <file name="gps_outline.png" crc="304654965" ref="index"/>
+    <file name="u268-4.png" crc="4008896346" ref="index"/>
+    <file name="compass02-u261-r-fr.png" crc="4191838727" ref="index"/>
+    <file name="map03-u263-r-fr.png" crc="311124475" ref="index"/>
+    <file name="sun-u265-r-fr.png" crc="457922638" ref="index"/>
+    <file name="gps-u267-r-fr.png" crc="4088142981" ref="index"/>
+    <file name="u1196-4.png" crc="4115160619" ref="index"/>
+    <file name="u1295-4.png" crc="3766436031" ref="index"/>
+    <file name="u1296-4.png" crc="269941718" ref="index"/>
+    <file name="checkmark-u1335-fr.png" crc="16018907" ref="index"/>
+    <file name="backpack2-u379-fr.png" crc="4230327641" ref="index"/>
+    <file name="u1353-4.png" crc="357237711" ref="index"/>
+    <file name="u1354-4.png" crc="3795553014" ref="index"/>
+    <file name="u1355-4.png" crc="275947635" ref="index"/>
+    <file name="cactus.png" crc="3950608277" ref="index"/>
+    <file name="u1461-4.png" crc="333093209" ref="index"/>
+    <file name="u1465-4.png" crc="4131160465" ref="index"/>
+    <file name="u1467-4.png" crc="525340524" ref="index"/>
+    <file name="clovers.png" crc="3863104170" ref="index"/>
+    <file name="cattail-u1430-fr.png" crc="3839446584" ref="index"/>
+    <file name="eat.png" crc="509206668" ref="index"/>
+    <file name="u1458-4.png" crc="4033848826" ref="index"/>
+    <file name="u1464-4.png" crc="3829492042" ref="index"/>
+    <file name="u1468-4.png" crc="3775932624" ref="index"/>
+    <file name="u1466-4.png" crc="292315163" ref="index"/>
+    <file name="dandilion-u1423-fr.png" crc="63133264" ref="index"/>
+    <file name="pine_cone-u1391-fr.png" crc="201012631" ref="index"/>
+    <file name="seedweed-u1398-fr.png" crc="4038317077" ref="index"/>
+    <file name="u1478-4.png" crc="11829788" ref="index"/>
+    <file name="u1469-4.png" crc="3786287231" ref="index"/>
+    <file name="u1480-4.png" crc="4210080296" ref="index"/>
+    <file name="poison_ivy-u1444-fr.png" crc="3794236849" ref="index"/>
+    <file name="mushrooms-u1482-fr.png" crc="3764900905" ref="index"/>
+    <file name="castor-u1496-fr.png" crc="412799242" ref="index"/>
+    <file name="u1459-4.png" crc="268376520" ref="index"/>
+    <file name="dont_eat.png" crc="496902609" ref="index"/>
+    <file name="holly.png" crc="4290128100" ref="index"/>
+    <file name="u1477-4.png" crc="3767775704" ref="index"/>
+    <file name="u1479-4.png" crc="68249983" ref="index"/>
+    <file name="u1481-4.png" crc="226399078" ref="index"/>
+    <file name="almonds-u1489-fr.png" crc="94782720" ref="index"/>
+    <file name="horsenettle.png" crc="321969070" ref="index"/>
+    <file name="animals_bg.png" crc="460901667" ref="index"/>
+    <file name="raccoon.png" crc="181841068" seo="true" ref="index"/>
+    <file name="porcupine.png" crc="4136024046" seo="true" ref="index"/>
+    <file name="snake.png" crc="251726404" seo="true" ref="index"/>
+    <file name="skunk.png" crc="3924408628" seo="true" ref="index"/>
+    <file name="fox.png" crc="4090537817" seo="true" ref="index"/>
+    <file name="wolf.png" crc="441079860" seo="true" ref="index"/>
+    <file name="deer.png" crc="59933995" seo="true" ref="index"/>
+    <file name="bear.png" crc="4174211222" seo="true" ref="index"/>
+    <file name="bigfoot.png" crc="509844392" seo="true" ref="index"/>
+    <file name="u1592-6.png" crc="4250267869" ref="index"/>
+    <file name="u1737-6.png" crc="4090915893" ref="index"/>
+    <file name="u1751-6.png" crc="4051988204" ref="index"/>
+    <file name="u1765-6.png" crc="359659196" ref="index"/>
+    <file name="u1779-6.png" crc="312693531" ref="index"/>
+    <file name="u1793-6.png" crc="4167532225" ref="index"/>
+    <file name="u1807-6.png" crc="421414693" ref="index"/>
+    <file name="u1821-6.png" crc="3916514927" ref="index"/>
+    <file name="u1835-6.png" crc="379611549" ref="index"/>
+    <file name="loading.gif" crc="3815509949" ref="index"/>
+    <file name="u1600.png" crc="3919726280" ref="index"/>
+    <file name="u1600-r.png" crc="3765492800" ref="index"/>
+    <file name="u1593.png" crc="4246834522" ref="index"/>
+    <file name="u1593-r.png" crc="360482745" ref="index"/>
+    <file name="trees.png" crc="191717700" ref="index"/>
+    <file name="log.png" crc="4236842137" ref="index"/>
+    <file name="fire.png" crc="213694113" ref="index"/>
+    <file name="u1847-4.png" crc="142391969" ref="index"/>
+    <file name="tent.png" crc="166247021" ref="index"/>
+    <file name="u1849-4.png" crc="376737461" ref="index"/>
+    <file name="rv.png" crc="216619296" ref="index"/>
+    <file name="tree04-u1947-fr.png" crc="220158264" ref="index"/>
+    <file name="tree01-u1926-fr.png" crc="234863786" ref="index"/>
+    <file name="mtn02-u1919-fr.png" crc="349412259" ref="index"/>
+    <file name="mtn01-u1906-fr.png" crc="4027080286" ref="index"/>
+    <file name="tree02-u1933-fr.png" crc="4043701244" ref="index"/>
+    <file name="tree03-u1940-fr.png" crc="67504031" ref="index"/>
+    <file name="bear02.png" crc="110358069" ref="index"/>
+    <file name="u1851-4.png" crc="114669302" ref="index"/>
+    <file name="u1852-4.png" crc="4144481451" ref="index"/>
+    <file name="water.png" crc="461073348" ref="index"/>
+    <file name="cloud02.png" crc="15953055" ref="index"/>
+    <file name="boat-u1974-fr.png" crc="3915915225" ref="index"/>
+    <file name="u1854-4.png" crc="3779214145" ref="index"/>
+    <file name="u1855-4.png" crc="4290552907" ref="index"/>
+    <file name="cloud02-u1989-fr.png" crc="4240449468" ref="index"/>
+    <file name="home_video_play_btn.png" crc="43810824" seo="true" ref="index"/>
+    <file name="checklist.png" crc="285807428" ref="index"/>
+    <file name="checklist-u2004-r-fr.png" crc="201142949" ref="index"/>
+    <file name="logo02.png" crc="4139010412" ref="index"/>
+    <file name="u1995-4.png" crc="36401148" ref="index"/>
+    <file name="u2003_states.png" crc="73124234" ref="index"/>
+    <file name="u2003_states-r.png" crc="3983864665" ref="index"/>
+    <file name="map04.png" crc="3814200038" ref="index"/>
+    <file name="u2063-8.png" crc="93339493" ref="index"/>
+    <file name="u2118-7.png" crc="268480571" ref="index"/>
+    <file name="u2122-7.png" crc="3999888890" ref="index"/>
+    <file name="u2126-7.png" crc="112939476" ref="index"/>
+    <file name="u2060.png" crc="300184479" ref="index"/>
+    <file name="u2060-a.png" crc="4210672251" ref="index"/>
+    <file name="u2056.png" crc="4007125622" ref="index"/>
+    <file name="u2056-a.png" crc="3961645748" ref="index"/>
+    <file name="u2058.png" crc="4107658986" ref="index"/>
+    <file name="u2058-a.png" crc="3938607527" ref="index"/>
+    <file name="u2103.png" crc="4053320420" ref="index"/>
+    <file name="u2103-a.png" crc="4096254207" ref="index"/>
+    <file name="rain_cloud.png" crc="443175161" ref="index"/>
+    <file name="hiker-u2037-fr.png" crc="3965037045" ref="index"/>
+    <file name="compass03.png" crc="381947723" ref="index"/>
+    <file name="small.png" crc="101941690" ref="index"/>
+  </folder>
+  <file name="index.html" crc="427223791" seo="true" mt="1447878209368" redirect="true"/>
+</manifest>

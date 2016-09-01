@@ -1,0 +1,80 @@
+<manifest alg="2" build="6" opt="true" iceEnabled="true" exportTarget="other" resolutions="1x" timestamp="1412272894412">
+  <folder name="css">
+    <file name="site_global.css" crc="426517801"/>
+    <file name="master_a-master.css" crc="3976766187" ref="index:capabilities"/>
+    <file name="index.css" crc="3865545266" ref="index"/>
+    <file name="iefonts_index.css" crc="494976129" ref="index"/>
+    <file name="capabilities.css" crc="298931986" ref="capabilities"/>
+    <file name="iefonts_capabilities.css" crc="4192375301" ref="capabilities"/>
+  </folder>
+  <folder name="scripts">
+    <file name="jquery-1.8.3.min.js" crc="4021225061" ref="index:capabilities"/>
+    <file name="museutils.js" crc="4136605575" ref="index:capabilities"/>
+    <file name="jquery.musepolyfill.bgsize.js" crc="242197875" ref="index:capabilities"/>
+    <file name="jquery.watch.js" crc="172956391" ref="index:capabilities"/>
+    <file name="jquery.musemenu.js" crc="4009181048" ref="index:capabilities"/>
+    <file name="pie.js" crc="3827607177" ref="index:capabilities"/>
+    <file name="webpro.js" crc="420478120" ref="index"/>
+    <file name="musewpslideshow.js" crc="480958572" ref="index"/>
+    <file name="jquery.museoverlay.js" crc="184401257" ref="index"/>
+    <file name="touchswipe.js" crc="60020316" ref="index"/>
+    <file name="form_check.php" crc="313295658" ref="index"/>
+    <file name="form_throttle.php" crc="254134657" ref="index"/>
+    <file name="form_process.php" crc="304694956" ref="index"/>
+    <file name="form-u941.php" crc="3891460230" ref="index"/>
+    <file name="html5shiv.js" crc="4241844378" ref="index:capabilities"/>
+  </folder>
+  <folder name="images">
+    <file name="home_banner.jpg" crc="3883633538" ref="index"/>
+    <file name="pdg_logo.png" crc="423159320" ref="index:capabilities"/>
+    <file name="home_advise_img.jpg" crc="3802239203" ref="index"/>
+    <file name="home_build_img.jpg" crc="30501660" ref="index"/>
+    <file name="home_operate_img.jpg" crc="431211558" ref="index"/>
+    <file name="home_video_play_btn.png" crc="3792178934" ref="index"/>
+    <file name="home_video_bg.jpg" crc="4199891288" ref="index"/>
+    <file name="life_sciences_icon.png" crc="3878781100" ref="index"/>
+    <file name="client_logo_merck.png" crc="484719055" ref="index"/>
+    <file name="client_logo_abbvie.png" crc="3798339765" ref="index"/>
+    <file name="client_logo_az.png" crc="3917197613" ref="index"/>
+    <file name="client_logo_pfizer.png" crc="530654909" ref="index"/>
+    <file name="client_logo_genzyme.png" crc="411756109" ref="index"/>
+    <file name="client_logo_otsuka.png" crc="3764712114" ref="index"/>
+    <file name="client_logo_endo.png" crc="4013138505" ref="index"/>
+    <file name="client_logo_teva.png" crc="45689191" ref="index"/>
+    <file name="ipad_casestudy_image.jpg" crc="4115348931" ref="index"/>
+    <file name="map_bg.jpg" crc="64893142" ref="index"/>
+    <file name="building_pic.png" crc="3966632494" ref="index"/>
+    <file name="u946-17.png" crc="4238696733" ref="index"/>
+    <file name="u946-17-r.png" crc="445684855" ref="index"/>
+    <file name="u946-17-m.png" crc="445684855" ref="index"/>
+    <file name="u946-17-fs.png" crc="4275260537" ref="index"/>
+    <file name="checkboxunchecked.jpg" crc="4028532441" ref="index"/>
+    <file name="checkboxuncheckedrollover.jpg" crc="460745630" ref="index"/>
+    <file name="checkboxuncheckedmousedown.jpg" crc="4105190257" ref="index"/>
+    <file name="checkboxchecked.jpg" crc="4050656469" ref="index"/>
+    <file name="checkboxcheckedrollover.jpg" crc="419270246" ref="index"/>
+    <file name="checkboxcheckedmousedown.jpg" crc="259332323" ref="index"/>
+    <file name="financial_icon.png" crc="481699349" ref="index"/>
+    <file name="client_logo_blackrock.png" crc="4202805516" ref="index"/>
+    <file name="client_logo_corning.png" crc="187301956" ref="index"/>
+    <file name="client_logo_creditsuisse.png" crc="4036049525" ref="index"/>
+    <file name="client_logo_mastercard.png" crc="4020220978" ref="index"/>
+    <file name="client_logo_deutsche.png" crc="403844973" ref="index"/>
+    <file name="client_logo_santander.png" crc="399868588" ref="index"/>
+    <file name="oil_icon.png" crc="522474102" ref="index"/>
+    <file name="client_logo_aramark.png" crc="405313828" ref="index"/>
+    <file name="client_logo_quaker.png" crc="4116271177" ref="index"/>
+    <file name="client_logo_toyota.png" crc="3946296796" ref="index"/>
+    <file name="client_logo_parker.png" crc="282358154" ref="index"/>
+    <file name="client_logos_comcast.png" crc="24832317" ref="index"/>
+    <file name="client_logos_ironmtn.png" crc="183991264" ref="index"/>
+    <file name="linkedin_icon.jpg" crc="516825850" ref="index:capabilities"/>
+    <file name="twitter_icon.jpg" crc="196434132" ref="index:capabilities"/>
+    <file name="gplus_icon.jpg" crc="442110003" ref="index:capabilities"/>
+    <file name="facebook_icon.jpg" crc="330259778" ref="index:capabilities"/>
+    <file name="capabilities_banner.jpg" crc="372177015" ref="capabilities"/>
+    <file name="u1282-grad.png" crc="199696844" ref="capabilities"/>
+  </folder>
+  <file name="index.html" crc="368485548" mt="1412272892760" redirect="true"/>
+  <file name="capabilities.html" crc="504066934" mt="1412272675244" redirect="true"/>
+</manifest>
