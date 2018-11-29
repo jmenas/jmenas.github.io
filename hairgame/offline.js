@@ -1,11 +1,11 @@
 ﻿{
-	"version": 1543447591,
+	"version": 1543450526,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
 		"jquery-2.1.1.min.js",
 		"offlineClient.js",
-		"images/salonbg-sheet0.png",
+		"images/salonbg-default-000.jpg",
 		"images/button_test-sheet0.png",
 		"images/scrolltosprite-sheet0.png",
 		"icon-16.png",
