@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1543450526,
+	"version": 1543451121,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -7,7 +7,8 @@
 		"offlineClient.js",
 		"images/salonbg-default-000.jpg",
 		"images/button_test-sheet0.png",
-		"images/scrolltosprite-sheet0.png",
+		"images/salonbg2-default-000.jpg",
+		"images/salonbg3-default-000.jpg",
 		"icon-16.png",
 		"icon-32.png",
 		"icon-114.png",
