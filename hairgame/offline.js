@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1543587544,
+	"version": 1543590151,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -48,6 +48,9 @@
 		"images/juliabubble-sheet5.png",
 		"images/juliabubble-sheet6.png",
 		"images/salonbg4-sheet0.png",
+		"images/sprite-sheet0.png",
+		"media/397353__plasterbrain__tada-fanfare-g.m4a",
+		"media/397353__plasterbrain__tada-fanfare-g.ogg",
 		"icon-16.png",
 		"icon-32.png",
 		"icon-114.png",
