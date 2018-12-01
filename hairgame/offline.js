@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1543621783,
+	"version": 1543677686,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -24,6 +24,7 @@
 		"images/box-sheet8.png",
 		"images/box-sheet9.png",
 		"images/boxopenhitarea-sheet0.png",
+		"images/productspawnpoint-sheet0.png",
 		"images/sky.jpg",
 		"images/light_overlay.jpg",
 		"images/buildings2-sheet0.png",
