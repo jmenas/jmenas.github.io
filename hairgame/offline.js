@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1543684664,
+	"version": 1543697020,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -65,10 +65,15 @@
 		"images/juliabubble-sheet4.png",
 		"images/juliabubble-sheet5.png",
 		"images/juliabubble-sheet6.png",
+		"images/julia-sheet0.png",
+		"images/julia-sheet1.png",
+		"images/julia-sheet2.png",
+		"images/julia-sheet3.png",
 		"images/dark_overlay-sheet0.png",
 		"images/scroll_left_btn-sheet0.png",
 		"images/scroll_right_btn-sheet0.png",
 		"images/camera-sheet0.png",
+		"images/scenario_text_bg.jpg",
 		"media/397353__plasterbrain__tada-fanfare-g.m4a",
 		"media/397353__plasterbrain__tada-fanfare-g.ogg",
 		"icon-16.png",
