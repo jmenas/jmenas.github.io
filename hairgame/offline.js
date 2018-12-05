@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1543957035,
+	"version": 1544016947,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -108,6 +108,7 @@
 		"images/scroll_right_btn-sheet0.png",
 		"images/camera-sheet0.png",
 		"images/scenario_text_bg.jpg",
+		"images/twitterbutton-sheet0.png",
 		"media/397353__plasterbrain__tada-fanfare-g.m4a",
 		"media/397353__plasterbrain__tada-fanfare-g.ogg",
 		"media/398281__flashtrauma__reception-bell.m4a",
