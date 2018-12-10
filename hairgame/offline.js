@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1544371960,
+	"version": 1544447328,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -126,6 +126,7 @@
 		"images/twitterbutton-sheet0.png",
 		"images/aveda_buck_icon-sheet0.png",
 		"images/product_info_bg.jpg",
+		"images/score_bg.jpg",
 		"images/feedback_text_bg.jpg",
 		"images/scenario_text_bg.jpg",
 		"images/bg_green.jpg",
