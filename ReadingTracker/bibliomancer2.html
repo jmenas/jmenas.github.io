@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 The Bibliomancer's Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #080613;
+  --surface: #100d22;
+  --surface2: #181330;
+  --surface3: #201b3d;
+  --border: #2a2248;
+  --gold: #c8a84b;
+  --gold-light: #e8cc80;
+  --gold-dim: #7a6530;
+  --text: #e0ceac;
+  --text-muted: #7a6a50;
+  --text-bright: #f0e0c0;
+  --accent-purple: #7c4dff;
+  --accent-teal: #00bfa5;
+  --green: #4caf73;
+  --red: #e05555;
+  --orange: #e8873a;
+  --blue: #5080e8;
+  --font-display: 'Uncial Antiqua', cursive;
+  --font-body: 'Crimson Text', Georgia, serif;
+  --radius: 8px;
+  --glow: 0 0 20px rgba(200,168,75,0.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* === STARFIELD BACKGROUND === */
+.stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(124,77,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0,191,165,0.05) 0%, transparent 50%);
+}
+
+.stars::before, .stars::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 5% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 25% 60%, rgba(255,255,200,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 20%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 65% 15%, rgba(200,220,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 65%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 35%, rgba(255,255,200,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 88% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 93% 20%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 12% 75%, rgba(200,200,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 58% 90%, rgba(255,255,200,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 10%, rgba(255,255,255,0.4) 0%, transparent 100%);
+}
+
+.stars::after {
+  background-image:
+    radial-gradient(1px 1px at 8% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 85%, rgba(255,255,200,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 38% 5%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 70%, rgba(200,200,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 62% 28%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 78%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 90% 42%, rgba(255,200,200,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 52%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 32% 38%, rgba(200,255,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 68% 88%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  opacity: 0.7;
+}
+
+/* === LAYOUT === */
+.app-wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* === HEADER === */
+.site-header {
+  text-align: center;
+  padding: 40px 0 20px;
+}
+
+.site-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  color: var(--gold-light);
+  text-shadow: 0 0 30px rgba(200,168,75,0.6), 0 0 60px rgba(200,168,75,0.3);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from { text-shadow: 0 0 20px rgba(200,168,75,0.5), 0 0 40px rgba(200,168,75,0.2); }
+  to { text-shadow: 0 0 30px rgba(200,168,75,0.8), 0 0 60px rgba(200,168,75,0.4), 0 0 90px rgba(124,77,255,0.2); }
+}
+
+.site-header p {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 1.1rem;
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+
+.header-rune {
+  font-size: 2.5rem;
+  animation: spin 20s linear infinite;
+  display: inline-block;
+  opacity: 0.7;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === SETUP SCREEN === */
+#setup-screen {
+  max-width: 680px;
+  margin: 30px auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+#setup-screen h2 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.setup-steps { list-style: none; counter-reset: steps; }
+.setup-steps li {
+  counter-increment: steps;
+  padding: 10px 0 10px 50px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+.setup-steps li::before {
+  content: counter(steps);
+  position: absolute; left: 0; top: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface3);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-family: var(--font-display);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+}
+
+.setup-steps li strong { color: var(--text); }
+.setup-steps li code {
+  background: var(--surface3); padding: 1px 6px;
+  border-radius: 3px; font-size: 0.85em;
+  color: var(--accent-teal); letter-spacing: 0;
+}
+
+.sheet-format {
+  margin: 20px 0;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 3px solid var(--gold-dim);
+}
+.sheet-format h4 { color: var(--gold); font-size: 0.9rem; margin-bottom: 8px; }
+.sheet-format .cols { display: flex; flex-wrap: wrap; gap: 6px; }
+.sheet-format .col-tag {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.sheet-format .col-tag span { color: var(--gold-light); }
+
+.url-group { display: flex; gap: 10px; margin-top: 20px; }
+.url-group input {
+  flex: 1;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.url-group input:focus { border-color: var(--gold-dim); }
+.url-group input::placeholder { color: var(--text-muted); }
+
+.btn {
+  background: linear-gradient(135deg, #8a6800, #c8a84b);
+  color: #0d0b18;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  letter-spacing: 0.03em;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,168,75,0.4); }
+.btn:active { transform: translateY(0); }
+.btn-sm { padding: 8px 16px; font-size: 0.8rem; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--text-muted); box-shadow: none; transform: none; }
+
+.setup-error { color: var(--red); font-size: 0.9rem; margin-top: 10px; display: none; }
+.setup-loading { color: var(--text-muted); font-size: 0.9rem; margin-top: 10px; display: none; font-style: italic; }
+
+/* === MAIN APP === */
+#main-app { display: none; }
+
+/* === CHARACTER CARD === */
+.character-banner {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  box-shadow: var(--glow), 0 4px 20px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.character-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(200,168,75,0.05) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.char-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--surface3);
+  border: 2px solid var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 0 20px rgba(200,168,75,0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.char-avatar:hover { transform: scale(1.05); }
+
+.char-info h2 {
+  font-family: var(--font-display);
+  color: var(--gold-light);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.char-info .char-title {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.95rem;
+  margin: 2px 0 10px;
+}
+
+.xp-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.xp-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 4px;
+  transition: width 1s ease;
+  box-shadow: 0 0 8px rgba(200,168,75,0.5);
+}
+.xp-label { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
+
+.char-level {
+  text-align: center;
+  flex-shrink: 0;
+}
+.level-badge {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, var(--surface3), var(--surface));
+  border: 2px solid var(--gold-dim);
+  border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  box-shadow: 0 0 15px rgba(200,168,75,0.2);
+}
+.level-badge .lv { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.level-badge .num { font-family: var(--font-display); color: var(--gold); font-size: 1.4rem; line-height: 1; }
+
+.char-quick-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.qstat { text-align: center; }
+.qstat .val { font-family: var(--font-display); color: var(--gold-light); font-size: 1.3rem; }
+.qstat .lbl { color: var(--text-muted); font-size: 0.75rem; display: block; }
+
+/* === NAV TABS === */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.nav-tab:hover { color: var(--text); background: var(--surface2); }
+.nav-tab.active {
+  background: var(--surface3);
+  color: var(--gold-light);
+  border: 1px solid var(--gold-dim);
+  box-shadow: 0 0 10px rgba(200,168,75,0.1);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* === REFRESH BAR === */
+.refresh-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.refresh-bar strong { color: var(--text); }
+
+/* === JOURNEY MAP / MILESTONE PATH === */
+.journey-section h3 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.journey-map {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 30px 20px;
+  overflow-x: auto;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.milestone-path {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 700px;
+  position: relative;
+}
+
+.milestone-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex-shrink: 0;
+  width: 90px;
+}
+
+.milestone-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  position: relative;
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.milestone-node.unlocked .milestone-icon {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 15px rgba(200,168,75,0.3);
+  animation: msPulse 2s ease-in-out infinite alternate;
+}
+
+.milestone-node.current .milestone-icon {
+  border-color: var(--gold);
+  box-shadow: 0 0 25px rgba(200,168,75,0.6);
+  transform: scale(1.15);
+}
+
+@keyframes msPulse {
+  from { box-shadow: 0 0 10px rgba(200,168,75,0.2); }
+  to { box-shadow: 0 0 20px rgba(200,168,75,0.5); }
+}
+
+.milestone-node.locked .milestone-icon { filter: grayscale(0.7); opacity: 0.5; }
+
+.milestone-label {
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+.milestone-node.unlocked .milestone-label { color: var(--text); }
+.milestone-node.current .milestone-label { color: var(--gold-light); }
+
+.milestone-connector {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  position: relative;
+  min-width: 20px;
+}
+.milestone-connector.filled {
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  box-shadow: 0 0 8px rgba(200,168,75,0.4);
+}
+
+.player-token {
+  position: absolute;
+  top: -8px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 12px rgba(200,168,75,0.8);
+  animation: tokenBounce 1s ease-in-out infinite alternate;
+}
+@keyframes tokenBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+/* === COMPANIONS === */
+.companions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.companion-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.companion-card.unlocked {
+  border-color: var(--gold-dim);
+  cursor: default;
+}
+.companion-card.unlocked:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 20px rgba(200,168,75,0.2);
+}
+.companion-card.locked { opacity: 0.45; filter: grayscale(0.5); }
+
+.companion-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.companion-card.unlocked::before { background: linear-gradient(90deg, transparent, var(--card-accent, var(--gold)), transparent); }
+
+.companion-emoji { font-size: 3rem; margin-bottom: 10px; display: block; line-height: 1; }
+.companion-name {
+  font-family: var(--font-display);
+  color: var(--gold-light);
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.companion-card.locked .companion-name { color: var(--text-muted); }
+.companion-role {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+.companion-bio {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.companion-unlock {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  display: inline-block;
+}
+.companion-card.unlocked .companion-unlock {
+  background: rgba(200,168,75,0.1);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* === ACHIEVEMENTS === */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.achievement-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: all 0.2s;
+}
+
+.achievement-card.unlocked { border-color: var(--gold-dim); }
+.achievement-card.locked { opacity: 0.4; }
+.achievement-card.unlocked:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); transform: translateY(-2px); }
+
+.achievement-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.achievement-card.unlocked .achievement-icon {
+  background: rgba(200,168,75,0.08);
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 10px rgba(200,168,75,0.15);
+}
+
+.achievement-info { flex: 1; min-width: 0; }
+.achievement-name {
+  font-family: var(--font-display);
+  color: var(--gold-light);
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+.achievement-card.locked .achievement-name { color: var(--text-muted); }
+.achievement-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
+
+/* === STATS === */
+.stat-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 16px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.stat-card:hover { border-color: var(--gold-dim); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+.stat-card .icon { font-size: 1.6rem; margin-bottom: 6px; }
+.stat-card .value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card .label { font-size: 0.78rem; color: var(--text-muted); }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.chart-card h4 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+.chart-card canvas { max-height: 220px; }
+
+/* === BOOKS TABLE === */
+.books-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.books-controls input, .books-controls select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.books-controls input:focus, .books-controls select:focus { border-color: var(--gold-dim); }
+.books-controls input { flex: 1; min-width: 180px; }
+.books-controls select option { background: var(--surface2); }
+
+.books-table-wrap { overflow-x: auto; }
+.books-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.books-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--surface);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.books-table th:hover { color: var(--gold-light); }
+.books-table th.sorted { color: var(--gold-light); }
+.books-table th.sorted::after { content: ' ↓'; }
+.books-table th.sorted.asc::after { content: ' ↑'; }
+
+.books-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.books-table tr:last-child td { border-bottom: none; }
+.books-table tr:hover td { background: var(--surface2); }
+
+.books-table .book-title { font-weight: 600; color: var(--text-bright); }
+.books-table .book-author { color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
+
+.status-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  display: inline-block;
+}
+.status-read { background: rgba(76,175,115,0.15); color: var(--green); border: 1px solid rgba(76,175,115,0.3); }
+.status-reading { background: rgba(80,128,232,0.15); color: var(--blue); border: 1px solid rgba(80,128,232,0.3); }
+.status-want { background: rgba(124,77,255,0.15); color: var(--accent-purple); border: 1px solid rgba(124,77,255,0.3); }
+.status-dnf { background: rgba(224,85,85,0.15); color: var(--red); border: 1px solid rgba(224,85,85,0.3); }
+
+.stars-display { color: var(--gold); letter-spacing: -1px; font-size: 0.9rem; }
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.no-data .icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+
+/* === TOAST === */
+#toast-container {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 340px;
+}
+
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--gold-dim);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5), 0 0 20px rgba(200,168,75,0.2);
+  animation: toastIn 0.4s ease;
+  pointer-events: all;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.toast.out { animation: toastOut 0.3s ease forwards; }
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(50px); }
+}
+
+.toast-icon { font-size: 1.8rem; flex-shrink: 0; }
+.toast-body .toast-title { font-family: var(--font-display); color: var(--gold-light); font-size: 0.95rem; }
+.toast-body .toast-msg { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+
+/* === MODAL === */
+#name-modal {
+  position: fixed; inset: 0;
+  background: rgba(8,6,19,0.85);
+  z-index: 8888;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: 16px;
+  padding: 36px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(200,168,75,0.2);
+}
+.modal-box h3 { font-family: var(--font-display); color: var(--gold); font-size: 1.5rem; margin-bottom: 10px; }
+.modal-box p { color: var(--text-muted); margin-bottom: 20px; font-style: italic; }
+.modal-box input {
+  width: 100%;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  outline: none;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.modal-box input:focus { border-color: var(--gold-dim); }
+
+/* === SECTION HEADERS === */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.section-head h3 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1.2rem;
+}
+.section-head p { color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+
+/* === MISC === */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.currently-reading-banner {
+  background: linear-gradient(135deg, rgba(80,128,232,0.1), rgba(124,77,255,0.1));
+  border: 1px solid rgba(80,128,232,0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.crb-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 4px; }
+.crb-book { font-family: var(--font-display); color: var(--text-bright); font-size: 1.1rem; }
+.crb-author { color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .character-banner { grid-template-columns: auto 1fr; }
+  .char-quick-stats { display: none; }
+  #setup-screen { padding: 24px; }
+  .url-group { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+
+<div id="toast-container"></div>
+
+<div id="name-modal" style="display:none;">
+  <div class="modal-box">
+    <div style="font-size:3rem;margin-bottom:12px;">🧙</div>
+    <h3>Name Your Adventurer</h3>
+    <p>Your legend begins with a name, brave bibliomancer.</p>
+    <input type="text" id="adventurer-name-input" placeholder="Enter your name..." maxlength="30">
+    <button class="btn" style="width:100%" onclick="saveName()">Begin the Journey</button>
+  </div>
+</div>
+
+<div class="app-wrap">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div style="font-size:1.5rem;opacity:0.6;letter-spacing:0.5em;margin-bottom:8px;">✦ ✦ ✦</div>
+    <h1>The Bibliomancer's Journey</h1>
+    <p>Track your reading. Forge your legend. Unlock the ancient knowledge.</p>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen">
+    <h2>⚔️ Begin Your Quest</h2>
+    <p style="color:var(--text-muted);margin-bottom:20px;font-style:italic;font-size:0.95rem;">Connect your Goodreads export (or any Google Sheet) to start your adventure.</p>
+
+    <ol class="setup-steps">
+      <li><strong>Export from Goodreads:</strong> Go to <strong>My Books → Import and Export → Export Library</strong>. Download the CSV file.</li>
+      <li><strong>Upload to Google Sheets:</strong> Open <a href="https://sheets.google.com" target="_blank" style="color:var(--gold-dim)">sheets.google.com</a>, click <strong>+ New</strong>, then <strong>File → Import</strong> your downloaded CSV.</li>
+      <li>Go to <strong>File → Share → Publish to web</strong>. Select your sheet, choose <strong>Comma-separated values (.csv)</strong>, and click <strong>Publish</strong>.</li>
+      <li>Copy the published URL and paste it below.</li>
+    </ol>
+
+    <div class="sheet-format">
+      <h4>📋 Goodreads Export Columns (auto-detected)</h4>
+      <div class="cols">
+        <div class="col-tag"><span>✓</span> Title</div>
+        <div class="col-tag"><span>✓</span> Author</div>
+        <div class="col-tag"><span>✓</span> My Rating</div>
+        <div class="col-tag"><span>✓</span> Number of Pages</div>
+        <div class="col-tag"><span>✓</span> Date Read</div>
+        <div class="col-tag"><span>✓</span> Date Added</div>
+        <div class="col-tag"><span>✓</span> Exclusive Shelf</div>
+        <div class="col-tag"><span>✓</span> Bookshelves</div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px;">
+        <strong style="color:var(--text)">Genre tip:</strong> Add a custom Goodreads shelf (e.g. <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">fantasy</code>, <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">sci-fi</code>) to each book — the app reads your first custom shelf as the genre. Alternatively, add a <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">Genre</code> column manually.
+      </p>
+    </div>
+
+    <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:8px;font-size:0.85rem;color:var(--text-muted);">
+      <strong style="color:var(--text);">💡 Tip:</strong> All 23 Goodreads export columns are handled automatically — extra columns are ignored. Works with manual sheets too as long as headers are recognizable.
+    </div>
+
+    <div class="url-group">
+      <input type="text" id="sheet-url-input" placeholder="Paste your Google Sheets CSV URL here...">
+      <button class="btn" onclick="connectSheet()">Connect ✦</button>
+    </div>
+    <div id="setup-error" class="setup-error">⚠ Could not load the sheet. Make sure it's published as CSV and the URL is correct.</div>
+    <div id="setup-loading" class="setup-loading">✨ Consulting the ancient archives...</div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="loadDemo()">✦ Try with Demo Data</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app">
+
+    <!-- REFRESH BAR -->
+    <div class="refresh-bar">
+      <span>Connected: <strong id="sheet-label">your reading log</strong> · Updated <strong id="last-updated">—</strong></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="refreshData()">↻ Refresh</button>
+        <button class="btn btn-ghost btn-sm" onclick="disconnectSheet()">✕ Disconnect</button>
+      </div>
+    </div>
+
+    <!-- CHARACTER BANNER -->
+    <div class="character-banner">
+      <div class="char-avatar" onclick="showNameModal()" title="Click to change name">
+        <span id="char-emoji">📖</span>
+      </div>
+      <div class="char-info">
+        <h2 id="char-name">The Bibliomancer</h2>
+        <div class="char-title" id="char-title-text">The Blank Page</div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+          <span class="xp-label" id="xp-label">0 / 1 books to next level</span>
+        </div>
+      </div>
+      <div class="char-level">
+        <div class="level-badge">
+          <span class="lv">LVL</span>
+          <span class="num" id="char-level">0</span>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('adventure', this)">🗺 Adventure</button>
+      <button class="nav-tab" onclick="switchTab('companions', this)">🧑‍🤝‍🧑 Companions</button>
+      <button class="nav-tab" onclick="switchTab('achievements', this)">🏆 Achievements</button>
+      <button class="nav-tab" onclick="switchTab('stats', this)">📊 Statistics</button>
+      <button class="nav-tab" onclick="switchTab('books', this)">📚 Book Log</button>
+    </nav>
+
+    <!-- ADVENTURE TAB -->
+    <div id="tab-adventure" class="tab-panel active">
+      <div id="currently-reading-section"></div>
+
+      <div class="journey-section">
+        <div class="section-head">
+          <h3>Your Journey</h3>
+          <p id="journey-subtitle">Follow the path of the bibliomancer</p>
+        </div>
+        <div class="journey-map">
+          <div class="milestone-path" id="milestone-path"></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Recent Unlocks</h3>
+        <p>Characters and achievements you've recently earned</p>
+      </div>
+      <div id="recent-unlocks" class="companions-grid" style="margin-bottom:0"></div>
+    </div>
+
+    <!-- COMPANIONS TAB -->
+    <div id="tab-companions" class="tab-panel">
+      <div class="section-head">
+        <h3>Your Companions</h3>
+        <p id="companions-subtitle">Characters you've met on your journey</p>
+      </div>
+      <div class="companions-grid" id="companions-grid"></div>
+    </div>
+
+    <!-- ACHIEVEMENTS TAB -->
+    <div id="tab-achievements" class="tab-panel">
+      <div class="section-head">
+        <h3>Hall of Achievements</h3>
+        <p id="achievements-subtitle">Feats of reading prowess</p>
+      </div>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="tab-stats" class="tab-panel">
+      <div class="stat-summary" id="stat-summary"></div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h4>📅 Books Finished per Month</h4>
+          <canvas id="chart-monthly"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>🎭 Genres</h4>
+          <canvas id="chart-genre"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>⭐ Rating Distribution</h4>
+          <canvas id="chart-ratings"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>📄 Pages Read per Month</h4>
+          <canvas id="chart-pages"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKS TAB -->
+    <div id="tab-books" class="tab-panel">
+      <div class="books-controls">
+        <input type="text" id="book-search" placeholder="🔍 Search books, authors..." oninput="filterBooks()">
+        <select id="status-filter" onchange="filterBooks()">
+          <option value="">All Status</option>
+          <option value="Read">Read</option>
+          <option value="Reading">Reading</option>
+          <option value="Want to Read">Want to Read</option>
+          <option value="DNF">DNF</option>
+        </select>
+        <select id="genre-filter" onchange="filterBooks()">
+          <option value="">All Genres</option>
+        </select>
+        <select id="sort-by" onchange="filterBooks()">
+          <option value="date_finished">Sort: Date Finished</option>
+          <option value="title">Sort: Title</option>
+          <option value="author">Sort: Author</option>
+          <option value="rating">Sort: Rating</option>
+          <option value="pages">Sort: Pages</option>
+        </select>
+      </div>
+      <div class="books-table-wrap">
+        <table class="books-table" id="books-table">
+          <thead>
+            <tr>
+              <th>Title / Author</th>
+              <th>Genre</th>
+              <th>Pages</th>
+              <th>Finished</th>
+              <th>Rating</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="books-tbody"></tbody>
+        </table>
+      </div>
+      <div id="books-empty" class="empty-state" style="display:none">
+        <span class="icon">📖</span>
+        No books match your filter.
+      </div>
+    </div>
+
+  </div><!-- /main-app -->
+</div><!-- /app-wrap -->
+
+<script>
+// ═══════════════════════════════════════════
+// DATA & CONFIGURATION
+// ═══════════════════════════════════════════
+
+const LEVELS = [
+  { books: 0,   title: 'The Blank Page',         emoji: '📖' },
+  { books: 1,   title: 'The Curious Apprentice',  emoji: '🕯️' },
+  { books: 3,   title: 'The Eager Scholar',       emoji: '📜' },
+  { books: 6,   title: 'The Wandering Reader',    emoji: '🎒' },
+  { books: 10,  title: 'The Seasoned Adventurer', emoji: '⚔️' },
+  { books: 20,  title: 'The Lore Keeper',         emoji: '📗' },
+  { books: 35,  title: 'The Arcane Reader',       emoji: '🔮' },
+  { books: 50,  title: 'The Grand Bibliomancer',  emoji: '🧙' },
+  { books: 75,  title: 'The Legendary Scholar',   emoji: '🌟' },
+  { books: 100, title: 'The Infinite Wanderer',   emoji: '🌌' },
+  { books: 150, title: 'The Celestial Bibliomancer', emoji: '✨' },
+];
+
+const COMPANIONS = [
+  {
+    id: 'lyra', books: 1,
+    name: 'Lyra', role: 'The Librarian',
+    emoji: '📚', color: '#c8a84b',
+    bio: 'Keeper of the First Archive, Lyra greets every bibliomancer who reads their first book. She guides new readers through the great halls of knowledge.',
+    quote: '"Every great journey begins by opening a single page."',
+    ability: '+5 to Finding Hidden Bookmarks'
+  },
+  {
+    id: 'finn', books: 5,
+    name: 'Finn', role: 'The Wandering Bard',
+    emoji: '🎭', color: '#00bfa5',
+    bio: 'A storyteller who has sung of five adventures and counting. Finn appears at taverns and crossroads, spinning tales of faraway books.',
+    quote: '"Five tales told — your voice begins to echo across the realms."',
+    ability: '+10 to Bardic Knowledge checks'
+  },
+  {
+    id: 'aeva', books: 10,
+    name: 'Aeva', role: 'The Forest Sage',
+    emoji: '🌿', color: '#4caf73',
+    bio: 'Ancient guardian of the reading groves, Aeva emerges from the deep woods only when a reader has crossed the ten-book threshold.',
+    quote: '"The forest grows one tree at a time. So too does wisdom."',
+    ability: '+15 to Ancient Lore and Nature checks'
+  },
+  {
+    id: 'drax', books: 25,
+    name: 'Drax', role: 'The Dragon of Knowledge',
+    emoji: '🐉', color: '#e05555',
+    bio: 'A fearsome yet wise dragon who hoards not gold, but books. Only the most dedicated readers may claim Drax as an ally.',
+    quote: '"Twenty-five volumes? You are worthy of my hoard."',
+    ability: '+20 to Dragon Lore and resistance to plot holes'
+  },
+  {
+    id: 'selene', books: 50,
+    name: 'Selene', role: 'The Eternal Phoenix',
+    emoji: '🦅', color: '#e8873a',
+    bio: 'Reborn through the flames of fifty books, Selene is a creature of legend seen by very few. Her feathers carry the wisdom of countless tales.',
+    quote: '"From the ashes of fifty stories, a new legend rises."',
+    ability: '+25 to Fire-type reading sessions and narrative rebirth'
+  },
+  {
+    id: 'zephyros', books: 100,
+    name: 'Zephyros', role: 'The Celestial Owl',
+    emoji: '🦉', color: '#7c4dff',
+    bio: 'An ancient owl who has witnessed the reading of a hundred worlds. Zephyros exists between the stars, watching over legendary bibliomancers.',
+    quote: '"A hundred worlds explored. The cosmos bows to your curiosity."',
+    ability: '+30 to all knowledge checks, Omniscient Vision'
+  },
+];
+
+const JOURNEY_MILESTONES = [
+  { books: 0,   icon: '🏰', label: 'The First\nLibrary',    place: 'Starting Point' },
+  { books: 1,   icon: '📚', label: 'The\nReading Nook',     place: 'Lyra\'s Archive' },
+  { books: 5,   icon: '🌲', label: 'Enchanted\nForest',     place: 'Finn\'s Crossroads' },
+  { books: 10,  icon: '🏔️', label: 'The Mountain\nPass',    place: 'Aeva\'s Groves' },
+  { books: 25,  icon: '🐉', label: 'Dragon\'s\nLair',       place: 'Drax\'s Hoard' },
+  { books: 50,  icon: '🌋', label: 'Phoenix\nPeaks',        place: 'Selene\'s Aerie' },
+  { books: 100, icon: '⭐', label: 'The Celestial\nLibrary', place: 'Zephyros\'s Domain' },
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_book',    icon: '🎉', name: 'First Chapter',        desc: 'Complete your first book',         check: (s) => s.booksRead >= 1 },
+  { id: 'five_books',   icon: '📖', name: 'The Apprentice',        desc: 'Complete 5 books',                 check: (s) => s.booksRead >= 5 },
+  { id: 'ten_books',    icon: '🔟', name: 'Double Digits',         desc: 'Complete 10 books',                check: (s) => s.booksRead >= 10 },
+  { id: 'page_1k',      icon: '📄', name: 'Thousand Pages',        desc: 'Read 1,000 total pages',           check: (s) => s.totalPages >= 1000 },
+  { id: 'page_5k',      icon: '📑', name: 'Five Thousand Leagues', desc: 'Read 5,000 total pages',           check: (s) => s.totalPages >= 5000 },
+  { id: 'page_10k',     icon: '🗺️', name: 'The Boundless Reader',  desc: 'Read 10,000 total pages',          check: (s) => s.totalPages >= 10000 },
+  { id: 'genres5',      icon: '🎭', name: 'The Polymath',          desc: 'Read books from 5+ different genres', check: (s) => s.uniqueGenres >= 5 },
+  { id: 'genres10',     icon: '🌈', name: 'Genre Conqueror',       desc: 'Read from 10+ different genres',   check: (s) => s.uniqueGenres >= 10 },
+  { id: 'perfect_rate', icon: '⭐', name: 'A Perfect Read',        desc: 'Give a 5-star rating to a book',   check: (s) => s.hasFiveStar },
+  { id: 'long_book',    icon: '🧱', name: 'The Tome Bearer',       desc: 'Read a book with 500+ pages',      check: (s) => s.longestBook >= 500 },
+  { id: 'epic_tome',    icon: '🗿', name: 'Epic Tome Slayer',      desc: 'Read a book with 800+ pages',      check: (s) => s.longestBook >= 800 },
+  { id: 'series',       icon: '🔗', name: 'Series Devotee',        desc: 'Read 3+ books by the same author', check: (s) => s.maxSameAuthor >= 3 },
+  { id: 'diverse',      icon: '🌍', name: 'Diverse Reader',        desc: 'Read books from 10+ different authors', check: (s) => s.uniqueAuthors >= 10 },
+  { id: 'rater',        icon: '📊', name: 'The Critic',            desc: 'Rate 10+ books',                   check: (s) => s.ratedBooks >= 10 },
+  { id: 'fifty',        icon: '🥇', name: 'The Fifty',             desc: 'Complete 50 books',                check: (s) => s.booksRead >= 50 },
+  { id: 'century',      icon: '💯', name: 'The Century',           desc: 'Complete 100 books',               check: (s) => s.booksRead >= 100 },
+  { id: 'page_25k',     icon: '🌌', name: 'Words Beyond Stars',    desc: 'Read 25,000 total pages',          check: (s) => s.totalPages >= 25000 },
+  { id: 'high_avg',     icon: '🏅', name: 'Discerning Taste',      desc: 'Maintain an average rating of 4.0+', check: (s) => s.avgRating >= 4.0 && s.ratedBooks >= 5 },
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let books = [];
+let stats = {};
+let charts = {};
+let sortState = { col: 'date_finished', asc: false };
+
+// ═══════════════════════════════════════════
+// CSV PARSING
+// ═══════════════════════════════════════════
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = parseCSVRow(lines[0]).map(h => h.trim().toLowerCase());
+  const colMap = detectColumns(headers);
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCSVRow(lines[i]);
+    if (!vals.some(v => v.trim())) continue;
+    const get = (key) => (colMap[key] !== undefined && colMap[key] < vals.length) ? vals[colMap[key]].trim() : '';
+
+    // Status: prefer Exclusive Shelf (Goodreads), fallback to generic status column
+    const statusRaw = get('status') || get('bookshelves');
+    const status = normalizeStatus(statusRaw);
+
+    // Genre: prefer dedicated genre column, then extract from Bookshelves
+    // (filter out standard Goodreads shelf names like read/currently-reading/to-read)
+    let genre = get('genre');
+    if (!genre) {
+      const shelves = get('bookshelves').split(',')
+        .map(s => s.trim())
+        .filter(s => s && !/^(read|currently-reading|to-read|favorites|owned|wish-list|default)$/i.test(s));
+      genre = shelves[0] || '';
+    }
+
+    // Date: Goodreads has Date Read (finished) and Date Added (added to shelf, used as fallback start)
+    const dateFinished = get('dateFinished');
+    const dateStarted  = get('dateStarted') || get('dateAdded');
+
+    // Rating: Goodreads "My Rating" is 0 when unrated
+    const rating = parseFloat(get('rating')) || 0;
+
+    result.push({
+      title:        get('title') || '(Untitled)',
+      author:       get('author'),
+      genre,
+      pages:        parseInt(get('pages')) || 0,
+      dateStarted,
+      dateFinished,
+      rating,
+      status,
+    });
+  }
+  return result;
+}
+
+function parseCSVRow(line) {
+  const fields = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      fields.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
+
+function detectColumns(headers) {
+  const map = {};
+  // Priority-ordered patterns: first match wins for each key.
+  // Goodreads exports: "Title", "Author", "My Rating", "Number of Pages",
+  // "Date Read", "Date Added", "Exclusive Shelf", "Bookshelves"
+  const patterns = {
+    title:        [/^title$/, /book\s*title/, /book\s*name/, /title/],
+    author:       [/^author$/, /^author\s+l-f$/, /author/, /writer/, /^by$/],
+    genre:        [/^genre$/, /^category$/, /^subject$/, /genre/, /category/],
+    bookshelves:  [/^bookshelves$/, /^bookshelves\s*with/, /bookshelf/],
+    pages:        [/^number of pages$/, /^pages$/, /page\s*count/, /num\s*pages/, /^pages/, /length/],
+    dateStarted:  [/^date\s*started$/, /started/, /date\s*start/, /begin/],
+    dateFinished: [/^date\s*read$/, /^date\s*finished$/, /date\s*read/, /finish/, /complet/, /date\s*end/],
+    dateAdded:    [/^date\s*added$/],
+    rating:       [/^my\s*rating$/, /^rating$/, /star/, /my\s*rating/, /review\s*score/],
+    status:       [/^exclusive\s*shelf$/, /^read\s*status$/, /exclusive/, /^status$/],
+  };
+  for (const [key, rxList] of Object.entries(patterns)) {
+    for (const rx of rxList) {
+      const idx = headers.findIndex(h => rx.test(h));
+      if (idx !== -1) { map[key] = idx; break; }
+    }
+  }
+  return map;
+}
+
+function normalizeStatus(s) {
+  const l = s.toLowerCase().trim();
+  // Goodreads Exclusive Shelf values
+  if (l === 'read') return 'Read';
+  if (l === 'currently-reading') return 'Reading';
+  if (l === 'to-read') return 'Want to Read';
+  // Generic fallbacks
+  if (!l || l === 'finished' || l === 'completed' || l === 'done') return 'Read';
+  if (l.includes('reading') || l.includes('current') || l.includes('progress')) return 'Reading';
+  if (l.includes('want') || l.includes('tbr') || l.includes('wishlist') || l.includes('to read') || l.includes('to-read')) return 'Want to Read';
+  if (l.includes('dnf') || l.includes('did not finish') || l.includes('abandoned')) return 'DNF';
+  return s || 'Read';
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const cleaned = str.trim();
+  if (!cleaned) return null;
+  // Goodreads format: YYYY/MM/DD
+  const grMatch = cleaned.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (grMatch) return new Date(+grMatch[1], +grMatch[2]-1, +grMatch[3]);
+  // ISO: YYYY-MM-DD
+  const isoMatch = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (isoMatch) return new Date(+isoMatch[1], +isoMatch[2]-1, +isoMatch[3]);
+  // MM/DD/YYYY or DD/MM/YYYY
+  const parts = cleaned.split(/[\/\-\.]/);
+  if (parts.length === 3) {
+    const [a, b, c] = parts.map(Number);
+    const d = c > 1000 ? new Date(c, a-1, b) : new Date(a, b-1, c);
+    if (!isNaN(d)) return d;
+  }
+  // Native parse last resort
+  const d = new Date(cleaned);
+  return isNaN(d) ? null : d;
+}
+
+// ═══════════════════════════════════════════
+// STATS CALCULATION
+// ═══════════════════════════════════════════
+function calcStats(bookList) {
+  const read = bookList.filter(b => b.status === 'Read');
+  const totalPages = read.reduce((s, b) => s + b.pages, 0);
+  const authorCounts = {};
+  read.forEach(b => { if (b.author) authorCounts[b.author] = (authorCounts[b.author]||0)+1; });
+  const maxSameAuthor = Math.max(0, ...Object.values(authorCounts));
+  const rated = read.filter(b => b.rating > 0);
+  const avgRating = rated.length ? (rated.reduce((s,b)=>s+b.rating,0)/rated.length) : 0;
+  const genres = [...new Set(read.map(b=>b.genre).filter(Boolean))];
+  const authors = [...new Set(read.map(b=>b.author).filter(Boolean))];
+  const longestBook = Math.max(0, ...read.map(b=>b.pages));
+  const avgPages = read.length ? Math.round(totalPages / read.length) : 0;
+
+  // Monthly data
+  const monthly = {};
+  const monthlyPages = {};
+  read.forEach(b => {
+    const d = parseDate(b.dateFinished);
+    if (d) {
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      monthly[key] = (monthly[key]||0)+1;
+      monthlyPages[key] = (monthlyPages[key]||0)+b.pages;
+    }
+  });
+
+  // Genre counts
+  const genreCounts = {};
+  read.forEach(b => { if (b.genre) genreCounts[b.genre] = (genreCounts[b.genre]||0)+1; });
+
+  // Rating counts
+  const ratingCounts = {1:0, 2:0, 3:0, 4:0, 5:0};
+  rated.forEach(b => { const r = Math.round(b.rating); if (r>=1&&r<=5) ratingCounts[r]++; });
+
+  return {
+    booksRead: read.length,
+    currentlyReading: bookList.filter(b=>b.status==='Reading'),
+    wantToRead: bookList.filter(b=>b.status==='Want to Read').length,
+    totalPages,
+    avgPages,
+    avgRating: Math.round(avgRating*10)/10,
+    uniqueGenres: genres.length,
+    uniqueAuthors: authors.length,
+    maxSameAuthor,
+    hasFiveStar: rated.some(b=>b.rating>=5),
+    longestBook,
+    ratedBooks: rated.length,
+    monthly,
+    monthlyPages,
+    genreCounts,
+    ratingCounts,
+    authors,
+    genres,
+  };
+}
+
+// ═══════════════════════════════════════════
+// LEVEL SYSTEM
+// ═══════════════════════════════════════════
+function getLevel(booksRead) {
+  let lvl = 0, levelData = LEVELS[0];
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (booksRead >= LEVELS[i].books) { lvl = i; levelData = LEVELS[i]; }
+    else break;
+  }
+  const nextLvl = LEVELS[Math.min(lvl+1, LEVELS.length-1)];
+  const prevBooks = levelData.books;
+  const nextBooks = nextLvl.books;
+  const pct = lvl === LEVELS.length-1 ? 100 :
+    Math.min(100, ((booksRead - prevBooks) / (nextBooks - prevBooks)) * 100);
+  return { level: lvl, title: levelData.title, emoji: levelData.emoji, pct, nextBooks, levelData };
+}
+
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function render() {
+  stats = calcStats(books);
+  const lv = getLevel(stats.booksRead);
+
+  // Character banner
+  const name = localStorage.getItem('bm_name') || 'The Bibliomancer';
+  document.getElementById('char-name').textContent = name;
+  document.getElementById('char-title-text').textContent = lv.title;
+  document.getElementById('char-emoji').textContent = lv.emoji;
+  document.getElementById('char-level').textContent = lv.level;
+  document.getElementById('xp-fill').style.width = lv.pct + '%';
+  document.getElementById('xp-label').textContent =
+    lv.level === LEVELS.length-1 ? 'Max Level Achieved!' :
+    `${stats.booksRead} / ${lv.nextBooks} books to level ${lv.level+1}`;
+
+  renderCurrentlyReading();
+  renderJourneyMap();
+  renderRecentUnlocks();
+  renderCompanions();
+  renderAchievements();
+  renderStats();
+  renderCharts();
+  renderBooks();
+}
+
+function renderCurrentlyReading() {
+  const el = document.getElementById('currently-reading-section');
+  if (stats.currentlyReading.length === 0) { el.innerHTML = ''; return; }
+  const books = stats.currentlyReading;
+  el.innerHTML = `<div class="currently-reading-banner">
+    <div>
+      <div class="crb-label">📖 Currently Reading</div>
+      ${books.map(b=>`
+        <div class="crb-book">${esc(b.title)}</div>
+        ${b.author ? `<div class="crb-author">by ${esc(b.author)}</div>` : ''}
+      `).join('<hr style="border:none;border-top:1px solid rgba(80,128,232,0.2);margin:8px 0">')}
+    </div>
+  </div>`;
+}
+
+function renderJourneyMap() {
+  const path = document.getElementById('milestone-path');
+  const n = stats.booksRead;
+
+  // Find current segment
+  let curSegment = 0;
+  for (let i = 0; i < JOURNEY_MILESTONES.length; i++) {
+    if (n >= JOURNEY_MILESTONES[i].books) curSegment = i;
+  }
+
+  let html = '';
+  for (let i = 0; i < JOURNEY_MILESTONES.length; i++) {
+    const m = JOURNEY_MILESTONES[i];
+    const unlocked = n >= m.books;
+    const isCurrent = i === curSegment;
+
+    html += `<div class="milestone-node ${unlocked ? 'unlocked' : 'locked'} ${isCurrent ? 'current' : ''}" title="${m.place}">
+      <div class="milestone-icon">${m.icon}</div>
+      <div class="milestone-label">${m.label.replace('\n','<br>')}</div>
+      <div style="font-size:0.65rem;color:var(--text-muted)">${m.books > 0 ? m.books + ' books' : 'Start'}</div>
+    </div>`;
+
+    if (i < JOURNEY_MILESTONES.length - 1) {
+      const next = JOURNEY_MILESTONES[i+1];
+      const filled = n >= next.books;
+      const isActive = n >= m.books && n < next.books;
+      html += `<div class="milestone-connector ${filled ? 'filled' : ''}" style="position:relative">
+        ${isActive ? `<div class="player-token" style="left:${Math.min(95, Math.max(5, ((n - m.books)/(next.books - m.books))*100))}%"></div>` : ''}
+      </div>`;
+    }
+  }
+  path.innerHTML = html;
+
+  // Subtitle
+  const subtitle = stats.booksRead === 0 ? 'Your adventure awaits — read your first book!' :
+    `You've reached ${JOURNEY_MILESTONES[curSegment].place} (${stats.booksRead} books read)`;
+  document.getElementById('journey-subtitle').textContent = subtitle;
+}
+
+function renderRecentUnlocks() {
+  const el = document.getElementById('recent-unlocks');
+  const unlocked = COMPANIONS.filter(c => stats.booksRead >= c.books).slice(-3).reverse();
+  if (unlocked.length === 0) {
+    el.innerHTML = `<div class="empty-state">Read your first book to meet your first companion!</div>`;
+    return;
+  }
+  el.innerHTML = unlocked.map(c => companionCardHTML(c, true)).join('');
+}
+
+function renderCompanions() {
+  const el = document.getElementById('companions-grid');
+  const unlockedCount = COMPANIONS.filter(c => stats.booksRead >= c.books).length;
+  document.getElementById('companions-subtitle').textContent =
+    `${unlockedCount} of ${COMPANIONS.length} companions found`;
+  el.innerHTML = COMPANIONS.map(c => companionCardHTML(c, stats.booksRead >= c.books)).join('');
+}
+
+function companionCardHTML(c, unlocked) {
+  return `<div class="companion-card ${unlocked ? 'unlocked' : 'locked'}" style="--card-accent:${c.color}">
+    <span class="companion-emoji">${c.emoji}</span>
+    <div class="companion-name">${c.name}</div>
+    <div class="companion-role">${c.role}</div>
+    ${unlocked ? `<div class="companion-bio">${c.bio}</div>
+    <div style="font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-bottom:10px">${c.quote}</div>
+    <div class="companion-unlock">✦ ${c.ability}</div>` :
+    `<div class="companion-bio" style="filter:blur(3px)">${c.bio}</div>
+    <div class="companion-unlock">🔒 Unlocks at ${c.books} books</div>`}
+  </div>`;
+}
+
+function renderAchievements() {
+  const el = document.getElementById('achievements-grid');
+  let unlockedCount = 0;
+  el.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = a.check(stats);
+    if (unlocked) unlockedCount++;
+    return `<div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+      <div class="achievement-icon">${a.icon}</div>
+      <div class="achievement-info">
+        <div class="achievement-name">${a.name}</div>
+        <div class="achievement-desc">${a.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('achievements-subtitle').textContent =
+    `${unlockedCount} of ${ACHIEVEMENTS.length} achievements unlocked`;
+}
+
+function renderStats() {
+  const el = document.getElementById('stat-summary');
+  const s = stats;
+  const items = [
+    { icon: '📚', value: s.booksRead, label: 'Books Read' },
+    { icon: '📄', value: s.totalPages.toLocaleString(), label: 'Pages Read' },
+    { icon: '📈', value: s.avgPages, label: 'Avg. Pages/Book' },
+    { icon: '⭐', value: s.avgRating > 0 ? s.avgRating.toFixed(1) : '—', label: 'Avg. Rating' },
+    { icon: '🎭', value: s.uniqueGenres, label: 'Genres Explored' },
+    { icon: '✍️', value: s.uniqueAuthors, label: 'Authors Read' },
+    { icon: '📖', value: s.currentlyReading.length, label: 'In Progress' },
+    { icon: '🔖', value: s.wantToRead, label: 'Want to Read' },
+  ];
+  el.innerHTML = items.map(i => `<div class="stat-card">
+    <div class="icon">${i.icon}</div>
+    <div class="value">${i.value}</div>
+    <div class="label">${i.label}</div>
+  </div>`).join('');
+}
+
+function renderCharts() {
+  // Destroy old charts
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#8a7a60', font: { family: 'Crimson Text', size: 12 } } } },
+    scales: {
+      x: { ticks: { color: '#8a7a60', font: { family: 'Crimson Text' } }, grid: { color: '#2a2248' } },
+      y: { ticks: { color: '#8a7a60', font: { family: 'Crimson Text' } }, grid: { color: '#2a2248' } }
+    }
+  };
+
+  // Monthly books
+  const monthKeys = Object.keys(stats.monthly).sort();
+  charts.monthly = new Chart(document.getElementById('chart-monthly'), {
+    type: 'bar',
+    data: {
+      labels: monthKeys.map(k => { const [y,m] = k.split('-'); return new Date(y, m-1).toLocaleDateString('en-US',{month:'short',year:'2-digit'}); }),
+      datasets: [{ label: 'Books', data: monthKeys.map(k => stats.monthly[k]),
+        backgroundColor: 'rgba(200,168,75,0.3)', borderColor: '#c8a84b', borderWidth: 2, borderRadius: 4 }]
+    },
+    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } } }
+  });
+
+  // Genre doughnut
+  const gKeys = Object.keys(stats.genreCounts);
+  const gColors = ['#c8a84b','#00bfa5','#7c4dff','#e05555','#e8873a','#4caf73','#5080e8','#e8508b','#50c8e8','#a0c840'];
+  charts.genre = new Chart(document.getElementById('chart-genre'), {
+    type: 'doughnut',
+    data: {
+      labels: gKeys,
+      datasets: [{ data: gKeys.map(k => stats.genreCounts[k]),
+        backgroundColor: gKeys.map((_,i) => gColors[i % gColors.length] + '90'),
+        borderColor: gKeys.map((_,i) => gColors[i % gColors.length]),
+        borderWidth: 1.5 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { color: '#8a7a60', font: { family: 'Crimson Text', size: 11 }, padding: 10, boxWidth: 12 }
+        }
+      }
+    }
+  });
+
+  // Rating bar
+  charts.ratings = new Chart(document.getElementById('chart-ratings'), {
+    type: 'bar',
+    data: {
+      labels: ['⭐', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐⭐⭐'],
+      datasets: [{ label: 'Books', data: [1,2,3,4,5].map(r => stats.ratingCounts[r]),
+        backgroundColor: [
+          'rgba(224,85,85,0.4)','rgba(232,135,58,0.4)','rgba(200,168,75,0.4)',
+          'rgba(76,175,115,0.4)','rgba(0,191,165,0.4)'
+        ],
+        borderColor: ['#e05555','#e8873a','#c8a84b','#4caf73','#00bfa5'],
+        borderWidth: 2, borderRadius: 4 }]
+    },
+    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } } }
+  });
+
+  // Pages per month
+  charts.pages = new Chart(document.getElementById('chart-pages'), {
+    type: 'line',
+    data: {
+      labels: monthKeys.map(k => { const [y,m] = k.split('-'); return new Date(y,m-1).toLocaleDateString('en-US',{month:'short',year:'2-digit'}); }),
+      datasets: [{ label: 'Pages', data: monthKeys.map(k => stats.monthlyPages[k] || 0),
+        borderColor: '#00bfa5', backgroundColor: 'rgba(0,191,165,0.1)',
+        pointBackgroundColor: '#00bfa5', borderWidth: 2, tension: 0.4, fill: true }]
+    },
+    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } } }
+  });
+}
+
+let filteredBooks = [];
+function renderBooks() {
+  // Populate genre filter
+  const gf = document.getElementById('genre-filter');
+  const currentGenre = gf.value;
+  const genres = [...new Set(books.map(b=>b.genre).filter(Boolean))].sort();
+  gf.innerHTML = '<option value="">All Genres</option>' + genres.map(g=>`<option value="${esc(g)}" ${g===currentGenre?'selected':''}>${esc(g)}</option>`).join('');
+
+  filterBooks();
+}
+
+function filterBooks() {
+  const search = document.getElementById('book-search').value.toLowerCase();
+  const status = document.getElementById('status-filter').value;
+  const genre = document.getElementById('genre-filter').value;
+  const sortBy = document.getElementById('sort-by').value;
+
+  filteredBooks = books.filter(b => {
+    if (search && !b.title.toLowerCase().includes(search) && !b.author.toLowerCase().includes(search)) return false;
+    if (status && b.status !== status) return false;
+    if (genre && b.genre !== genre) return false;
+    return true;
+  });
+
+  filteredBooks.sort((a, b) => {
+    let va, vb;
+    if (sortBy === 'title') { va = a.title.toLowerCase(); vb = b.title.toLowerCase(); }
+    else if (sortBy === 'author') { va = a.author.toLowerCase(); vb = b.author.toLowerCase(); }
+    else if (sortBy === 'rating') { va = a.rating; vb = b.rating; }
+    else if (sortBy === 'pages') { va = a.pages; vb = b.pages; }
+    else { va = parseDate(a.dateFinished) || new Date(0); vb = parseDate(b.dateFinished) || new Date(0); }
+    if (va < vb) return 1;
+    if (va > vb) return -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById('books-tbody');
+  const empty = document.getElementById('books-empty');
+
+  if (filteredBooks.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = filteredBooks.map(b => {
+      const statusClass = { 'Read':'status-read','Reading':'status-reading','Want to Read':'status-want','DNF':'status-dnf' }[b.status] || 'status-read';
+      const stars = b.rating > 0 ? '★'.repeat(Math.round(b.rating)) + '☆'.repeat(5-Math.round(b.rating)) : '—';
+      const df = parseDate(b.dateFinished);
+      const dateStr = df ? df.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      return `<tr>
+        <td><div class="book-title">${esc(b.title)}</div><div class="book-author">${b.author ? 'by ' + esc(b.author) : ''}</div></td>
+        <td>${esc(b.genre) || '—'}</td>
+        <td>${b.pages || '—'}</td>
+        <td style="white-space:nowrap">${dateStr}</td>
+        <td><span class="stars-display" title="${b.rating} stars">${stars}</span></td>
+        <td><span class="status-badge ${statusClass}">${b.status}</span></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+// SHEET CONNECTION
+// ═══════════════════════════════════════════
+async function fetchSheet(url) {
+  // Support both pub and export URLs; ensure CSV output
+  let csvUrl = url.trim();
+  if (csvUrl.includes('docs.google.com/spreadsheets') && !csvUrl.includes('output=csv') && !csvUrl.includes('format=csv')) {
+    // Try to append output=csv for pub URLs
+    csvUrl += (csvUrl.includes('?') ? '&' : '?') + 'output=csv';
+  }
+  const res = await fetch(csvUrl);
+  if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+  return await res.text();
+}
+
+async function connectSheet() {
+  const url = document.getElementById('sheet-url-input').value.trim();
+  if (!url) { showSetupError('Please enter a URL.'); return; }
+  setSetupLoading(true);
+  try {
+    const csv = await fetchSheet(url);
+    const parsed = parseCSV(csv);
+    if (parsed.length === 0) throw new Error('No data found');
+    books = parsed;
+    localStorage.setItem('bm_sheet_url', url);
+    localStorage.setItem('bm_last_updated', new Date().toISOString());
+    setSetupLoading(false);
+    showApp();
+    if (!localStorage.getItem('bm_name')) showNameModal();
+    else render();
+    updateTimestamp();
+  } catch(e) {
+    setSetupLoading(false);
+    showSetupError('Could not load sheet. ' + e.message);
+  }
+}
+
+async function refreshData() {
+  const url = localStorage.getItem('bm_sheet_url');
+  if (!url) return;
+  try {
+    const csv = await fetchSheet(url);
+    books = parseCSV(csv);
+    localStorage.setItem('bm_last_updated', new Date().toISOString());
+    render();
+    updateTimestamp();
+    showToast('✦', 'Synced!', 'Your reading log has been refreshed.');
+  } catch(e) {
+    showToast('⚠', 'Sync Failed', 'Could not refresh data.');
+  }
+}
+
+function disconnectSheet() {
+  if (!confirm('Disconnect your sheet? Your progress will be reset.')) return;
+  localStorage.removeItem('bm_sheet_url');
+  localStorage.removeItem('bm_last_updated');
+  books = [];
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = '';
+  Object.values(charts).forEach(c => c.destroy()); charts = {};
+}
+
+function showSetupError(msg) {
+  const el = document.getElementById('setup-error');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = '';
+}
+function setSetupLoading(on) {
+  document.getElementById('setup-loading').style.display = on ? '' : 'none';
+  document.getElementById('setup-error').style.display = 'none';
+}
+function showApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = '';
+}
+function updateTimestamp() {
+  const ts = localStorage.getItem('bm_last_updated');
+  if (ts) {
+    const d = new Date(ts);
+    document.getElementById('last-updated').textContent = d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+  }
+  const url = localStorage.getItem('bm_sheet_url');
+  if (url) {
+    const m = url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    document.getElementById('sheet-label').textContent = m ? 'Sheet ' + m[1].slice(0,8) + '…' : 'your sheet';
+  }
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// NAME MODAL
+// ═══════════════════════════════════════════
+function showNameModal() {
+  const modal = document.getElementById('name-modal');
+  modal.style.display = 'flex';
+  const existing = localStorage.getItem('bm_name');
+  if (existing) document.getElementById('adventurer-name-input').value = existing;
+}
+function saveName() {
+  const name = document.getElementById('adventurer-name-input').value.trim() || 'The Bibliomancer';
+  localStorage.setItem('bm_name', name);
+  document.getElementById('name-modal').style.display = 'none';
+  render();
+  showToast('🧙', 'Welcome!', `Your legend begins, ${name}!`);
+}
+document.getElementById('adventurer-name-input').addEventListener('keydown', e => { if (e.key==='Enter') saveName(); });
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function showToast(icon, title, msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<div class="toast-icon">${icon}</div>
+    <div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 3500);
+}
+
+// ═══════════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════════
+function loadDemo() {
+  const demoCSV = `Title,Author,Genre,Pages,Date Started,Date Finished,Rating,Status
+The Name of the Wind,Patrick Rothfuss,Fantasy,662,01/02/2024,01/15/2024,5,Read
+Project Hail Mary,Andy Weir,Science Fiction,476,01/16/2024,01/25/2024,5,Read
+The Hitchhiker's Guide to the Galaxy,Douglas Adams,Science Fiction,193,01/28/2024,01/30/2024,4,Read
+Dune,Frank Herbert,Science Fiction,688,02/01/2024,02/20/2024,5,Read
+A Court of Thorns and Roses,Sarah J. Maas,Fantasy,419,02/22/2024,03/05/2024,4,Read
+The Midnight Library,Matt Haig,Fiction,304,03/06/2024,03/12/2024,3,Read
+Sapiens,Yuval Noah Harari,Non-Fiction,443,03/15/2024,04/01/2024,4,Read
+The Alchemist,Paulo Coelho,Fiction,197,04/02/2024,04/04/2024,4,Read
+Atomic Habits,James Clear,Self-Help,320,04/08/2024,04/18/2024,5,Read
+The Hunger Games,Suzanne Collins,YA Fantasy,374,04/20/2024,04/25/2024,4,Read
+Mistborn,Brandon Sanderson,Fantasy,541,04/28/2024,05/15/2024,5,Read
+Educated,Tara Westover,Memoir,352,05/16/2024,05/25/2024,5,Read
+The Silent Patient,Alex Michaelides,Thriller,336,05/26/2024,05/30/2024,4,Read
+Ready Player One,Ernest Cline,Science Fiction,374,06/01/2024,06/08/2024,3,Read
+The Wise Man's Fear,Patrick Rothfuss,Fantasy,994,06/10/2024,07/05/2024,5,Read
+The Way of Kings,Brandon Sanderson,Fantasy,1007,07/08/2024,08/12/2024,5,Read
+Good Omens,Terry Pratchett,Comedy Fantasy,288,08/14/2024,08/18/2024,4,Read
+Thinking Fast and Slow,Daniel Kahneman,Non-Fiction,499,08/20/2024,09/10/2024,4,Read
+The Seven Husbands of Evelyn Hugo,Taylor Jenkins Reid,Historical Fiction,400,09/12/2024,09/18/2024,5,Read
+Rhythm of War,Brandon Sanderson,Fantasy,1230,09/20/2024,11/01/2024,5,Read
+The Girl with the Dragon Tattoo,Stieg Larsson,Thriller,672,11/05/2024,11/22/2024,4,Read
+Piranesi,Susanna Clarke,Fantasy,272,11/24/2024,11/26/2024,5,Read
+The Power of Now,Eckhart Tolle,Self-Help,236,12/01/2024,12/10/2024,3,Read
+The Final Empire,Brandon Sanderson,Fantasy,541,12/12/2024,12/28/2024,5,Read
+Fourth Wing,Rebecca Yarros,Fantasy Romance,517,01/05/2025,01/18/2025,4,Read
+Babel,R.F. Kuang,Historical Fantasy,546,01/20/2025,02/08/2025,5,Read
+Legends & Lattes,Travis Baldree,Fantasy,304,02/10/2025,02/14/2025,4,Read
+Tomorrow, and Tomorrow, and Tomorrow,Gabrielle Zevin,Literary Fiction,480,02/16/2025,03/01/2025,5,Read
+The Midnight Crisis,Ariel Fynn,Thriller,320,,, ,Reading
+Words of Radiance,Brandon Sanderson,Fantasy,1087,,,, ,Want to Read`;
+
+  books = parseCSV(demoCSV);
+  localStorage.setItem('bm_sheet_url', '__demo__');
+  localStorage.setItem('bm_last_updated', new Date().toISOString());
+  showApp();
+  document.getElementById('sheet-label').textContent = 'Demo Data';
+  document.getElementById('last-updated').textContent = 'just now';
+  if (!localStorage.getItem('bm_name')) showNameModal();
+  else render();
+  showToast('✨', 'Demo Loaded!', '28 books of adventure await.');
+}
+
+// ═══════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+async function init() {
+  const url = localStorage.getItem('bm_sheet_url');
+  if (url) {
+    if (url === '__demo__') {
+      loadDemo();
+    } else {
+      showApp();
+      updateTimestamp();
+      try {
+        const csv = await fetchSheet(url);
+        books = parseCSV(csv);
+        render();
+      } catch(e) {
+        disconnectSheet();
+        showSetupError('Could not reload your sheet. Please reconnect.');
+      }
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
