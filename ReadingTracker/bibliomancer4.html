@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bibliomancer's Journey</title>
+<style>
+:root{--bg:#080613;--surf:#100d22;--surf2:#181330;--surf3:#201b3d;--bdr:#2a2248;--gold:#c8a84b;--gold-l:#e8cc80;--gold-d:#7a6530;--txt:#e0ceac;--txt-m:#7a6a50;--txt-b:#f0e0c0;--purple:#7c4dff;--teal:#00bfa5;--green:#4caf73;--red:#e05555;--orange:#e8873a;--blue:#5080e8;--ff-h:'Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;--ff-b:Georgia,'Times New Roman',serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--ff-b);font-size:17px;min-height:100vh;line-height:1.5;overflow-x:hidden}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(124,77,255,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(0,191,165,.05) 0%,transparent 50%)}
+.stars::before{content:'';position:absolute;inset:0;background-image:radial-gradient(1px 1px at 5% 10%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 25% 60%,rgba(255,255,200,.5) 0%,transparent 100%),radial-gradient(1px 1px at 45% 80%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 65% 15%,rgba(200,220,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 88% 55%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 38% 5%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 15% 30%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 72% 65%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 93% 20%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 55% 40%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 8% 85%,rgba(200,200,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 80% 30%,rgba(255,255,200,.4) 0%,transparent 100%)}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px 60px}
+.site-hd{text-align:center;padding:40px 0 28px}
+.site-hd .rune{font-size:1.2rem;opacity:.5;letter-spacing:.6em;display:block;margin-bottom:10px}
+.site-hd h1{font-family:var(--ff-h);font-size:clamp(2rem,6vw,3.5rem);color:var(--gold-l);text-shadow:0 0 30px rgba(200,168,75,.6),0 0 60px rgba(200,168,75,.3);letter-spacing:.04em;line-height:1.2;animation:glow 3s ease-in-out infinite alternate}
+@keyframes glow{from{text-shadow:0 0 20px rgba(200,168,75,.5),0 0 40px rgba(200,168,75,.2)}to{text-shadow:0 0 35px rgba(200,168,75,.85),0 0 65px rgba(200,168,75,.4)}}
+.site-hd p{color:var(--txt-m);font-style:italic;font-size:1.05rem;margin-top:6px;letter-spacing:.04em}
+#setup{max-width:700px;margin:0 auto}
+.scard{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;padding:36px 40px;box-shadow:0 4px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+.scard h2{font-family:var(--ff-h);color:var(--gold);font-size:1.7rem;margin-bottom:6px;text-align:center}
+.scard .sub{color:var(--txt-m);font-style:italic;text-align:center;margin-bottom:24px;font-size:.95rem;display:block}
+.steps{list-style:none;counter-reset:s;margin-bottom:20px}
+.steps li{counter-increment:s;padding:11px 0 11px 50px;position:relative;border-bottom:1px solid var(--bdr);font-size:.93rem;color:var(--txt-m)}
+.steps li:last-child{border-bottom:none}
+.steps li::before{content:counter(s);position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;background:var(--surf3);border:1px solid var(--gold-d);color:var(--gold);font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.steps li strong{color:var(--txt)}
+.steps li a{color:var(--gold-d)}
+.colbox{background:var(--surf2);border-radius:8px;padding:16px;border-left:3px solid var(--gold-d);margin:16px 0}
+.colbox h4{color:var(--gold);font-size:.88rem;margin-bottom:10px;font-family:var(--ff-h)}
+.ctags{display:flex;flex-wrap:wrap;gap:6px}
+.ct{background:var(--surf3);border:1px solid var(--bdr);padding:3px 10px;border-radius:20px;font-size:.78rem;color:var(--txt-m)}
+.ct span{color:var(--gold-l)}
+.colbox p{font-size:.8rem;color:var(--txt-m);margin-top:10px;line-height:1.5}
+.tip{margin:14px 0;padding:13px 16px;background:var(--surf2);border-radius:8px;font-size:.84rem;color:var(--txt-m)}
+.tip strong{color:var(--txt)}
+.urlrow{display:flex;gap:10px;margin-top:22px}
+.urlrow input{flex:1;background:var(--surf3);border:1px solid var(--bdr);border-radius:8px;padding:12px 16px;color:var(--txt);font-family:var(--ff-b);font-size:.95rem;outline:none;transition:border-color .2s}
+.urlrow input:focus{border-color:var(--gold-d)}
+.urlrow input::placeholder{color:var(--txt-m)}
+.demorow{text-align:center;margin-top:16px}
+.err{color:var(--red);font-size:.88rem;margin-top:8px;display:none}
+.ld{color:var(--txt-m);font-size:.88rem;margin-top:8px;display:none;font-style:italic}
+.btn{background:linear-gradient(135deg,#8a6800,#c8a84b);color:#0d0b18;border:none;padding:12px 24px;border-radius:8px;font-family:var(--ff-h);font-size:.9rem;cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:.03em}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(200,168,75,.4)}
+.btn:active{transform:none}
+.btn-sm{padding:8px 16px;font-size:.8rem}
+.btn-g{background:transparent;color:var(--txt-m);border:1px solid var(--bdr)}
+.btn-g:hover{color:var(--txt);border-color:var(--txt-m);box-shadow:none;transform:none}
+#app{display:none}
+.rbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;margin-bottom:14px;font-size:.84rem;color:var(--txt-m)}
+.rbar strong{color:var(--txt)}
+.rbar-acts{display:flex;gap:8px}
+.cbanner{background:linear-gradient(135deg,var(--surf),var(--surf2));border:1px solid var(--bdr);border-radius:16px;padding:22px 26px;margin-bottom:14px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;box-shadow:0 0 18px rgba(200,168,75,.12),0 4px 20px rgba(0,0,0,.4);position:relative;overflow:hidden}
+.cbanner::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(200,168,75,.05),transparent 40%);pointer-events:none}
+.avatar{width:66px;height:66px;border-radius:50%;background:var(--surf3);border:2px solid var(--gold-d);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 18px rgba(200,168,75,.25);cursor:pointer;transition:transform .2s;flex-shrink:0}
+.avatar:hover{transform:scale(1.07)}
+.cinfo h2{font-family:var(--ff-h);color:var(--gold-l);font-size:1.3rem;line-height:1.2}
+.ctitle{color:var(--txt-m);font-style:italic;font-size:.92rem;margin:2px 0 10px}
+.xpw{display:flex;align-items:center;gap:10px}
+.xpt{flex:1;height:7px;background:var(--surf3);border-radius:4px;overflow:hidden;border:1px solid var(--bdr)}
+.xpf{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold));border-radius:4px;transition:width 1s ease;box-shadow:0 0 8px rgba(200,168,75,.4)}
+.xpl{color:var(--txt-m);font-size:.77rem;white-space:nowrap}
+.lvb{width:56px;height:56px;background:linear-gradient(135deg,var(--surf3),var(--surf));border:2px solid var(--gold-d);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lvb .lv{font-size:.6rem;color:var(--txt-m);text-transform:uppercase;letter-spacing:.1em}
+.lvb .ln{font-family:var(--ff-h);color:var(--gold);font-size:1.35rem;line-height:1}
+.tabs{display:flex;gap:4px;background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:5px;margin-bottom:18px;flex-wrap:wrap}
+.tab{flex:1;min-width:80px;padding:9px 14px;border:none;background:transparent;color:var(--txt-m);border-radius:7px;cursor:pointer;font-family:var(--ff-b);font-size:.97rem;transition:all .2s;white-space:nowrap;text-align:center}
+.tab:hover{color:var(--txt);background:var(--surf2)}
+.tab.on{background:var(--surf3);color:var(--gold-l);border:1px solid var(--gold-d)}
+.panel{display:none}.panel.on{display:block}
+.sechd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.sechd h3{font-family:var(--ff-h);color:var(--gold);font-size:1.2rem}
+.sechd p{color:var(--txt-m);font-size:.84rem;font-style:italic}
+.jmap{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:28px 18px;overflow-x:auto;margin-bottom:22px}
+.mpath{display:flex;align-items:center;min-width:660px}
+.mnode{display:flex;flex-direction:column;align-items:center;gap:7px;flex-shrink:0;width:86px}
+.micon{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.45rem;border:2px solid var(--bdr);background:var(--surf2);transition:all .3s}
+.mnode.done .micon{border-color:var(--gold-d);box-shadow:0 0 14px rgba(200,168,75,.3);animation:mpulse 2s ease-in-out infinite alternate}
+.mnode.cur .micon{border-color:var(--gold);box-shadow:0 0 24px rgba(200,168,75,.6);transform:scale(1.15)}
+.mnode.locked .micon{filter:grayscale(.7);opacity:.45}
+@keyframes mpulse{from{box-shadow:0 0 8px rgba(200,168,75,.2)}to{box-shadow:0 0 18px rgba(200,168,75,.5)}}
+.mlabel{font-size:.68rem;text-align:center;color:var(--txt-m);line-height:1.3}
+.mnode.done .mlabel,.mnode.cur .mlabel{color:var(--txt)}
+.mnode.cur .mlabel{color:var(--gold-l)}
+.mbks{font-size:.63rem;color:var(--txt-m)}
+.mconn{flex:1;height:3px;background:var(--bdr);position:relative;min-width:14px}
+.mconn.filled{background:linear-gradient(90deg,var(--gold-d),var(--gold));box-shadow:0 0 7px rgba(200,168,75,.4)}
+.ptoken{position:absolute;top:-7px;width:16px;height:16px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(200,168,75,.8);animation:bounce .9s ease-in-out infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:14px;margin-bottom:22px}
+.ccard{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.ccard.on{border-color:var(--gold-d)}.ccard.on:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.3),0 0 18px rgba(200,168,75,.15)}.ccard.off{opacity:.42;filter:grayscale(.5)}
+.ccard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}.ccard.on::before{background:linear-gradient(90deg,transparent,var(--cc,var(--gold)),transparent)}
+.cemoji{font-size:2.8rem;margin-bottom:9px;display:block;line-height:1}
+.cname{font-family:var(--ff-h);color:var(--gold-l);font-size:.97rem;margin-bottom:3px}.ccard.off .cname{color:var(--txt-m)}
+.crole{font-size:.78rem;color:var(--txt-m);font-style:italic;margin-bottom:7px}
+.cbio{font-size:.82rem;color:var(--txt-m);line-height:1.4;margin-bottom:8px}
+.cquote{font-size:.76rem;color:var(--txt-m);font-style:italic;margin-bottom:9px}
+.cbadge{font-size:.73rem;padding:3px 10px;border-radius:20px;background:var(--surf3);border:1px solid var(--bdr);color:var(--txt-m);display:inline-block}
+.ccard.on .cbadge{background:rgba(200,168,75,.1);border-color:var(--gold-d);color:var(--gold)}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px;margin-bottom:22px}
+.acard{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:13px 15px;display:flex;gap:13px;align-items:flex-start;transition:all .2s}
+.acard.on{border-color:var(--gold-d)}.acard.off{opacity:.38}.acard.on:hover{box-shadow:0 4px 18px rgba(0,0,0,.3);transform:translateY(-2px)}
+.aicon{font-size:1.7rem;flex-shrink:0;width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:var(--surf2);border-radius:7px;border:1px solid var(--bdr)}
+.acard.on .aicon{background:rgba(200,168,75,.08);border-color:var(--gold-d)}
+.aname{font-family:var(--ff-h);color:var(--gold-l);font-size:.92rem;margin-bottom:2px}.acard.off .aname{color:var(--txt-m)}
+.adesc{font-size:.78rem;color:var(--txt-m);line-height:1.3}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:11px;margin-bottom:22px}
+.scc{background:var(--surf);border:1px solid var(--bdr);border-radius:11px;padding:16px;text-align:center;transition:all .2s}
+.scc:hover{border-color:var(--gold-d)}.scc .si{font-size:1.5rem;margin-bottom:5px}.scc .sv{font-family:var(--ff-h);font-size:1.7rem;color:var(--gold-l);line-height:1;margin-bottom:3px}.scc .sl{font-size:.75rem;color:var(--txt-m)}
+.chgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.ccrd{background:var(--surf);border:1px solid var(--bdr);border-radius:11px;padding:18px}
+.ccrd h4{font-family:var(--ff-h);color:var(--gold);font-size:.97rem;margin-bottom:12px}
+.ccrd canvas{max-height:200px}
+.bctrl{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.bctrl input,.bctrl select{background:var(--surf);border:1px solid var(--bdr);border-radius:7px;padding:8px 12px;color:var(--txt);font-family:var(--ff-b);font-size:.93rem;outline:none;transition:border-color .2s}
+.bctrl input:focus,.bctrl select:focus{border-color:var(--gold-d)}.bctrl input{flex:1;min-width:170px}
+.bctrl select option{background:var(--surf2)}
+.twrap{overflow-x:auto}
+.btbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.btbl th{text-align:left;padding:9px 13px;background:var(--surf);color:var(--gold);font-family:var(--ff-h);font-size:.83rem;letter-spacing:.05em;border-bottom:2px solid var(--bdr);cursor:pointer;user-select:none;white-space:nowrap}
+.btbl th:hover{color:var(--gold-l)}
+.btbl td{padding:9px 13px;border-bottom:1px solid var(--bdr);vertical-align:top}
+.btbl tr:last-child td{border-bottom:none}.btbl tr:hover td{background:var(--surf2)}
+.bt{font-weight:600;color:var(--txt-b)}.ba{color:var(--txt-m);font-style:italic;font-size:.83rem}
+.badge{padding:2px 9px;border-radius:20px;font-size:.76rem;white-space:nowrap;display:inline-block}
+.b-r{background:rgba(76,175,115,.15);color:var(--green);border:1px solid rgba(76,175,115,.3)}
+.b-i{background:rgba(80,128,232,.15);color:var(--blue);border:1px solid rgba(80,128,232,.3)}
+.b-w{background:rgba(124,77,255,.15);color:var(--purple);border:1px solid rgba(124,77,255,.3)}
+.b-d{background:rgba(224,85,85,.15);color:var(--red);border:1px solid rgba(224,85,85,.3)}
+.stars{color:var(--gold);letter-spacing:-1px;font-size:.87rem}
+.empty{text-align:center;padding:45px 20px;color:var(--txt-m);font-style:italic}
+.crb{background:linear-gradient(135deg,rgba(80,128,232,.1),rgba(124,77,255,.1));border:1px solid rgba(80,128,232,.3);border-radius:11px;padding:15px 18px;margin-bottom:18px}
+.crbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:3px}
+.crbt{font-family:var(--ff-h);color:var(--txt-b);font-size:1.07rem}
+.crba{color:var(--txt-m);font-style:italic;font-size:.88rem}
+#toasts{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:9px;pointer-events:none;max-width:320px}
+.toast{background:var(--surf2);border:1px solid var(--gold-d);border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:11px;box-shadow:0 4px 28px rgba(0,0,0,.5);animation:tin .35s ease;pointer-events:all}
+.toast.out{animation:tout .3s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateX(40px)}}
+.ti{font-size:1.7rem;flex-shrink:0}.tt{font-family:var(--ff-h);color:var(--gold-l);font-size:.92rem}.tm{font-size:.8rem;color:var(--txt-m);margin-top:1px}
+#nm{position:fixed;inset:0;background:rgba(8,6,19,.85);z-index:8888;display:none;align-items:center;justify-content:center;padding:20px}
+.mbox{background:var(--surf);border:1px solid var(--gold-d);border-radius:14px;padding:34px;max-width:400px;width:100%;text-align:center;box-shadow:0 0 50px rgba(200,168,75,.2)}
+.mbox h3{font-family:var(--ff-h);color:var(--gold);font-size:1.45rem;margin-bottom:8px}
+.mbox p{color:var(--txt-m);margin-bottom:18px;font-style:italic;font-size:.93rem}
+.mbox input{width:100%;background:var(--surf3);border:1px solid var(--bdr);border-radius:7px;padding:11px 14px;color:var(--txt);font-family:var(--ff-h);font-size:.97rem;outline:none;text-align:center;margin-bottom:14px}
+.mbox input:focus{border-color:var(--gold-d)}
+@media(max-width:600px){.cbanner{grid-template-columns:auto 1fr}.lvb{display:none}.scard,.twrap{padding:22px}.urlrow{flex-direction:column}.chgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div id="toasts"></div>
+<div id="nm">
+  <div class="mbox">
+    <div style="font-size:2.8rem;margin-bottom:10px">🧙</div>
+    <h3>Name Your Adventurer</h3>
+    <p>Your legend begins with a name, brave bibliomancer.</p>
+    <input type="text" id="ni" placeholder="Enter your name…" maxlength="30">
+    <button class="btn" style="width:100%" onclick="saveName()">Begin the Journey ✦</button>
+  </div>
+</div>
+<div class="wrap">
+  <header class="site-hd">
+    <span class="rune">✦ ✦ ✦</span>
+    <h1>The Bibliomancer's Journey</h1>
+    <p>Track your reading · Forge your legend · Unlock ancient knowledge</p>
+  </header>
+  <div id="setup">
+    <div class="scard">
+      <h2>⚔️ Begin Your Quest</h2>
+      <span class="sub">Connect your Goodreads export to start your adventure.</span>
+      <ol class="steps">
+        <li><strong>Export from Goodreads:</strong> Go to <a href="https://www.goodreads.com/review/import" target="_blank">My Books → Import and Export</a> → <strong>Export Library</strong> → download the CSV.</li>
+        <li><strong>Upload to Google Sheets:</strong> Open <a href="https://sheets.new" target="_blank">sheets.new</a>, then <strong>File → Import → Upload</strong> your CSV. Click <strong>Import data</strong>.</li>
+        <li>Go to <strong>File → Share → Publish to web</strong>. Set dropdowns to your sheet and <strong>Comma-separated values (.csv)</strong>. Click <strong>Publish</strong>.</li>
+        <li>Copy the URL shown and paste it below.</li>
+      </ol>
+      <div class="colbox">
+        <h4>📋 Goodreads columns auto-detected</h4>
+        <div class="ctags">
+          <div class="ct"><span>✓</span> Title</div>
+          <div class="ct"><span>✓</span> Author</div>
+          <div class="ct"><span>✓</span> My Rating</div>
+          <div class="ct"><span>✓</span> Number of Pages</div>
+          <div class="ct"><span>✓</span> Date Read</div>
+          <div class="ct"><span>✓</span> Date Added</div>
+          <div class="ct"><span>✓</span> Exclusive Shelf</div>
+          <div class="ct"><span>✓</span> Bookshelves</div>
+        </div>
+        <p><strong style="color:var(--txt)">Genre tip:</strong> Add a custom shelf like <strong>fantasy</strong> or <strong>sci-fi</strong> to your Goodreads books — the app uses your first non-standard shelf as the genre.</p>
+      </div>
+      <div class="tip"><strong>💡 The published URL looks like:</strong><br><code style="color:var(--teal);font-size:.82rem">https://docs.google.com/spreadsheets/d/…/pub?gid=0&amp;single=true&amp;output=csv</code></div>
+      <div class="urlrow">
+        <input type="text" id="ui" placeholder="Paste your published Google Sheets CSV URL here…">
+        <button class="btn" onclick="connectSheet()">Connect ✦</button>
+      </div>
+      <div id="err" class="err"></div>
+      <div id="ld" class="ld">✨ Consulting the ancient archives…</div>
+      <div class="demorow"><button class="btn btn-g btn-sm" onclick="loadDemo()">✦ Try with Demo Data</button></div>
+    </div>
+  </div>
+  <div id="app">
+    <div class="rbar">
+      <span>Connected: <strong id="shl">—</strong> · Updated <strong id="tsu">—</strong></span>
+      <div class="rbar-acts">
+        <button class="btn btn-g btn-sm" onclick="refreshData()">↻ Refresh</button>
+        <button class="btn btn-g btn-sm" onclick="disconnect()">✕ Disconnect</button>
+      </div>
+    </div>
+    <div class="cbanner">
+      <div class="avatar" onclick="openNM()" title="Click to rename"><span id="ce">📖</span></div>
+      <div class="cinfo">
+        <h2 id="cn">The Bibliomancer</h2>
+        <div class="ctitle" id="ct">The Blank Page</div>
+        <div class="xpw">
+          <div class="xpt"><div class="xpf" id="xf" style="width:0%"></div></div>
+          <span class="xpl" id="xl">0 / 1 books to next level</span>
+        </div>
+      </div>
+      <div class="lvb"><span class="lv">LVL</span><span class="ln" id="cl">0</span></div>
+    </div>
+    <nav class="tabs">
+      <button class="tab on"  onclick="sw('adventure',this)">🗺 Adventure</button>
+      <button class="tab"     onclick="sw('companions',this)">🧙 Companions</button>
+      <button class="tab"     onclick="sw('achievements',this)">🏆 Achievements</button>
+      <button class="tab"     onclick="sw('stats',this)">📊 Statistics</button>
+      <button class="tab"     onclick="sw('books',this)">📚 Book Log</button>
+    </nav>
+    <div id="p-adventure" class="panel on">
+      <div id="crs"></div>
+      <div class="sechd"><h3>Your Journey</h3><p id="jsub">Follow the path of the bibliomancer</p></div>
+      <div class="jmap"><div class="mpath" id="mp"></div></div>
+      <div class="sechd"><h3>Recent Unlocks</h3><p>Characters you've recently met</p></div>
+      <div class="cgrid" id="ru"></div>
+    </div>
+    <div id="p-companions" class="panel">
+      <div class="sechd"><h3>Companions</h3><p id="csub"></p></div>
+      <div class="cgrid" id="cg"></div>
+    </div>
+    <div id="p-achievements" class="panel">
+      <div class="sechd"><h3>Hall of Achievements</h3><p id="asub"></p></div>
+      <div class="agrid" id="ag"></div>
+    </div>
+    <div id="p-stats" class="panel">
+      <div class="sgrid" id="sg"></div>
+      <div class="chgrid">
+        <div class="ccrd"><h4>📅 Books per Month</h4><canvas id="cm"></canvas></div>
+        <div class="ccrd"><h4>🎭 Genres</h4><canvas id="cg2"></canvas></div>
+        <div class="ccrd"><h4>⭐ Ratings</h4><canvas id="cr"></canvas></div>
+        <div class="ccrd"><h4>📄 Pages per Month</h4><canvas id="cp"></canvas></div>
+      </div>
+    </div>
+    <div id="p-books" class="panel">
+      <div class="bctrl">
+        <input type="text" id="bs" placeholder="🔍 Search title or author…" oninput="fbooks()">
+        <select id="bst" onchange="fbooks()"><option value="">All Status</option><option>Read</option><option>Reading</option><option>Want to Read</option><option>DNF</option></select>
+        <select id="bg" onchange="fbooks()"></select>
+        <select id="bso" onchange="fbooks()"><option value="df">Sort: Date Read</option><option value="title">Sort: Title</option><option value="author">Sort: Author</option><option value="rating">Sort: Rating</option><option value="pages">Sort: Pages</option></select>
+      </div>
+      <div class="twrap">
+        <table class="btbl"><thead><tr><th>Title / Author</th><th>Genre</th><th>Pages</th><th>Date Read</th><th>Rating</th><th>Status</th></tr></thead>
+        <tbody id="bb"></tbody></table>
+      </div>
+      <div id="be" class="empty" style="display:none">No books match your filter.</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';document.head.appendChild(s);})();
+var mem={};
+function lg(k){try{return localStorage.getItem(k)}catch(e){return mem[k]||null}}
+function ls(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}}
+function ld2(k){try{localStorage.removeItem(k)}catch(e){delete mem[k]}}
+var LEVELS=[{n:0,t:'The Blank Page',e:'📖'},{n:1,t:'The Curious Apprentice',e:'🕯️'},{n:3,t:'The Eager Scholar',e:'📜'},{n:6,t:'The Wandering Reader',e:'🎒'},{n:10,t:'The Seasoned Adventurer',e:'⚔️'},{n:20,t:'The Lore Keeper',e:'📗'},{n:35,t:'The Arcane Reader',e:'🔮'},{n:50,t:'The Grand Bibliomancer',e:'🧙'},{n:75,t:'The Legendary Scholar',e:'🌟'},{n:100,t:'The Infinite Wanderer',e:'🌌'},{n:150,t:'The Celestial Bibliomancer',e:'✨'}];
+var COMP=[{id:'lyra',n:1,name:'Lyra',role:'The Librarian',e:'📚',c:'#c8a84b',bio:'Keeper of the First Archive, Lyra greets every bibliomancer who reads their first book.',quote:'"Every great journey begins by opening a single page."',sk:'+5 to Finding Hidden Bookmarks'},{id:'finn',n:5,name:'Finn',role:'The Wandering Bard',e:'🎭',c:'#00bfa5',bio:'A storyteller who has sung of five adventures. Finn appears at taverns spinning tales of faraway books.',quote:'"Five tales told — your voice begins to echo across the realms."',sk:'+10 to Bardic Knowledge'},{id:'aeva',n:10,name:'Aeva',role:'The Forest Sage',e:'🌿',c:'#4caf73',bio:'Ancient guardian of the reading groves, Aeva emerges only when a reader crosses ten books.',quote:'"The forest grows one tree at a time. So too does wisdom."',sk:'+15 to Ancient Lore'},{id:'drax',n:25,name:'Drax',role:'The Dragon of Knowledge',e:'🐉',c:'#e05555',bio:'A fearsome yet wise dragon who hoards not gold, but books.',quote:'"Twenty-five volumes? You are worthy of my hoard."',sk:'+20 to Dragon Lore'},{id:'selene',n:50,name:'Selene',role:'The Eternal Phoenix',e:'🦅',c:'#e8873a',bio:'Reborn through the flames of fifty books, Selene is seen by very few.',quote:'"From the ashes of fifty stories, a new legend rises."',sk:'+25 to Fire-type reading sessions'},{id:'zeph',n:100,name:'Zephyros',role:'The Celestial Owl',e:'🦉',c:'#7c4dff',bio:'An ancient owl who has witnessed a hundred worlds, watching over legendary bibliomancers.',quote:'"A hundred worlds explored. The cosmos bows to your curiosity."',sk:'+30 to all knowledge checks'}];
+var MILE=[{n:0,e:'🏰',lb:'The First\nLibrary',pl:'Starting Point'},{n:1,e:'📚',lb:'The\nReading Nook',pl:"Lyra's Archive"},{n:5,e:'🌲',lb:'Enchanted\nForest',pl:"Finn's Crossroads"},{n:10,e:'🏔️',lb:'The Mountain\nPass',pl:"Aeva's Groves"},{n:25,e:'🐉',lb:"Dragon's\nLair",pl:"Drax's Hoard"},{n:50,e:'🌋',lb:'Phoenix\nPeaks',pl:"Selene's Aerie"},{n:100,e:'⭐',lb:'Celestial\nLibrary',pl:"Zephyros's Domain"}];
+var ACH=[{e:'🎉',name:'First Chapter',desc:'Complete your first book',ck:function(s){return s.read>=1}},{e:'📖',name:'The Apprentice',desc:'Complete 5 books',ck:function(s){return s.read>=5}},{e:'🔟',name:'Double Digits',desc:'Complete 10 books',ck:function(s){return s.read>=10}},{e:'📄',name:'Thousand Pages',desc:'Read 1,000 total pages',ck:function(s){return s.pages>=1000}},{e:'📑',name:'Five Thousand Leagues',desc:'Read 5,000 total pages',ck:function(s){return s.pages>=5000}},{e:'🗺️',name:'The Boundless Reader',desc:'Read 10,000 total pages',ck:function(s){return s.pages>=10000}},{e:'🎭',name:'The Polymath',desc:'Read from 5+ genres',ck:function(s){return s.genres>=5}},{e:'🌈',name:'Genre Conqueror',desc:'Read from 10+ genres',ck:function(s){return s.genres>=10}},{e:'⭐',name:'A Perfect Read',desc:'Give a 5-star rating',ck:function(s){return s.has5}},{e:'🧱',name:'The Tome Bearer',desc:'Read a 500+ page book',ck:function(s){return s.longest>=500}},{e:'🗿',name:'Epic Tome Slayer',desc:'Read an 800+ page book',ck:function(s){return s.longest>=800}},{e:'🔗',name:'Series Devotee',desc:'Read 3+ books by one author',ck:function(s){return s.maxA>=3}},{e:'🌍',name:'Diverse Reader',desc:'Read 10+ different authors',ck:function(s){return s.authors>=10}},{e:'📊',name:'The Critic',desc:'Rate 10+ books',ck:function(s){return s.rated>=10}},{e:'🥇',name:'The Fifty',desc:'Complete 50 books',ck:function(s){return s.read>=50}},{e:'💯',name:'The Century',desc:'Complete 100 books',ck:function(s){return s.read>=100}},{e:'🌌',name:'Words Beyond Stars',desc:'Read 25,000 total pages',ck:function(s){return s.pages>=25000}},{e:'🏅',name:'Discerning Taste',desc:'Avg rating 4.0+ (min 5 rated)',ck:function(s){return s.avgR>=4&&s.rated>=5}}];
+var books=[],stats={},charts={};
+function parseCSV(text){
+  var lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){return l.trim();});
+  if(lines.length<2)return[];
+  var headers=csvRow(lines[0]).map(function(h){return h.trim().toLowerCase();});
+  var cm=detectCols(headers);
+  var res=[];
+  for(var i=1;i<lines.length;i++){
+    var v=csvRow(lines[i]);
+    if(!v.some(function(x){return x.trim();}))continue;
+    function g(k){return(cm[k]!==undefined&&cm[k]<v.length)?v[cm[k]].trim():'';}
+    var statusRaw=g('status')||g('shelves');
+    var status=normSt(statusRaw);
+    var genre=g('genre');
+    if(!genre){var sh=g('shelves').split(',').map(function(s){return s.trim();}).filter(function(s){return s&&!/^(read|currently-reading|to-read|favorites|owned|wish-list|default)$/i.test(s);});genre=sh[0]||'';}
+    res.push({title:g('title')||'(Untitled)',author:g('author'),genre:genre,pages:parseInt(g('pages'))||0,dateStarted:g('dstart')||g('dadded'),dateFinished:g('dread'),rating:parseFloat(g('rating'))||0,status:status});
+  }
+  return res;
+}
+function csvRow(line){var f=[],c='',q=false;for(var i=0;i<line.length;i++){var ch=line[i];if(ch==='"'){if(q&&line[i+1]==='"'){c+='"';i++;}else q=!q;}else if(ch===','&&!q){f.push(c);c='';}else c+=ch;}f.push(c);return f;}
+function detectCols(h){
+  var m={};
+  var defs=[
+    ['title',[/^title$/,/book.?title/,/title/]],
+    ['author',[/^author$/,/^author.l.f$/,/author/,/writer/]],
+    ['genre',[/^genre$/,/^category$/,/genre/,/category/]],
+    ['shelves',[/^bookshelves$/,/^bookshelves.with/,/bookshelf/]],
+    ['pages',[/^number of pages$/,/^pages$/,/num.*pages/,/page.*count/]],
+    ['dstart',[/^date started$/,/date.*start/,/started/]],
+    ['dread',[/^date read$/,/^date finished$/,/date.*read/,/finish/,/complet/]],
+    ['dadded',[/^date added$/]],
+    ['rating',[/^my rating$/,/^rating$/,/my.*rating/,/star/]],
+    ['status',[/^exclusive shelf$/,/exclusive.*shelf/,/^status$/]]
+  ];
+  defs.forEach(function(d){var key=d[0],rxs=d[1];for(var i=0;i<rxs.length;i++){var idx=h.findIndex(function(hh){return rxs[i].test(hh);});if(idx!==-1){m[key]=idx;break;}}});
+  return m;
+}
+function normSt(s){var l=(s||'').toLowerCase().trim();if(l==='read')return'Read';if(l==='currently-reading')return'Reading';if(l==='to-read')return'Want to Read';if(!l||l==='finished'||l==='completed'||l==='done')return'Read';if(l.includes('reading')||l.includes('current'))return'Reading';if(l.includes('want')||l.includes('tbr')||l.includes('to-read')||l.includes('to read')||l.includes('wishlist'))return'Want to Read';if(l.includes('dnf')||l.includes('abandoned'))return'DNF';return s||'Read';}
+function pDate(str){if(!str)return null;var s=str.trim();var m=s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);var p=s.split(/[\/\-.]/);if(p.length===3){var a=+p[0],b=+p[1],c=+p[2];var d=c>1000?new Date(c,a-1,b):new Date(a,b-1,c);if(!isNaN(d))return d;}var nd=new Date(s);return isNaN(nd)?null:nd;}
+function calcStats(bl){
+  var read=bl.filter(function(b){return b.status==='Read';});
+  var pages=read.reduce(function(s,b){return s+b.pages;},0);
+  var ac={};read.forEach(function(b){if(b.author)ac[b.author]=(ac[b.author]||0)+1;});
+  var maxA=Math.max.apply(null,[0].concat(Object.values(ac)));
+  var rated=read.filter(function(b){return b.rating>0;});
+  var avg=rated.length?rated.reduce(function(s,b){return s+b.rating;},0)/rated.length:0;
+  var mon={},monP={};
+  read.forEach(function(b){var d=pDate(b.dateFinished);if(d){var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');mon[k]=(mon[k]||0)+1;monP[k]=(monP[k]||0)+b.pages;}});
+  var gc={};read.forEach(function(b){if(b.genre)gc[b.genre]=(gc[b.genre]||0)+1;});
+  var rc={1:0,2:0,3:0,4:0,5:0};rated.forEach(function(b){var r=Math.round(b.rating);if(r>=1&&r<=5)rc[r]++;});
+  return{read:read.length,cr:bl.filter(function(b){return b.status==='Reading';}),want:bl.filter(function(b){return b.status==='Want to Read';}).length,pages:pages,avgPages:read.length?Math.round(pages/read.length):0,avgR:Math.round(avg*10)/10,genres:[...new Set(read.map(function(b){return b.genre;}).filter(Boolean))].length,authors:[...new Set(read.map(function(b){return b.author;}).filter(Boolean))].length,maxA:maxA,has5:rated.some(function(b){return b.rating>=5;}),longest:Math.max.apply(null,[0].concat(read.map(function(b){return b.pages;}))),rated:rated.length,mon:mon,monP:monP,gc:gc,rc:rc};
+}
+function getLv(n){var lv=0,ld=LEVELS[0];for(var i=0;i<LEVELS.length;i++){if(n>=LEVELS[i].n){lv=i;ld=LEVELS[i];}else break;}var nx=LEVELS[Math.min(lv+1,LEVELS.length-1)];var pct=lv===LEVELS.length-1?100:Math.min(100,((n-ld.n)/(nx.n-ld.n))*100);return{lv:lv,t:ld.t,e:ld.e,pct:pct,next:nx.n};}
+function render(){
+  stats=calcStats(books);var lv=getLv(stats.read);
+  var name=lg('bm_name')||'The Bibliomancer';
+  document.getElementById('cn').textContent=name;
+  document.getElementById('ct').textContent=lv.t;
+  document.getElementById('ce').textContent=lv.e;
+  document.getElementById('cl').textContent=lv.lv;
+  document.getElementById('xf').style.width=lv.pct+'%';
+  document.getElementById('xl').textContent=lv.lv===LEVELS.length-1?'Max Level Achieved!':stats.read+' / '+lv.next+' books to level '+(lv.lv+1);
+  rCR();rJourney();rRecent();rComps();rAch();rStat();rCharts();rBooks();
+}
+function rCR(){var el=document.getElementById('crs');if(!stats.cr.length){el.innerHTML='';return;}el.innerHTML='<div class="crb"><div class="crbl">📖 Currently Reading</div>'+stats.cr.map(function(b){return'<div class="crbt">'+esc(b.title)+'</div>'+(b.author?'<div class="crba">by '+esc(b.author)+'</div>':'');}).join('<hr style="border:none;border-top:1px solid rgba(80,128,232,.2);margin:6px 0">')+'</div>';}
+function rJourney(){var el=document.getElementById('mp'),n=stats.read,cur=0;for(var i=0;i<MILE.length;i++){if(n>=MILE[i].n)cur=i;}var h='';for(var i=0;i<MILE.length;i++){var m=MILE[i],u=n>=m.n,ic=i===cur;h+='<div class="mnode '+(u?'done ':'locked ')+(ic?'cur':'')+'"><div class="micon">'+m.e+'</div><div class="mlabel">'+m.lb.replace('\n','<br>')+'</div><div class="mbks">'+(m.n>0?m.n+' bks':'Start')+'</div></div>';if(i<MILE.length-1){var nx=MILE[i+1],fl=n>=nx.n,ac=n>=m.n&&n<nx.n,pct=ac?Math.min(95,Math.max(5,((n-m.n)/(nx.n-m.n))*100)):0;h+='<div class="mconn'+(fl?' filled':'')+'">'+( ac?'<div class="ptoken" style="left:'+pct+'%"></div>':''  )+'</div>';}}el.innerHTML=h;document.getElementById('jsub').textContent=stats.read===0?'Your adventure awaits — read your first book!':'You\'ve reached '+MILE[cur].pl+' ('+stats.read+' books read)';}
+function rRecent(){var el=document.getElementById('ru'),u=COMP.filter(function(c){return stats.read>=c.n;}).slice(-3).reverse();el.innerHTML=u.length?u.map(function(c){return cch(c,true);}).join(''):'<div class="empty" style="padding:28px">Read your first book to meet your first companion!</div>';}
+function rComps(){var el=document.getElementById('cg'),u=COMP.filter(function(c){return stats.read>=c.n;}).length;document.getElementById('csub').textContent=u+' of '+COMP.length+' companions found';el.innerHTML=COMP.map(function(c){return cch(c,stats.read>=c.n);}).join('');}
+function cch(c,on){return'<div class="ccard '+(on?'on':'off')+'" style="--cc:'+c.c+'"><span class="cemoji">'+c.e+'</span><div class="cname">'+c.name+'</div><div class="crole">'+c.role+'</div>'+(on?'<div class="cbio">'+c.bio+'</div><div class="cquote">'+c.quote+'</div><span class="cbadge">✦ '+c.sk+'</span>':'<div class="cbio" style="filter:blur(3px)">'+c.bio+'</div><span class="cbadge">🔒 Unlocks at '+c.n+' books</span>')+'</div>';}
+function rAch(){var el=document.getElementById('ag'),cnt=0;el.innerHTML=ACH.map(function(a){var on=a.ck(stats);if(on)cnt++;return'<div class="acard '+(on?'on':'off')+'"><div class="aicon">'+a.e+'</div><div><div class="aname">'+a.name+'</div><div class="adesc">'+a.desc+'</div></div></div>';}).join('');document.getElementById('asub').textContent=cnt+' of '+ACH.length+' unlocked';}
+function rStat(){var s=stats,el=document.getElementById('sg');var it=[{i:'📚',v:s.read,l:'Books Read'},{i:'📄',v:s.pages.toLocaleString(),l:'Pages Read'},{i:'📈',v:s.avgPages,l:'Avg Pages/Book'},{i:'⭐',v:s.avgR>0?s.avgR.toFixed(1):'—',l:'Avg Rating'},{i:'🎭',v:s.genres,l:'Genres'},{i:'✍️',v:s.authors,l:'Authors'},{i:'📖',v:s.cr.length,l:'In Progress'},{i:'🔖',v:s.want,l:'Want to Read'}];el.innerHTML=it.map(function(x){return'<div class="scc"><div class="si">'+x.i+'</div><div class="sv">'+x.v+'</div><div class="sl">'+x.l+'</div></div>';}).join('');}
+function rCharts(){
+  if(typeof Chart==='undefined'){setTimeout(rCharts,400);return;}
+  Object.values(charts).forEach(function(c){try{c.destroy();}catch(e){}});charts={};
+  var tick={color:'#8a7a60',font:{family:'Georgia',size:11}},grid={color:'#2a2248'};
+  var base={responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8a7a60',font:{family:'Georgia',size:11}}}}};
+  var mks=Object.keys(stats.mon).sort();
+  var ml=mks.map(function(k){var p=k.split('-');return new Date(+p[0],+p[1]-1).toLocaleDateString('en-US',{month:'short',year:'2-digit'});});
+  charts.m=new Chart(document.getElementById('cm'),{type:'bar',data:{labels:ml,datasets:[{label:'Books',data:mks.map(function(k){return stats.mon[k];}),backgroundColor:'rgba(200,168,75,.3)',borderColor:'#c8a84b',borderWidth:2,borderRadius:4}]},options:Object.assign({},base,{scales:{x:{ticks:tick,grid:grid},y:{ticks:tick,grid:grid}},plugins:{legend:{display:false}}})});
+  var gk=Object.keys(stats.gc),gc=['#c8a84b','#00bfa5','#7c4dff','#e05555','#e8873a','#4caf73','#5080e8','#e8508b','#50c8e8','#a0c840'];
+  charts.g=new Chart(document.getElementById('cg2'),{type:'doughnut',data:{labels:gk,datasets:[{data:gk.map(function(k){return stats.gc[k];}),backgroundColor:gk.map(function(_,i){return gc[i%gc.length]+'90';}),borderColor:gk.map(function(_,i){return gc[i%gc.length];}),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'right',labels:{color:'#8a7a60',font:{family:'Georgia',size:10},padding:8,boxWidth:11}}}}});
+  charts.r=new Chart(document.getElementById('cr'),{type:'bar',data:{labels:['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'],datasets:[{data:[1,2,3,4,5].map(function(r){return stats.rc[r];}),backgroundColor:['rgba(224,85,85,.4)','rgba(232,135,58,.4)','rgba(200,168,75,.4)','rgba(76,175,115,.4)','rgba(0,191,165,.4)'],borderColor:['#e05555','#e8873a','#c8a84b','#4caf73','#00bfa5'],borderWidth:2,borderRadius:4}]},options:Object.assign({},base,{scales:{x:{ticks:tick,grid:grid},y:{ticks:tick,grid:grid}},plugins:{legend:{display:false}}})});
+  charts.p=new Chart(document.getElementById('cp'),{type:'line',data:{labels:ml,datasets:[{data:mks.map(function(k){return stats.monP[k]||0;}),borderColor:'#00bfa5',backgroundColor:'rgba(0,191,165,.1)',pointBackgroundColor:'#00bfa5',borderWidth:2,tension:.4,fill:true}]},options:Object.assign({},base,{scales:{x:{ticks:tick,grid:grid},y:{ticks:tick,grid:grid}},plugins:{legend:{display:false}}})});
+}
+function rBooks(){var gf=document.getElementById('bg'),cv=gf.value,gs=[...new Set(books.map(function(b){return b.genre;}).filter(Boolean))].sort();gf.innerHTML='<option value="">All Genres</option>'+gs.map(function(g){return'<option'+(g===cv?' selected':'')+'>'+esc(g)+'</option>';}).join('');fbooks();}
+function fbooks(){
+  var sr=(document.getElementById('bs').value||'').toLowerCase(),st=document.getElementById('bst').value,gn=document.getElementById('bg').value,so=document.getElementById('bso').value;
+  var fb=books.filter(function(b){if(sr&&!b.title.toLowerCase().includes(sr)&&!(b.author||'').toLowerCase().includes(sr))return false;if(st&&b.status!==st)return false;if(gn&&b.genre!==gn)return false;return true;});
+  fb.sort(function(a,b){var va,vb;if(so==='title'){va=a.title.toLowerCase();vb=b.title.toLowerCase();}else if(so==='author'){va=(a.author||'').toLowerCase();vb=(b.author||'').toLowerCase();}else if(so==='rating'){va=a.rating;vb=b.rating;}else if(so==='pages'){va=a.pages;vb=b.pages;}else{va=pDate(a.dateFinished)||new Date(0);vb=pDate(b.dateFinished)||new Date(0);}return va<vb?1:va>vb?-1:0;});
+  var tb=document.getElementById('bb'),be=document.getElementById('be');
+  if(!fb.length){tb.innerHTML='';be.style.display='';return;}
+  be.style.display='none';
+  var sc={Read:'b-r',Reading:'b-i','Want to Read':'b-w',DNF:'b-d'};
+  tb.innerHTML=fb.map(function(b){var sc2=sc[b.status]||'b-r',sr2=b.rating>0?'★'.repeat(Math.round(b.rating))+'☆'.repeat(5-Math.round(b.rating)):'—',df=pDate(b.dateFinished),ds=df?df.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';return'<tr><td><div class="bt">'+esc(b.title)+'</div>'+(b.author?'<div class="ba">by '+esc(b.author)+'</div>':'')+'</td><td>'+esc(b.genre||'—')+'</td><td>'+(b.pages||'—')+'</td><td style="white-space:nowrap">'+ds+'</td><td><span class="stars">'+sr2+'</span></td><td><span class="badge '+sc2+'">'+b.status+'</span></td></tr>';}).join('');
+}
+async function fetchCSV(url){var u=url.trim();if(u.includes('docs.google.com/spreadsheets')&&!u.includes('output=csv')&&!u.includes('format=csv'))u+=(u.includes('?')?'&':'?')+'output=csv';var r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}
+async function connectSheet(){
+  var url=(document.getElementById('ui').value||'').trim();
+  if(!url){showErr('Please paste a URL first.');return;}
+  setLd(true);
+  try{
+    var csv=await fetchCSV(url);var parsed=parseCSV(csv);
+    if(!parsed.length)throw new Error('No data found. Check your sheet is published as CSV.');
+    books=parsed;ls('bm_url',url);ls('bm_ts',new Date().toISOString());
+    setLd(false);showApp();updateMeta();
+    if(!lg('bm_name'))openNM();else render();
+  }catch(e){setLd(false);showErr('Could not load: '+e.message);}
+}
+async function refreshData(){var url=lg('bm_url');if(!url)return;try{var csv=await fetchCSV(url);books=parseCSV(csv);ls('bm_ts',new Date().toISOString());render();updateMeta();toast('✦','Synced!','Reading log refreshed.');}catch(e){toast('⚠','Sync failed','Could not reach your sheet.');}}
+function disconnect(){if(!confirm('Disconnect your sheet?'))return;ld2('bm_url');ld2('bm_ts');books=[];Object.values(charts).forEach(function(c){try{c.destroy();}catch(e){}});charts={};document.getElementById('app').style.display='none';document.getElementById('setup').style.display='';}
+function showApp(){document.getElementById('setup').style.display='none';document.getElementById('app').style.display='';}
+function updateMeta(){var ts=lg('bm_ts');if(ts)document.getElementById('tsu').textContent=new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});var url=lg('bm_url')||'';var m=url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);document.getElementById('shl').textContent=m?'Sheet '+m[1].slice(0,8)+'…':'your sheet';}
+function setLd(on){document.getElementById('ld').style.display=on?'':'none';if(on)document.getElementById('err').style.display='none';}
+function showErr(msg){var e=document.getElementById('err');e.textContent='⚠ '+msg;e.style.display='';}
+function sw(name,btn){document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});document.getElementById('p-'+name).classList.add('on');btn.classList.add('on');}
+function openNM(){document.getElementById('nm').style.display='flex';var ex=lg('bm_name');if(ex)document.getElementById('ni').value=ex;}
+function saveName(){var n=(document.getElementById('ni').value||'').trim()||'The Bibliomancer';ls('bm_name',n);document.getElementById('nm').style.display='none';render();toast('🧙','Welcome!','Your legend begins, '+n+'!');}
+document.getElementById('ni').addEventListener('keydown',function(e){if(e.key==='Enter')saveName();});
+function toast(icon,title,msg){var el=document.createElement('div');el.className='toast';el.innerHTML='<div class="ti">'+icon+'</div><div><div class="tt">'+title+'</div><div class="tm">'+msg+'</div></div>';document.getElementById('toasts').appendChild(el);setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove();},320);},3500);}
+function loadDemo(){
+  var csv='Title,Author,Bookshelves,Number of Pages,Date Added,Date Read,My Rating,Exclusive Shelf\n'+
+  'The Name of the Wind,Patrick Rothfuss,fantasy,662,2024/01/02,2024/01/15,5,read\n'+
+  'Project Hail Mary,Andy Weir,sci-fi,476,2024/01/16,2024/01/25,5,read\n'+
+  'Hitchhiker\'s Guide to the Galaxy,Douglas Adams,sci-fi,193,2024/01/28,2024/01/30,4,read\n'+
+  'Dune,Frank Herbert,sci-fi,688,2024/02/01,2024/02/20,5,read\n'+
+  'A Court of Thorns and Roses,Sarah J. Maas,fantasy,419,2024/02/22,2024/03/05,4,read\n'+
+  'The Midnight Library,Matt Haig,fiction,304,2024/03/06,2024/03/12,3,read\n'+
+  'Sapiens,Yuval Noah Harari,non-fiction,443,2024/03/15,2024/04/01,4,read\n'+
+  'The Alchemist,Paulo Coelho,fiction,197,2024/04/02,2024/04/04,4,read\n'+
+  'Atomic Habits,James Clear,self-help,320,2024/04/08,2024/04/18,5,read\n'+
+  'The Hunger Games,Suzanne Collins,ya-fantasy,374,2024/04/20,2024/04/25,4,read\n'+
+  'Mistborn,Brandon Sanderson,fantasy,541,2024/04/28,2024/05/15,5,read\n'+
+  'Educated,Tara Westover,memoir,352,2024/05/16,2024/05/25,5,read\n'+
+  'The Silent Patient,Alex Michaelides,thriller,336,2024/05/26,2024/05/30,4,read\n'+
+  'Ready Player One,Ernest Cline,sci-fi,374,2024/06/01,2024/06/08,3,read\n'+
+  'The Wise Man\'s Fear,Patrick Rothfuss,fantasy,994,2024/06/10,2024/07/05,5,read\n'+
+  'The Way of Kings,Brandon Sanderson,fantasy,1007,2024/07/08,2024/08/12,5,read\n'+
+  'Good Omens,Terry Pratchett,fantasy,288,2024/08/14,2024/08/18,4,read\n'+
+  'Thinking Fast and Slow,Daniel Kahneman,non-fiction,499,2024/08/20,2024/09/10,4,read\n'+
+  'Seven Husbands of Evelyn Hugo,Taylor Jenkins Reid,historical-fiction,400,2024/09/12,2024/09/18,5,read\n'+
+  'Rhythm of War,Brandon Sanderson,fantasy,1230,2024/09/20,2024/11/01,5,read\n'+
+  'The Girl with the Dragon Tattoo,Stieg Larsson,thriller,672,2024/11/05,2024/11/22,4,read\n'+
+  'Piranesi,Susanna Clarke,fantasy,272,2024/11/24,2024/11/26,5,read\n'+
+  'The Power of Now,Eckhart Tolle,self-help,236,2024/12/01,2024/12/10,3,read\n'+
+  'The Final Empire,Brandon Sanderson,fantasy,541,2024/12/12,2024/12/28,5,read\n'+
+  'Fourth Wing,Rebecca Yarros,fantasy,517,2025/01/05,2025/01/18,4,read\n'+
+  'Babel,R.F. Kuang,historical-fiction,546,2025/01/20,2025/02/08,5,read\n'+
+  'Legends & Lattes,Travis Baldree,fantasy,304,2025/02/10,2025/02/14,4,read\n'+
+  'Tomorrow and Tomorrow and Tomorrow,Gabrielle Zevin,fiction,480,2025/02/16,2025/03/01,5,read\n'+
+  'The Midnight Crisis,Ariel Fynn,thriller,320,2025/03/10,,,currently-reading\n'+
+  'Words of Radiance,Brandon Sanderson,fantasy,1087,2025/04/01,,,to-read';
+  books=parseCSV(csv);ls('bm_url','__demo__');ls('bm_ts',new Date().toISOString());
+  showApp();document.getElementById('shl').textContent='Demo Data';document.getElementById('tsu').textContent='just now';
+  if(!lg('bm_name'))openNM();else render();
+  toast('✨','Demo Loaded!','28 books of adventure await.');
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+(function init(){
+  try{
+    var url=lg('bm_url');
+    if(!url)return;
+    if(url==='__demo__'){loadDemo();return;}
+    showApp();updateMeta();
+    fetchCSV(url).then(function(csv){books=parseCSV(csv);render();}).catch(function(){
+      document.getElementById('app').style.display='none';
+      document.getElementById('setup').style.display='';
+      document.getElementById('ui').value=url;
+      showErr('Could not reload saved sheet — please reconnect.');
+    });
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
