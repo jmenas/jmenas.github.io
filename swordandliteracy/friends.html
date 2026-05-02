@@ -1,0 +1,824 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Reading Tracker — Fellowship of Readers</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/fantasy-theme.css" />
+  <style>
+    /* =========================================================
+       Friends Page — inline styles
+       ========================================================= */
+
+    /* --- Navigation (same as dashboard.html) --- */
+    .nav-inner {
+      max-width: var(--max-width-content);
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .nav-brand {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-gold);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: flex;
+      gap: var(--space-2);
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--color-gold-light);
+      background-color: rgba(201,162,39,0.1);
+    }
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--color-gold);
+      font-size: var(--text-xl);
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (max-width: 767px) {
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0; right: 0;
+        background: var(--color-bg-surface);
+        border-bottom: 2px solid var(--color-border-gold);
+        flex-direction: column;
+        padding: var(--space-4);
+        gap: var(--space-1);
+        z-index: var(--z-dropdown);
+      }
+      .nav-links.open { display: flex; }
+    }
+
+    /* --- Section headings --- */
+    .section-heading {
+      font-family: var(--font-heading);
+      font-size: var(--text-xl);
+      color: var(--color-gold);
+      border-bottom: 1px solid var(--color-border-gold);
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    /* --- Search section --- */
+    .search-section {
+      margin-bottom: var(--space-8);
+    }
+    .search-bar {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+    .search-bar input {
+      flex: 1;
+    }
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+    }
+    .search-result-avatar {
+      width: 80px;
+      height: 96px;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid var(--color-border-gold);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-surface);
+    }
+    .search-result-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .search-result-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-md);
+      color: var(--color-gold-light);
+      margin-bottom: var(--space-1);
+    }
+    .search-result-username {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-1);
+    }
+    .search-result-level {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+    .search-result-actions {
+      flex-shrink: 0;
+    }
+
+    /* --- Requests section --- */
+    .requests-section {
+      margin-bottom: var(--space-8);
+    }
+    .requests-subsection {
+      margin-bottom: var(--space-6);
+    }
+    .requests-subsection h3 {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-3);
+    }
+    .request-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-2);
+    }
+    .request-avatar {
+      width: 80px;
+      height: 96px;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid var(--color-border-gold);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-surface);
+    }
+    .request-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .request-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-md);
+      color: var(--color-gold-light);
+      margin-bottom: var(--space-1);
+    }
+    .request-username {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .request-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    /* --- Friends grid --- */
+    .friends-section {
+      margin-bottom: var(--space-8);
+    }
+    .friends-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+    @media (min-width: 600px) {
+      .friends-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .friends-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .friend-card {
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border-gold);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      text-align: center;
+      position: relative;
+    }
+    .friend-card-avatar {
+      width: 80px;
+      height: 96px;
+      overflow: hidden;
+      border: 2px solid var(--color-gold);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-surface);
+    }
+    .friend-card-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-md);
+      color: var(--color-gold-light);
+    }
+    .friend-card-username {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .friend-card-level {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      background: var(--color-crimson-dark);
+      border: 1px solid var(--color-gold-dark);
+      border-radius: var(--radius-full);
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-heading);
+      font-size: var(--text-xs);
+      color: var(--color-gold-light);
+    }
+    .friend-card-book {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      font-style: italic;
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--space-2);
+      width: 100%;
+    }
+    .friend-card-book strong {
+      color: var(--color-text-secondary);
+      font-style: normal;
+    }
+    .friend-card-actions {
+      margin-top: auto;
+    }
+    .btn-sm {
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
+      min-height: 36px;
+    }
+  </style>
+</head>
+<body class="page-friends">
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="dashboard.html" class="nav-brand">&#9876; Fantasy Reading Tracker</a>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="library.html">Library</a></li>
+        <li><a href="friends.html" class="active">Friends</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="settings.html">Settings</a></li>
+        <li><button id="nav-logout" class="btn-link" type="button">Logout</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <header class="page-header">
+      <h1 class="title-rune">Fellowship of Readers</h1>
+      <p class="subtitle-lore">Seek out companions for your literary journey. No warrior reads alone.</p>
+    </header>
+
+    <!-- User Search -->
+    <section class="search-section" aria-labelledby="search-heading">
+      <h2 id="search-heading" class="section-heading">&#128269; Seek a Companion</h2>
+      <div class="search-bar">
+        <label for="user-search" class="sr-only">Search by warrior name or title</label>
+        <input
+          type="search"
+          id="user-search"
+          placeholder="Search by warrior name or display name..."
+          autocomplete="off"
+          aria-controls="search-results"
+          aria-autocomplete="list"
+        />
+        <button id="btn-search" class="btn-primary">Seek</button>
+      </div>
+      <div id="search-results" class="search-results" role="list" aria-label="Search results" aria-live="polite">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- Pending Requests -->
+    <section class="requests-section" aria-labelledby="requests-heading">
+      <h2 id="requests-heading" class="section-heading">&#9876; Pending Oaths</h2>
+
+      <div class="requests-subsection">
+        <h3>Incoming Requests</h3>
+        <div id="incoming-requests" class="requests-list" aria-live="polite">
+          <p class="empty-state">No incoming requests.</p>
+        </div>
+      </div>
+
+      <div class="requests-subsection">
+        <h3>Outgoing Requests</h3>
+        <div id="outgoing-requests" class="requests-list" aria-live="polite">
+          <p class="empty-state">No outgoing requests.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Friends List -->
+    <section class="friends-section" aria-labelledby="friends-heading">
+      <h2 id="friends-heading" class="section-heading">&#128218; Your Fellowship</h2>
+      <div id="friends-grid" class="friends-grid" aria-live="polite">
+        <p class="empty-state">Your fellowship is empty. Seek companions to join your journey.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Remove Friend Confirmation Modal -->
+  <div id="remove-friend-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="remove-friend-heading" hidden>
+    <div class="modal-content panel-parchment">
+      <h2 id="remove-friend-heading">Sever the Bond?</h2>
+      <p id="remove-friend-message">This warrior will be removed from your fellowship.</p>
+      <div class="form-actions">
+        <button id="confirm-remove-friend" class="btn-danger">Sever</button>
+        <button id="cancel-remove-friend" class="btn-secondary">Retreat</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+    import {
+      searchUsers,
+      sendFriendRequest,
+      acceptFriendRequest,
+      rejectFriendRequest,
+      removeFriend,
+      getFriends,
+      getPendingRequests,
+      getSentRequests,
+    } from './js/social.js';
+    import { renderBarbarian } from './js/barbarian.js';
+    import { getCurrentUser, logout } from './js/auth.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { app } from './js/app.js';
+
+    // -------------------------------------------------------
+    // Auth
+    // -------------------------------------------------------
+    const auth = getAuth(app);
+    let currentUserId = null;
+
+    // -------------------------------------------------------
+    // Hamburger nav
+    // -------------------------------------------------------
+    const hamburger = document.getElementById('nav-hamburger');
+    const navLinks  = document.getElementById('nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', String(open));
+      });
+    }
+
+    // -------------------------------------------------------
+    // Logout
+    // -------------------------------------------------------
+    const logoutBtn = document.getElementById('nav-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => logout());
+    }
+
+    // -------------------------------------------------------
+    // Remove friend modal state
+    // -------------------------------------------------------
+    let pendingRemoveFriendId   = null;
+    let pendingRemoveFriendName = '';
+
+    const removeModal       = document.getElementById('remove-friend-modal');
+    const removeMessage     = document.getElementById('remove-friend-message');
+    const confirmRemoveBtn  = document.getElementById('confirm-remove-friend');
+    const cancelRemoveBtn   = document.getElementById('cancel-remove-friend');
+
+    function openRemoveModal(friendId, friendName) {
+      pendingRemoveFriendId   = friendId;
+      pendingRemoveFriendName = friendName;
+      if (removeMessage) removeMessage.textContent = `Remove ${friendName} from your fellowship?`;
+      if (removeModal) {
+        removeModal.removeAttribute('hidden');
+        confirmRemoveBtn && confirmRemoveBtn.focus();
+      }
+    }
+
+    function closeRemoveModal() {
+      pendingRemoveFriendId   = null;
+      pendingRemoveFriendName = '';
+      if (removeModal) removeModal.setAttribute('hidden', '');
+    }
+
+    if (cancelRemoveBtn) cancelRemoveBtn.addEventListener('click', closeRemoveModal);
+    if (confirmRemoveBtn) {
+      confirmRemoveBtn.addEventListener('click', async () => {
+        if (!pendingRemoveFriendId || !currentUserId) return;
+        confirmRemoveBtn.disabled = true;
+        try {
+          await removeFriend(currentUserId, pendingRemoveFriendId);
+          closeRemoveModal();
+          await refreshFriends();
+        } catch (err) {
+          console.error('Failed to remove friend:', err);
+        } finally {
+          confirmRemoveBtn.disabled = false;
+        }
+      });
+    }
+
+    // -------------------------------------------------------
+    // Render helpers
+    // -------------------------------------------------------
+
+    function createAvatarContainer(barbarian, width, height) {
+      const wrap = document.createElement('div');
+      wrap.style.width  = width  + 'px';
+      wrap.style.height = height + 'px';
+      wrap.style.overflow = 'hidden';
+      renderBarbarian(wrap, barbarian || {});
+      return wrap;
+    }
+
+    // -------------------------------------------------------
+    // Search
+    // -------------------------------------------------------
+
+    async function refreshSearch(queryStr) {
+      const resultsEl = document.getElementById('search-results');
+      if (!resultsEl) return;
+
+      resultsEl.innerHTML = '<p class="empty-state">Searching...</p>';
+
+      try {
+        const users = await searchUsers(queryStr);
+
+        if (users.length === 0) {
+          resultsEl.innerHTML = '<p class="empty-state">No warriors found matching your search.</p>';
+          return;
+        }
+
+        // Fetch current user's friends and sent requests to determine button state
+        const [friends, sentRequests] = await Promise.all([
+          getFriends(currentUserId),
+          getSentRequests(currentUserId),
+        ]);
+        const friendIds    = new Set(friends.map(f => f.id));
+        const sentToIds    = new Set(sentRequests.map(r => r.recipientId));
+
+        resultsEl.innerHTML = '';
+
+        for (const user of users) {
+          if (user.id === currentUserId) continue; // skip self
+
+          const item = document.createElement('div');
+          item.className = 'search-result-item';
+          item.setAttribute('role', 'listitem');
+
+          // Avatar
+          const avatarWrap = document.createElement('div');
+          avatarWrap.className = 'search-result-avatar';
+          renderBarbarian(avatarWrap, user.barbarian || {});
+          item.appendChild(avatarWrap);
+
+          // Info
+          const info = document.createElement('div');
+          info.className = 'search-result-info';
+          info.innerHTML = `
+            <div class="search-result-name">${escapeHtml(user.displayName || user.username)}</div>
+            <div class="search-result-username">@${escapeHtml(user.username)}</div>
+            <div class="search-result-level">Level ${user.rpg?.currentLevel || 1}</div>
+          `;
+          item.appendChild(info);
+
+          // Action button
+          const actions = document.createElement('div');
+          actions.className = 'search-result-actions';
+
+          if (friendIds.has(user.id)) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-secondary btn-sm';
+            btn.textContent = 'Already Companions';
+            btn.disabled = true;
+            actions.appendChild(btn);
+          } else if (sentToIds.has(user.id)) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-secondary btn-sm';
+            btn.textContent = 'Request Sent';
+            btn.disabled = true;
+            actions.appendChild(btn);
+          } else {
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary btn-sm';
+            btn.textContent = 'Send Request';
+            btn.addEventListener('click', async () => {
+              btn.disabled = true;
+              btn.textContent = 'Sending...';
+              try {
+                const result = await sendFriendRequest(currentUserId, user.id);
+                if (result.status === 'sent') {
+                  btn.textContent = 'Request Sent';
+                  btn.className = 'btn-secondary btn-sm';
+                } else if (result.status === 'auto_accepted') {
+                  btn.textContent = 'Now Companions!';
+                  btn.className = 'btn-secondary btn-sm';
+                  await refreshFriends();
+                } else if (result.status === 'already_friends') {
+                  btn.textContent = 'Already Companions';
+                  btn.className = 'btn-secondary btn-sm';
+                } else if (result.status === 'already_sent') {
+                  btn.textContent = 'Request Sent';
+                  btn.className = 'btn-secondary btn-sm';
+                }
+              } catch (err) {
+                btn.textContent = 'Send Request';
+                btn.disabled = false;
+                console.error('Failed to send request:', err);
+              }
+            });
+            actions.appendChild(btn);
+          }
+
+          item.appendChild(actions);
+          resultsEl.appendChild(item);
+        }
+      } catch (err) {
+        resultsEl.innerHTML = '<p class="empty-state">Search failed. Please try again.</p>';
+        console.error('Search failed:', err);
+      }
+    }
+
+    const searchInput = document.getElementById('user-search');
+    const searchBtn   = document.getElementById('btn-search');
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        const q = searchInput ? searchInput.value.trim() : '';
+        if (q) refreshSearch(q);
+      });
+    }
+    if (searchInput) {
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const q = searchInput.value.trim();
+          if (q) refreshSearch(q);
+        }
+      });
+    }
+
+    // -------------------------------------------------------
+    // Pending requests
+    // -------------------------------------------------------
+
+    async function refreshRequests() {
+      const incomingEl = document.getElementById('incoming-requests');
+      const outgoingEl = document.getElementById('outgoing-requests');
+
+      const [incoming, outgoing] = await Promise.all([
+        getPendingRequests(currentUserId),
+        getSentRequests(currentUserId),
+      ]);
+
+      // Incoming
+      if (incomingEl) {
+        if (incoming.length === 0) {
+          incomingEl.innerHTML = '<p class="empty-state">No incoming requests.</p>';
+        } else {
+          incomingEl.innerHTML = '';
+          for (const req of incoming) {
+            const item = document.createElement('div');
+            item.className = 'request-item';
+
+            const avatarWrap = document.createElement('div');
+            avatarWrap.className = 'request-avatar';
+            renderBarbarian(avatarWrap, req.senderBarbarian || {});
+            item.appendChild(avatarWrap);
+
+            const info = document.createElement('div');
+            info.className = 'request-info';
+            info.innerHTML = `
+              <div class="request-name">${escapeHtml(req.senderDisplayName || req.senderUsername)}</div>
+              <div class="request-username">@${escapeHtml(req.senderUsername)} &mdash; Level ${req.senderLevel}</div>
+            `;
+            item.appendChild(info);
+
+            const actions = document.createElement('div');
+            actions.className = 'request-actions';
+
+            const acceptBtn = document.createElement('button');
+            acceptBtn.className = 'btn-primary btn-sm';
+            acceptBtn.textContent = 'Accept';
+            acceptBtn.addEventListener('click', async () => {
+              acceptBtn.disabled = true;
+              try {
+                await acceptFriendRequest(req.requestId, req.senderId, currentUserId);
+                await Promise.all([refreshRequests(), refreshFriends()]);
+              } catch (err) {
+                acceptBtn.disabled = false;
+                console.error('Failed to accept request:', err);
+              }
+            });
+
+            const declineBtn = document.createElement('button');
+            declineBtn.className = 'btn-secondary btn-sm';
+            declineBtn.textContent = 'Decline';
+            declineBtn.addEventListener('click', async () => {
+              declineBtn.disabled = true;
+              try {
+                await rejectFriendRequest(req.requestId);
+                await refreshRequests();
+              } catch (err) {
+                declineBtn.disabled = false;
+                console.error('Failed to decline request:', err);
+              }
+            });
+
+            actions.appendChild(acceptBtn);
+            actions.appendChild(declineBtn);
+            item.appendChild(actions);
+            incomingEl.appendChild(item);
+          }
+        }
+      }
+
+      // Outgoing
+      if (outgoingEl) {
+        if (outgoing.length === 0) {
+          outgoingEl.innerHTML = '<p class="empty-state">No outgoing requests.</p>';
+        } else {
+          outgoingEl.innerHTML = '';
+          for (const req of outgoing) {
+            const item = document.createElement('div');
+            item.className = 'request-item';
+
+            const info = document.createElement('div');
+            info.className = 'request-info';
+            info.innerHTML = `
+              <div class="request-name">Request sent to <em>${escapeHtml(req.recipientId)}</em></div>
+              <div class="request-username">Awaiting response...</div>
+            `;
+            item.appendChild(info);
+
+            const actions = document.createElement('div');
+            actions.className = 'request-actions';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn-secondary btn-sm';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.addEventListener('click', async () => {
+              cancelBtn.disabled = true;
+              try {
+                await rejectFriendRequest(req.requestId);
+                await refreshRequests();
+              } catch (err) {
+                cancelBtn.disabled = false;
+                console.error('Failed to cancel request:', err);
+              }
+            });
+
+            actions.appendChild(cancelBtn);
+            item.appendChild(actions);
+            outgoingEl.appendChild(item);
+          }
+        }
+      }
+    }
+
+    // -------------------------------------------------------
+    // Friends list
+    // -------------------------------------------------------
+
+    async function refreshFriends() {
+      const gridEl = document.getElementById('friends-grid');
+      if (!gridEl) return;
+
+      gridEl.innerHTML = '<p class="empty-state">Loading fellowship...</p>';
+
+      try {
+        const friends = await getFriends(currentUserId);
+
+        if (friends.length === 0) {
+          gridEl.innerHTML = '<p class="empty-state">Your fellowship is empty. Seek companions to join your journey.</p>';
+          return;
+        }
+
+        gridEl.innerHTML = '';
+
+        for (const friend of friends) {
+          const card = document.createElement('div');
+          card.className = 'friend-card';
+
+          // Avatar
+          const avatarWrap = document.createElement('div');
+          avatarWrap.className = 'friend-card-avatar';
+          renderBarbarian(avatarWrap, friend.barbarian || {});
+          card.appendChild(avatarWrap);
+
+          // Name
+          const nameEl = document.createElement('div');
+          nameEl.className = 'friend-card-name';
+          nameEl.textContent = friend.displayName || friend.username;
+          card.appendChild(nameEl);
+
+          // Username
+          const usernameEl = document.createElement('div');
+          usernameEl.className = 'friend-card-username';
+          usernameEl.textContent = '@' + friend.username;
+          card.appendChild(usernameEl);
+
+          // Level badge
+          const levelEl = document.createElement('div');
+          levelEl.className = 'friend-card-level';
+          levelEl.textContent = 'Level ' + (friend.rpg?.currentLevel || 1);
+          card.appendChild(levelEl);
+
+          // Most recent book
+          const bookEl = document.createElement('div');
+          bookEl.className = 'friend-card-book';
+          if (friend.mostRecentBook) {
+            bookEl.innerHTML = 'Last read: <strong>' + escapeHtml(friend.mostRecentBook.title) + '</strong>';
+          } else {
+            bookEl.textContent = 'No books read yet';
+          }
+          card.appendChild(bookEl);
+
+          // Profile link
+          const profileLink = document.createElement('a');
+          profileLink.href = 'profile.html?userId=' + encodeURIComponent(friend.id);
+          profileLink.className = 'btn-secondary btn-sm';
+          profileLink.textContent = 'View Profile';
+          card.appendChild(profileLink);
+
+          // Remove button
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'btn-link btn-sm';
+          removeBtn.textContent = 'Remove';
+          removeBtn.setAttribute('aria-label', 'Remove ' + (friend.displayName || friend.username) + ' from fellowship');
+          removeBtn.addEventListener('click', () => {
+            openRemoveModal(friend.id, friend.displayName || friend.username);
+          });
+          card.appendChild(removeBtn);
+
+          gridEl.appendChild(card);
+        }
+      } catch (err) {
+        gridEl.innerHTML = '<p class="empty-state">Failed to load fellowship. Please refresh.</p>';
+        console.error('Failed to load friends:', err);
+      }
+    }
+
+    // -------------------------------------------------------
+    // Utility
+    // -------------------------------------------------------
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // -------------------------------------------------------
+    // Auth state — load page data when signed in
+    // -------------------------------------------------------
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      currentUserId = user.uid;
+      await Promise.all([
+        refreshFriends(),
+        refreshRequests(),
+      ]);
+    });
+  </script>
+</body>
+</html>

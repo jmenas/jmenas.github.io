@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isFriend(userId) {
+      return exists(/databases/$(database)/documents/friendships/$(request.auth.uid + '_' + userId)) ||
+             exists(/databases/$(database)/documents/friendships/$(userId + '_' + request.auth.uid));
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Public profiles readable by all authenticated users
+      // Friends-only profiles readable only by friends
+      allow read: if isAuthenticated() && (
+        isOwner(userId) ||
+        resource.data.profileVisibility == 'public' ||
+        (resource.data.profileVisibility == 'friends_only' && isFriend(userId))
+      );
+      allow write: if isAuthenticated() && isOwner(userId);
+
+      // User subcollections — only owner can read/write
+      match /books/{bookId} {
+        allow read: if isAuthenticated() && (
+          isOwner(userId) ||
+          resource == null ||
+          get(/databases/$(database)/documents/users/$(userId)).data.profileVisibility == 'public' ||
+          isFriend(userId)
+        );
+        allow write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /questProgress/{questId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || isFriend(userId));
+        allow write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /earnedRewards/{rewardId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || isFriend(userId));
+        allow write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /earnedAchievements/{achievementId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || isFriend(userId));
+        allow write: if isAuthenticated() && isOwner(userId);
+      }
+
+      match /readingGoals/{goalId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || isFriend(userId));
+        allow write: if isAuthenticated() && isOwner(userId);
+      }
+    }
+
+    // Friend requests — readable/writable by sender or recipient
+    match /friendRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.recipientId
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.senderId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.recipientId
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        request.auth.uid == resource.data.recipientId
+      );
+    }
+
+    // Friendships — readable only by the two involved users
+    match /friendships/{friendshipId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.friendId
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.friendId
+      );
+    }
+
+    // Import jobs — only owner can read/write
+    match /importJobs/{jobId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}

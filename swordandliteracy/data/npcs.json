@@ -1,0 +1,74 @@
+[
+  {
+    "id": "npc_grimwald",
+    "name": "Grimwald the Archivist",
+    "personality": "Gruff but wise. Grimwald has spent centuries cataloguing the world's knowledge and has little patience for fools — but he respects those who read. He speaks in short, blunt sentences and occasionally quotes obscure texts.",
+    "portraitUrl": "img/npcs/grimwald.png",
+    "dialogues": [
+      {
+        "trigger": "account_creation",
+        "text": "Another seeker of knowledge arrives at my door. Hmph. Most who come here are tourists. You — I can tell you are different. The scrolls do not lie. Sit. Read. Prove me right."
+      },
+      {
+        "trigger": "level_up",
+        "text": "Your power grows, warrior. The scrolls do not lie. I have seen a thousand readers pass through these halls — few reach where you now stand. Do not squander it. Read on."
+      },
+      {
+        "trigger": "quest_completion",
+        "text": "Quest complete. As expected. I had my doubts — I always have doubts — but you have silenced them. For now. The next challenge awaits. It will not be easier."
+      },
+      {
+        "trigger": "daily_login",
+        "text": "You return. Good. The library does not sleep, and neither should your curiosity. I have set aside three tomes I think you will find... instructive. Do not disappoint me."
+      }
+    ]
+  },
+  {
+    "id": "npc_vaelindra",
+    "name": "Vaelindra the Sorceress",
+    "personality": "Mysterious and cryptic. Vaelindra speaks in riddles and metaphors, hinting at knowledge beyond mortal comprehension. She is ancient beyond reckoning and finds humans endlessly fascinating — like insects, but occasionally surprising ones.",
+    "portraitUrl": "img/npcs/vaelindra.png",
+    "dialogues": [
+      {
+        "trigger": "account_creation",
+        "text": "The threads of fate have drawn you here, little reader. I have watched a thousand souls begin this journey — most turn back at the first shadow. But you... the stars whisper something different about you. We shall see if they speak true."
+      },
+      {
+        "trigger": "level_up",
+        "text": "The veil between what you were and what you are becoming grows thinner. I can see it in your eyes — the hunger for more. The ancient texts call this the Awakening. It is only the beginning of what you might become."
+      },
+      {
+        "trigger": "quest_completion",
+        "text": "The pattern shifts. A thread completes its weave. You have done what the prophecy foretold — though I suspect you did not know there was a prophecy. There rarely is, until there is. Well done, little reader."
+      },
+      {
+        "trigger": "daily_login",
+        "text": "You return to the library as the moon returns to the sky — inevitable, faithful, luminous. The books have been waiting for you. They always wait. They have nothing but time, and neither, it seems, do you."
+      }
+    ]
+  },
+  {
+    "id": "npc_thalindor",
+    "name": "Thalindor the Bard",
+    "personality": "Jovial and enthusiastic. Thalindor is a travelling bard who has read every book he could get his hands on and turned most of them into songs. He is relentlessly positive, occasionally annoying, and genuinely delighted by every book ever written.",
+    "portraitUrl": "img/npcs/thalindor.png",
+    "dialogues": [
+      {
+        "trigger": "account_creation",
+        "text": "Oh ho! A new reader joins the grand adventure! Welcome, welcome, WELCOME! I am Thalindor — bard, traveller, and the greatest reader you will ever have the pleasure of meeting! Well, second greatest, now that you are here! Ha! This is going to be MAGNIFICENT!"
+      },
+      {
+        "trigger": "level_up",
+        "text": "LEVEL UP! Oh, I have been waiting to say that! Do you hear that, everyone? Our friend here has leveled up! I am composing a ballad about this very moment — it will be called 'The Day the Reader Rose' and it will make grown warriors weep with joy!"
+      },
+      {
+        "trigger": "quest_completion",
+        "text": "Quest complete! Another verse for the ballad! Another chapter in the legend! I knew you could do it — I told Grimwald, I said 'Grimwald, that one is special,' and he grumbled at me, but I was RIGHT! As usual! Celebrate, friend! You have earned it!"
+      },
+      {
+        "trigger": "daily_login",
+        "text": "You are back! Wonderful! I have been here all day, reading and singing and generally being magnificent. I found the most extraordinary book — I will not spoil it, but there is a dragon, a library, and a plot twist that made me fall off my chair. Literally. The chair is fine."
+      }
+    ]
+  }
+]

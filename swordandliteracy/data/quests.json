@@ -1,0 +1,101 @@
+[
+  {
+    "id": "quest_first_tome",
+    "title": "The First Rune is Cast",
+    "narrativeDesc": "Every legend begins with a single word. You have taken your first step into the vast library of the world, warrior. Read your first tome and let the ink of knowledge stain your fingers forever.",
+    "category": "books_read",
+    "completionValue": 1,
+    "rewardId": "reward_apprentice_scroll",
+    "bonusXp": 50
+  },
+  {
+    "id": "quest_five_tomes",
+    "title": "The Gathering Storm",
+    "narrativeDesc": "Five tomes lie conquered at your feet, their secrets absorbed into your very blood. The scribes of the ancient order take notice — a new reader of power stirs in the realm. Continue your conquest.",
+    "category": "books_read",
+    "completionValue": 5,
+    "rewardId": "reward_leather_satchel",
+    "bonusXp": 150
+  },
+  {
+    "id": "quest_ten_tomes",
+    "title": "The First Saga",
+    "narrativeDesc": "Ten tomes have been consumed by the flame of your curiosity. The great archivist Grimwald himself has inscribed your name in the Hall of Readers. You are no longer a novice — you are a warrior of words.",
+    "category": "books_read",
+    "completionValue": 10,
+    "rewardId": "reward_iron_helm",
+    "bonusXp": 500
+  },
+  {
+    "id": "quest_twentyfive_tomes",
+    "title": "The Wandering Scholar",
+    "narrativeDesc": "Twenty-five volumes of lore, history, and adventure have passed through your hands. You have walked the roads of a thousand worlds without leaving your chair. The wandering scholar's cloak is yours by right.",
+    "category": "books_read",
+    "completionValue": 25,
+    "rewardId": "reward_wanderer_cloak",
+    "bonusXp": 1000
+  },
+  {
+    "id": "quest_fifty_tomes",
+    "title": "The Grand Chronicler",
+    "narrativeDesc": "Fifty tomes! The ancient dragons themselves would bow their heads in respect. You have consumed more knowledge than most warriors see in a lifetime. The title of Grand Chronicler is bestowed upon you.",
+    "category": "books_read",
+    "completionValue": 50,
+    "rewardId": "reward_dragon_scale_armor",
+    "bonusXp": 2500
+  },
+  {
+    "id": "quest_three_genres",
+    "title": "The Realm Walker",
+    "narrativeDesc": "You have ventured beyond the familiar paths and explored three distinct realms of literature. The sorceress Vaelindra smiles — only those who dare to walk between worlds may claim the title of Realm Walker.",
+    "category": "genres_explored",
+    "completionValue": 3,
+    "rewardId": "reward_realm_walker_badge",
+    "bonusXp": 200
+  },
+  {
+    "id": "quest_five_genres",
+    "title": "The Loremaster's Breadth",
+    "narrativeDesc": "Five distinct realms of knowledge have yielded their secrets to you. From the darkest horror to the brightest fantasy, from the cold stars of science fiction to the warm hearths of history — you have walked them all. The Loremaster's seal is yours.",
+    "category": "genres_explored",
+    "completionValue": 5,
+    "rewardId": "reward_loremaster_seal",
+    "bonusXp": 400
+  },
+  {
+    "id": "quest_streak_three_months",
+    "title": "The Unbroken Vigil",
+    "narrativeDesc": "For three consecutive moons you have not let the flame of reading die. Through storm and siege, through feast and famine, you have kept your vigil. The bard Thalindor sings of your dedication in every tavern from here to the Frozen Peaks.",
+    "category": "reading_streak",
+    "completionValue": 3,
+    "rewardId": "reward_vigil_candle",
+    "bonusXp": 300
+  },
+  {
+    "id": "quest_streak_six_months",
+    "title": "The Eternal Flame",
+    "narrativeDesc": "Six moons of unbroken reading. The ancient order of scribes has never seen such dedication. They say the eternal flame of the great library burns brighter when a true reader walks its halls. You are that reader.",
+    "category": "reading_streak",
+    "completionValue": 6,
+    "rewardId": "reward_eternal_flame_torch",
+    "bonusXp": 750
+  },
+  {
+    "id": "quest_first_companion",
+    "title": "The First Oath of Fellowship",
+    "narrativeDesc": "No warrior should walk the path of knowledge alone. You have found your first companion — a fellow reader to share the journey. The bonds of fellowship are forged not in battle, but in the shared love of stories.",
+    "category": "social",
+    "completionValue": 1,
+    "rewardId": "reward_fellowship_ring",
+    "bonusXp": 100
+  },
+  {
+    "id": "quest_five_companions",
+    "title": "The Fellowship of the Tome",
+    "narrativeDesc": "Five sworn companions now walk beside you on the road of reading. Together you form a fellowship worthy of legend. The bard Thalindor has already begun composing the ballad of your fellowship — it will be sung for generations.",
+    "category": "social",
+    "completionValue": 5,
+    "rewardId": "reward_thalindor_companion",
+    "bonusXp": 500
+  }
+]

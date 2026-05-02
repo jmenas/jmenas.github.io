@@ -1,0 +1,666 @@
+/* =============================================================================
+   Fantasy Reading Tracker — components.css
+   Reusable component styles: navigation, cards, tabs, progress bars,
+   book grid, quest cards, achievement badges, NPC dialog, toasts, etc.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Navigation Component
+   --------------------------------------------------------------------------- */
+
+.nav-inner {
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.nav-brand {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  color: var(--color-gold);
+  text-decoration: none;
+  white-space: nowrap;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-brand:hover,
+.nav-brand:focus-visible {
+  color: var(--color-gold-light);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-2);
+  list-style: none;
+  align-items: center;
+}
+
+.nav-links a,
+.nav-links button {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible,
+.nav-links a.active {
+  color: var(--color-gold-light);
+  background-color: rgba(201, 162, 39, 0.1);
+  text-decoration: none;
+}
+
+/* Hamburger button — hidden on desktop, shown on mobile */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-gold);
+  font-size: var(--text-xl);
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.nav-hamburger:hover,
+.nav-hamburger:focus-visible {
+  background-color: rgba(201, 162, 39, 0.1);
+}
+
+/* Mobile nav */
+@media (max-width: 767px) {
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: var(--color-bg-surface);
+    border-bottom: 2px solid var(--color-border-gold);
+    flex-direction: column;
+    padding: var(--space-4);
+    gap: var(--space-1);
+    z-index: var(--z-dropdown);
+    align-items: stretch;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links button {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   2. Book Card Component
+   --------------------------------------------------------------------------- */
+
+.book-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.book-card:hover {
+  border-color: var(--color-border-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+.book-cover-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 150%; /* 2:3 aspect ratio */
+  overflow: hidden;
+  background: var(--color-bg-surface);
+}
+
+.book-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.book-card-body {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.book-card-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  color: var(--color-gold-light);
+  line-height: var(--leading-snug);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.book-card-author {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.book-card-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.genre-tag {
+  display: inline-block;
+  background: var(--color-crimson-dark);
+  border: 1px solid var(--color-crimson);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.book-card-rating {
+  display: flex;
+  gap: 2px;
+  font-size: var(--text-sm);
+  color: var(--color-gold);
+}
+
+.book-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.book-card-actions button,
+.book-card-actions a {
+  min-height: 44px;
+  min-width: 44px;
+  flex: 1;
+}
+
+/* Responsive book grid */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   3. Quest Card Component
+   --------------------------------------------------------------------------- */
+
+.quest-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  transition: border-color var(--transition-fast);
+}
+
+.quest-card:hover {
+  border-color: var(--color-border-gold);
+}
+
+.quest-card-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-1);
+}
+
+.quest-card-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-relaxed);
+}
+
+.quest-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.quest-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.quest-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-crimson-dark), var(--color-crimson-light));
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.quest-progress-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Friend Card Component
+   --------------------------------------------------------------------------- */
+
+.friend-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  min-height: 44px;
+}
+
+.friend-card:hover {
+  border-color: var(--color-border-gold);
+  box-shadow: var(--shadow-md);
+}
+
+.friend-card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-border-gold);
+  background: var(--color-bg-surface);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+}
+
+.friend-card-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-1);
+}
+
+.friend-card-level {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.friend-card-book {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Responsive friend card layout */
+@media (max-width: 479px) {
+  .friend-card {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   5. Achievement Badge Component
+   --------------------------------------------------------------------------- */
+
+.achievement-badge {
+  text-align: center;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-surface);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.achievement-badge.earned {
+  border-color: var(--color-gold);
+  background: rgba(201, 162, 39, 0.08);
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.2);
+}
+
+.achievement-badge.locked {
+  border-color: var(--color-border);
+  background: var(--color-bg-surface);
+  opacity: 0.7;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+  display: block;
+  line-height: 1;
+}
+
+.achievement-badge.locked .achievement-icon {
+  filter: grayscale(1) opacity(0.4);
+}
+
+.achievement-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-snug);
+}
+
+.achievement-badge.earned .achievement-name {
+  color: var(--color-gold);
+}
+
+.achievement-badge.locked .achievement-name {
+  color: var(--color-text-muted);
+}
+
+/* Achievements grid */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .achievements-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   6. Reward Card Component
+   --------------------------------------------------------------------------- */
+
+.reward-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-gold);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: box-shadow var(--transition-fast);
+}
+
+.reward-card:hover {
+  box-shadow: var(--shadow-gold);
+}
+
+.reward-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-1);
+}
+
+.reward-type-badge {
+  display: inline-block;
+  background: var(--color-crimson-dark);
+  border: 1px solid var(--color-gold-dark);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  font-size: 0.6875rem;
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.reward-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  line-height: var(--leading-relaxed);
+}
+
+/* Rewards grid */
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .rewards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   7. XP Progress Bar
+   --------------------------------------------------------------------------- */
+
+.xp-bar-track {
+  width: 100%;
+  height: 12px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold), var(--color-gold-light));
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+  min-width: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   8. Goal Progress Bar
+   --------------------------------------------------------------------------- */
+
+.goal-bar-track {
+  width: 100%;
+  height: 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.goal-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-arcane), var(--color-arcane-light));
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+  min-width: 4px;
+}
+
+.goal-numeric {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+   9. Responsive Breakpoints for All Components
+   --------------------------------------------------------------------------- */
+
+/* 320px — smallest mobile (base styles above already target this) */
+
+/* 768px — tablet */
+@media (min-width: 768px) {
+  .quest-card {
+    padding: var(--space-5);
+  }
+
+  .friend-card {
+    padding: var(--space-5);
+  }
+
+  .reward-card {
+    padding: var(--space-5);
+  }
+
+  .achievement-badge {
+    padding: var(--space-5);
+  }
+}
+
+/* 1024px — desktop */
+@media (min-width: 1024px) {
+  .quest-card {
+    padding: var(--space-6);
+  }
+
+  .friend-card {
+    padding: var(--space-6);
+  }
+
+  .book-card-body {
+    padding: var(--space-4);
+  }
+}
+
+/* 1440px — wide desktop */
+@media (min-width: 1440px) {
+  .quest-bar-track {
+    height: 12px;
+  }
+
+  .xp-bar-track {
+    height: 14px;
+  }
+
+  .goal-bar-track {
+    height: 16px;
+  }
+}
+
+/* 2560px — ultra-wide */
+@media (min-width: 2560px) {
+  .friend-card-avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .achievement-icon {
+    font-size: 2.5rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   10. Touch Targets — all interactive elements min 44×44px
+   --------------------------------------------------------------------------- */
+
+button,
+[role="button"],
+a,
+input[type="checkbox"],
+input[type="radio"],
+select,
+.achievement-badge,
+.reward-card,
+.quest-card,
+.friend-card,
+.book-card {
+  /* Ensure interactive elements meet WCAG 2.5.5 touch target size */
+}
+
+/* Explicit touch targets for small interactive elements */
+.genre-tag,
+.reward-type-badge {
+  /* These are display-only; interactive versions get min-height via button wrapper */
+}
+
+/* All buttons and links that are interactive must meet 44px minimum */
+button:not(.nav-hamburger),
+a[href],
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+  min-height: 44px;
+}
+
+/* Checkbox and radio touch targets */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 20px;
+  min-height: 20px;
+}
+
+/* Wrap small checkboxes/radios in a label with adequate touch area */
+label:has(input[type="checkbox"]),
+label:has(input[type="radio"]) {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}

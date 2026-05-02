@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Reading Tracker — The Grand Library</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/fantasy-theme.css" />
+  <style>
+    /* =========================================================
+       Library — inline styles
+       ========================================================= */
+
+    /* --- Navigation (shared with dashboard) --- */
+    .nav-inner {
+      max-width: var(--max-width-content);
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .nav-brand {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-gold);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: flex;
+      gap: var(--space-2);
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--color-gold-light);
+      background-color: rgba(201,162,39,0.1);
+    }
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--color-gold);
+      font-size: var(--text-xl);
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (max-width: 767px) {
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0; right: 0;
+        background: var(--color-bg-surface);
+        border-bottom: 2px solid var(--color-border-gold);
+        flex-direction: column;
+        padding: var(--space-4);
+        gap: var(--space-1);
+        z-index: var(--z-dropdown);
+      }
+      .nav-links.open { display: flex; }
+    }
+
+    /* --- Shelf Tabs --- */
+    .shelf-tabs {
+      display: flex;
+      gap: var(--space-2);
+      border-bottom: 2px solid var(--color-border-gold);
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: var(--space-3) var(--space-5);
+      cursor: pointer;
+      transition: color var(--transition-fast), border-color var(--transition-fast);
+      min-height: 44px;
+      letter-spacing: var(--tracking-wide);
+      margin-bottom: -2px;
+    }
+    .tab-btn:hover { color: var(--color-gold-light); }
+    .tab-btn[aria-selected="true"], .tab-btn.tab-active {
+      color: var(--color-gold);
+      border-bottom-color: var(--color-gold);
+    }
+
+    /* --- Library Actions --- */
+    .library-actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-6);
+    }
+
+    /* --- Books Grid --- */
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-5);
+    }
+    @media (min-width: 640px) {
+      .books-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 900px) {
+      .books-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1200px) {
+      .books-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* --- Book Card --- */
+    .book-card {
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+      position: relative;
+    }
+    .book-card:hover {
+      box-shadow: var(--shadow-gold);
+      transform: translateY(-2px);
+    }
+    .book-cover-wrap {
+      position: relative;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+      background: var(--color-bg-surface);
+    }
+    .book-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .book-shelf-badge {
+      position: absolute;
+      top: var(--space-2);
+      left: var(--space-2);
+      background: var(--color-crimson-dark);
+      color: var(--color-gold-light);
+      font-family: var(--font-heading);
+      font-size: var(--text-xs);
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-sm);
+      letter-spacing: var(--tracking-wide);
+    }
+    .book-card-body {
+      padding: var(--space-3);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .book-card-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-gold-light);
+      line-height: var(--leading-snug);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .book-card-author {
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+    .book-card-genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin-top: var(--space-1);
+    }
+    .genre-tag {
+      background: rgba(201,162,39,0.12);
+      border: 1px solid var(--color-gold-dark);
+      border-radius: var(--radius-full);
+      padding: 1px var(--space-2);
+      font-size: 0.65rem;
+      color: var(--color-gold-light);
+      letter-spacing: var(--tracking-wide);
+    }
+    .book-card-rating {
+      font-size: var(--text-sm);
+      color: var(--color-gold);
+      margin-top: var(--space-1);
+    }
+    .book-card-date {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+    .book-card-actions {
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: 1px solid var(--color-border);
+    }
+    .btn-icon {
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--text-sm);
+      min-width: 44px;
+      min-height: 36px;
+      transition: color var(--transition-fast), border-color var(--transition-fast);
+    }
+    .btn-icon:hover { color: var(--color-gold-light); border-color: var(--color-gold); }
+    .btn-icon-danger:hover { color: var(--color-crimson-light); border-color: var(--color-crimson); }
+
+    /* --- Cover Preview --- */
+    .cover-preview {
+      margin-top: var(--space-3);
+      display: flex;
+      justify-content: center;
+    }
+    .cover-preview img {
+      max-height: 160px;
+      border: 2px solid var(--color-border-gold);
+      border-radius: var(--radius-md);
+    }
+
+    /* --- Import section --- */
+    .import-section {
+      margin-top: var(--space-8);
+    }
+    .import-section-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      padding: 0;
+      min-height: 44px;
+    }
+    .import-section-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-crimson-dark);
+    }
+    .import-section-body {
+      margin-top: var(--space-4);
+    }
+    .import-instructions { margin-bottom: var(--space-4); color: var(--color-text-on-parchment); }
+    .field-hint { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .import-progress { margin-top: var(--space-3); }
+    .import-summary { margin-top: var(--space-3); }
+    .import-summary-success { color: var(--color-success); font-weight: var(--weight-semibold); }
+    .import-summary-skipped { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .spinner {
+      display: inline-block;
+      width: 1em; height: 1em;
+      border: 2px solid var(--color-border);
+      border-top-color: var(--color-gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: var(--space-2);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Read fields toggle --- */
+    .read-fields { margin-top: var(--space-2); }
+  </style>
+</head>
+<body class="page-library">
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="dashboard.html" class="nav-brand">&#9876; Fantasy Reading Tracker</a>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="library.html" class="active">Library</a></li>
+        <li><a href="friends.html">Friends</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="settings.html">Settings</a></li>
+        <li><button id="nav-logout" class="btn-link" type="button">Logout</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <header class="page-header">
+      <h1 class="title-rune">The Grand Library</h1>
+      <p class="subtitle-lore">Every tome you have conquered, every scroll you seek — catalogued for eternity.</p>
+    </header>
+
+    <!-- Shelf Tabs -->
+    <div class="shelf-tabs" role="tablist" aria-label="Library shelves">
+      <button role="tab" id="tab-read" aria-selected="true" aria-controls="shelf-read" class="tab-btn tab-active">
+        &#9876; Conquered Tomes
+      </button>
+      <button role="tab" id="tab-reading" aria-selected="false" aria-controls="shelf-reading" class="tab-btn">
+        &#128218; Current Saga
+      </button>
+      <button role="tab" id="tab-want" aria-selected="false" aria-controls="shelf-want" class="tab-btn">
+        &#128196; Scrolls of Desire
+      </button>
+    </div>
+
+    <!-- Add Book Button -->
+    <div class="library-actions">
+      <button id="btn-add-book" class="btn-primary" aria-haspopup="dialog" type="button">
+        + Inscribe a New Tome
+      </button>
+      <button id="btn-import-csv" class="btn-secondary" aria-haspopup="dialog" type="button">
+        Import from Goodreads
+      </button>
+    </div>
+
+    <!-- Shelf Panels -->
+    <div id="shelf-read" role="tabpanel" aria-labelledby="tab-read" class="shelf-panel">
+      <div id="books-read" class="books-grid">
+        <p class="empty-state">No conquered tomes yet. Begin your legend!</p>
+      </div>
+    </div>
+
+    <div id="shelf-reading" role="tabpanel" aria-labelledby="tab-reading" class="shelf-panel" hidden>
+      <div id="books-reading" class="books-grid">
+        <p class="empty-state">No current sagas. Pick up a tome and begin!</p>
+      </div>
+    </div>
+
+    <div id="shelf-want" role="tabpanel" aria-labelledby="tab-want" class="shelf-panel" hidden>
+      <div id="books-want" class="books-grid">
+        <p class="empty-state">No scrolls of desire. Add books you wish to conquer!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add / Edit Book Modal -->
+  <div id="book-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="book-modal-heading" hidden>
+    <div class="modal-content panel-parchment">
+      <h2 id="book-modal-heading">Inscribe a Tome</h2>
+      <form id="book-form" novalidate>
+        <input type="hidden" id="book-id" name="bookId" />
+
+        <div class="form-field">
+          <label for="book-title">Title of the Tome <span aria-hidden="true">*</span></label>
+          <input type="text" id="book-title" name="title" required autocomplete="off" />
+          <span class="field-error" aria-live="polite" id="err-title"></span>
+        </div>
+
+        <div class="form-field">
+          <label for="book-author">Scribe (Author) <span aria-hidden="true">*</span></label>
+          <input type="text" id="book-author" name="author" required autocomplete="off" />
+          <span class="field-error" aria-live="polite" id="err-author"></span>
+        </div>
+
+        <div class="form-field">
+          <label for="book-isbn">Rune of Identification (ISBN, optional)</label>
+          <input type="text" id="book-isbn" name="isbn" autocomplete="off" />
+        </div>
+
+        <div class="form-field">
+          <label for="book-pages">Number of Pages (optional)</label>
+          <input type="number" id="book-pages" name="pageCount" min="1" />
+        </div>
+
+        <div class="form-field">
+          <label for="book-shelf">Shelf <span aria-hidden="true">*</span></label>
+          <select id="book-shelf" name="shelf" required>
+            <option value="want_to_read">Scrolls of Desire (Want to Read)</option>
+            <option value="currently_reading">Current Saga (Currently Reading)</option>
+            <option value="read">Conquered Tomes (Read)</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="book-genres">Realms (Genres) <span aria-hidden="true">*</span></label>
+          <select id="book-genres" name="genres" multiple required size="5">
+            <option value="Fantasy">Fantasy</option>
+            <option value="Horror">Horror</option>
+            <option value="Science Fiction">Science Fiction</option>
+            <option value="Historical Fiction">Historical Fiction</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Romance">Romance</option>
+            <option value="Non-Fiction">Non-Fiction</option>
+            <option value="Biography">Biography</option>
+            <option value="Other">Other</option>
+          </select>
+          <span class="field-error" aria-live="polite" id="err-genres"></span>
+        </div>
+
+        <!-- Rating and Review (shown when shelf = read) -->
+        <div id="read-fields" class="read-fields" hidden>
+          <div class="form-field">
+            <label for="book-rating">Rating (1&ndash;5 stars, optional)</label>
+            <input type="number" id="book-rating" name="rating" min="1" max="5" />
+          </div>
+          <div class="form-field">
+            <label for="book-review">Review (optional)</label>
+            <textarea id="book-review" name="review" rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- Cover Preview -->
+        <div id="cover-preview" class="cover-preview" aria-label="Book cover preview"></div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="book-form-submit">Inscribe</button>
+          <button type="button" class="btn-secondary" id="book-modal-close">Abandon</button>
+        </div>
+        <div id="book-form-error" class="error-message" aria-live="assertive"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-heading" hidden>
+    <div class="modal-content panel-parchment">
+      <h2 id="delete-modal-heading">Erase from the Chronicles?</h2>
+      <p id="delete-modal-message">This deed cannot be undone. The tome will be struck from your records.</p>
+      <div class="form-actions">
+        <button id="confirm-delete" class="btn-danger" type="button">Erase</button>
+        <button id="cancel-delete" class="btn-secondary" type="button">Retreat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goodreads Import Section (inline, collapsible) -->
+  <section id="import-section" class="import-section panel-parchment" aria-labelledby="import-section-heading" style="margin-top:2rem;">
+    <button id="import-section-toggle" class="import-section-toggle" aria-expanded="false" aria-controls="import-section-body" type="button">
+      <span class="toggle-icon" aria-hidden="true">&#9654;</span>
+      <span id="import-section-heading" class="import-section-title">Import from Goodreads</span>
+    </button>
+    <div id="import-section-body" class="import-section-body" hidden>
+      <p class="import-instructions">
+        Export your library from Goodreads
+        (<em>My Books &rarr; Import/Export &rarr; Export Library</em>),
+        then upload the CSV file here.
+      </p>
+      <div class="form-field">
+        <label for="goodreads-file">Goodreads CSV Export</label>
+        <input type="file" id="goodreads-file" name="goodreadsFile" accept=".csv" aria-describedby="goodreads-file-hint" />
+        <span id="goodreads-file-hint" class="field-hint">Only .csv files are accepted.</span>
+      </div>
+      <div class="form-actions">
+        <button id="btn-import-tomes" class="btn-primary" type="button">Import Tomes</button>
+      </div>
+      <div id="import-progress" class="import-progress" hidden aria-live="polite" aria-atomic="true">
+        <p class="import-progress-text"><span class="spinner" aria-hidden="true"></span> Importing your tomes&hellip;</p>
+      </div>
+      <div id="import-summary" class="import-summary" hidden aria-live="polite" aria-atomic="true"></div>
+      <div id="import-error" class="error-message" aria-live="assertive" aria-atomic="true"></div>
+    </div>
+  </section>
+
+  <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+    // =========================================================
+    // Library — inline module script
+    // =========================================================
+    import { addBook, updateBook, deleteBook, getBooks } from './js/library.js';
+    import { getCurrentUser } from './js/auth.js';
+    import { logout } from './js/auth.js';
+    import { fetchCoverUrl, PLACEHOLDER_COVER_URL } from './js/coverService.js';
+    import { staticData, loadStaticData, app } from './js/app.js';
+    import { importGoodreadsFile } from './js/import.js';
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // -------------------------------------------------------
+    // Hamburger nav
+    // -------------------------------------------------------
+    const hamburger = document.getElementById('nav-hamburger');
+    const navLinks  = document.getElementById('nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', String(open));
+      });
+    }
+    const logoutBtn = document.getElementById('nav-logout');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => logout());
+
+    // -------------------------------------------------------
+    // Tab switching
+    // -------------------------------------------------------
+    const tabs = [
+      { tab: 'tab-read',    panel: 'shelf-read',    shelf: 'read' },
+      { tab: 'tab-reading', panel: 'shelf-reading', shelf: 'currently_reading' },
+      { tab: 'tab-want',    panel: 'shelf-want',    shelf: 'want_to_read' },
+    ];
+
+    tabs.forEach(({ tab, panel }) => {
+      const tabEl   = document.getElementById(tab);
+      const panelEl = document.getElementById(panel);
+      if (!tabEl || !panelEl) return;
+      tabEl.addEventListener('click', () => {
+        tabs.forEach(({ tab: t, panel: p }) => {
+          const te = document.getElementById(t);
+          const pe = document.getElementById(p);
+          if (te) { te.setAttribute('aria-selected', 'false'); te.classList.remove('tab-active'); }
+          if (pe) pe.hidden = true;
+        });
+        tabEl.setAttribute('aria-selected', 'true');
+        tabEl.classList.add('tab-active');
+        panelEl.hidden = false;
+      });
+    });
+
+    // -------------------------------------------------------
+    // Modal helpers
+    // -------------------------------------------------------
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) { m.removeAttribute('hidden'); m.style.display = 'flex'; }
+    }
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) { m.setAttribute('hidden', ''); m.style.display = 'none'; }
+    }
+
+    // Close modals on backdrop click
+    ['book-modal', 'delete-modal'].forEach(id => {
+      const m = document.getElementById(id);
+      if (m) {
+        m.addEventListener('click', (e) => {
+          if (e.target === m) closeModal(id);
+        });
+      }
+    });
+
+    // -------------------------------------------------------
+    // Book form — shelf change shows/hides read fields
+    // -------------------------------------------------------
+    const shelfSelect = document.getElementById('book-shelf');
+    const readFields  = document.getElementById('read-fields');
+    if (shelfSelect && readFields) {
+      shelfSelect.addEventListener('change', () => {
+        readFields.hidden = shelfSelect.value !== 'read';
+      });
+    }
+
+    // -------------------------------------------------------
+    // Cover preview on title/author change
+    // -------------------------------------------------------
+    let coverPreviewTimer = null;
+    const titleInput  = document.getElementById('book-title');
+    const authorInput = document.getElementById('book-author');
+    const isbnInput   = document.getElementById('book-isbn');
+    const coverPreviewEl = document.getElementById('cover-preview');
+
+    function scheduleCoverPreview() {
+      clearTimeout(coverPreviewTimer);
+      coverPreviewTimer = setTimeout(async () => {
+        const title  = titleInput  ? titleInput.value.trim()  : '';
+        const author = authorInput ? authorInput.value.trim() : '';
+        const isbn   = isbnInput   ? isbnInput.value.trim()   : '';
+        if (!title && !author) return;
+        const url = await fetchCoverUrl(title, author, isbn || null);
+        if (coverPreviewEl) {
+          coverPreviewEl.innerHTML = `<img src="${escAttr(url)}" alt="Cover preview for ${escAttr(title)}" />`;
+        }
+      }, 800);
+    }
+
+    if (titleInput)  titleInput.addEventListener('input', scheduleCoverPreview);
+    if (authorInput) authorInput.addEventListener('input', scheduleCoverPreview);
+    if (isbnInput)   isbnInput.addEventListener('input', scheduleCoverPreview);
+
+    // -------------------------------------------------------
+    // Open Add Book modal
+    // -------------------------------------------------------
+    const addBookBtn = document.getElementById('btn-add-book');
+    if (addBookBtn) {
+      addBookBtn.addEventListener('click', () => {
+        resetBookForm();
+        document.getElementById('book-modal-heading').textContent = 'Inscribe a Tome';
+        document.getElementById('book-form-submit').textContent = 'Inscribe';
+        openModal('book-modal');
+        if (titleInput) titleInput.focus();
+      });
+    }
+
+    // Close book modal
+    const bookModalClose = document.getElementById('book-modal-close');
+    if (bookModalClose) bookModalClose.addEventListener('click', () => closeModal('book-modal'));
+
+    function resetBookForm() {
+      const form = document.getElementById('book-form');
+      if (form) form.reset();
+      document.getElementById('book-id').value = '';
+      if (readFields) readFields.hidden = true;
+      if (coverPreviewEl) coverPreviewEl.innerHTML = '';
+      const errTitle  = document.getElementById('err-title');
+      const errAuthor = document.getElementById('err-author');
+      const errGenres = document.getElementById('err-genres');
+      const errForm   = document.getElementById('book-form-error');
+      if (errTitle)  errTitle.textContent  = '';
+      if (errAuthor) errAuthor.textContent = '';
+      if (errGenres) errGenres.textContent = '';
+      if (errForm)   errForm.textContent   = '';
+    }
+
+    // -------------------------------------------------------
+    // Book form submit (add or edit)
+    // -------------------------------------------------------
+    const bookForm = document.getElementById('book-form');
+    if (bookForm) {
+      bookForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const bookId  = document.getElementById('book-id').value;
+        const title   = (titleInput  ? titleInput.value.trim()  : '');
+        const author  = (authorInput ? authorInput.value.trim() : '');
+        const isbn    = (isbnInput   ? isbnInput.value.trim()   : '') || null;
+        const pages   = document.getElementById('book-pages').value;
+        const shelf   = shelfSelect ? shelfSelect.value : 'want_to_read';
+        const genreSelect = document.getElementById('book-genres');
+        const genres  = genreSelect
+          ? Array.from(genreSelect.selectedOptions).map(o => o.value)
+          : [];
+        const ratingInput = document.getElementById('book-rating');
+        const rating  = ratingInput && ratingInput.value ? parseInt(ratingInput.value, 10) : null;
+        const reviewEl = document.getElementById('book-review');
+        const review  = reviewEl ? reviewEl.value.trim() || null : null;
+
+        // Validation
+        let valid = true;
+        const errTitle  = document.getElementById('err-title');
+        const errAuthor = document.getElementById('err-author');
+        const errGenres = document.getElementById('err-genres');
+        if (errTitle)  errTitle.textContent  = '';
+        if (errAuthor) errAuthor.textContent = '';
+        if (errGenres) errGenres.textContent = '';
+
+        if (!title) {
+          if (errTitle) errTitle.textContent = 'Title is required.';
+          valid = false;
+        }
+        if (!author) {
+          if (errAuthor) errAuthor.textContent = 'Author is required.';
+          valid = false;
+        }
+        if (genres.length === 0) {
+          if (errGenres) errGenres.textContent = 'Select at least one genre.';
+          valid = false;
+        }
+        if (!valid) return;
+
+        const submitBtn = document.getElementById('book-form-submit');
+        if (submitBtn) submitBtn.disabled = true;
+        const errForm = document.getElementById('book-form-error');
+        if (errForm) errForm.textContent = '';
+
+        const user = getCurrentUser();
+        if (!user) {
+          if (errForm) errForm.textContent = 'You must be logged in.';
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+
+        const bookData = {
+          title,
+          author,
+          isbn,
+          pageCount: pages ? parseInt(pages, 10) : null,
+          shelf,
+          genres,
+          rating,
+          review,
+        };
+
+        try {
+          if (bookId) {
+            // Edit
+            await updateBook(user.uid, bookId, bookData, staticData);
+          } else {
+            // Add
+            await addBook(user.uid, bookData, staticData);
+          }
+          closeModal('book-modal');
+          resetBookForm();
+        } catch (err) {
+          if (errForm) errForm.textContent = err.message || 'Failed to save book.';
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
+
+    // -------------------------------------------------------
+    // Edit book
+    // -------------------------------------------------------
+    function openEditModal(book) {
+      resetBookForm();
+      document.getElementById('book-modal-heading').textContent = 'Edit Tome';
+      document.getElementById('book-form-submit').textContent = 'Save Changes';
+      document.getElementById('book-id').value = book.id;
+      if (titleInput)  titleInput.value  = book.title  || '';
+      if (authorInput) authorInput.value = book.author || '';
+      if (isbnInput)   isbnInput.value   = book.isbn   || '';
+      const pagesEl = document.getElementById('book-pages');
+      if (pagesEl) pagesEl.value = book.pageCount || '';
+      if (shelfSelect) {
+        shelfSelect.value = book.shelf || 'want_to_read';
+        if (readFields) readFields.hidden = book.shelf !== 'read';
+      }
+      const genreSelect = document.getElementById('book-genres');
+      if (genreSelect && Array.isArray(book.genres)) {
+        Array.from(genreSelect.options).forEach(opt => {
+          opt.selected = book.genres.includes(opt.value);
+        });
+      }
+      const ratingInput = document.getElementById('book-rating');
+      if (ratingInput) ratingInput.value = book.rating || '';
+      const reviewEl = document.getElementById('book-review');
+      if (reviewEl) reviewEl.value = book.review || '';
+
+      // Show existing cover
+      if (coverPreviewEl && (book.customCoverUrl || book.coverUrl)) {
+        const src = book.customCoverUrl || book.coverUrl;
+        coverPreviewEl.innerHTML = `<img src="${escAttr(src)}" alt="Current cover" />`;
+      }
+
+      openModal('book-modal');
+      if (titleInput) titleInput.focus();
+    }
+
+    // -------------------------------------------------------
+    // Delete book
+    // -------------------------------------------------------
+    let pendingDeleteId = null;
+
+    function openDeleteModal(bookId, bookTitle) {
+      pendingDeleteId = bookId;
+      const msgEl = document.getElementById('delete-modal-message');
+      if (msgEl) msgEl.textContent = `Erase "${bookTitle}" from the chronicles? This cannot be undone.`;
+      openModal('delete-modal');
+    }
+
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const cancelDeleteBtn  = document.getElementById('cancel-delete');
+
+    if (confirmDeleteBtn) {
+      confirmDeleteBtn.addEventListener('click', async () => {
+        if (!pendingDeleteId) return;
+        const user = getCurrentUser();
+        if (!user) return;
+        try {
+          await deleteBook(user.uid, pendingDeleteId, staticData);
+        } catch (err) {
+          console.error('Delete failed:', err);
+        }
+        pendingDeleteId = null;
+        closeModal('delete-modal');
+      });
+    }
+    if (cancelDeleteBtn) {
+      cancelDeleteBtn.addEventListener('click', () => {
+        pendingDeleteId = null;
+        closeModal('delete-modal');
+      });
+    }
+
+    // -------------------------------------------------------
+    // Render books
+    // -------------------------------------------------------
+    function renderStars(rating) {
+      if (!rating) return '';
+      const filled = Math.min(5, Math.max(1, Math.round(rating)));
+      return '&#9733;'.repeat(filled) + '&#9734;'.repeat(5 - filled);
+    }
+
+    const SHELF_LABELS = {
+      read: 'Conquered',
+      currently_reading: 'Reading',
+      want_to_read: 'Desired',
+    };
+
+    function buildBookCard(book) {
+      const cover = book.customCoverUrl || book.coverUrl || PLACEHOLDER_COVER_URL;
+      const shelfLabel = SHELF_LABELS[book.shelf] || book.shelf;
+      const genres = Array.isArray(book.genres) ? book.genres : [];
+      const genreTags = genres.slice(0, 3).map(g =>
+        `<span class="genre-tag">${escHtml(g)}</span>`
+      ).join('');
+
+      let completedDate = '';
+      if (book.shelf === 'read' && book.completedAt) {
+        const d = typeof book.completedAt.toDate === 'function'
+          ? book.completedAt.toDate()
+          : (book.completedAt instanceof Date ? book.completedAt : null);
+        if (d) completedDate = `<div class="book-card-date">Completed: ${d.toLocaleDateString()}</div>`;
+      }
+
+      const ratingHtml = book.shelf === 'read' && book.rating
+        ? `<div class="book-card-rating" aria-label="Rating: ${book.rating} out of 5 stars">${renderStars(book.rating)}</div>`
+        : '';
+
+      return `
+        <article class="book-card" data-book-id="${escAttr(book.id)}" aria-label="${escAttr(book.title)} by ${escAttr(book.author)}">
+          <div class="book-cover-wrap">
+            <img class="book-cover" src="${escAttr(cover)}" alt="Cover of ${escAttr(book.title)}"
+              onerror="this.src='${PLACEHOLDER_COVER_URL}'" loading="lazy" />
+            <span class="book-shelf-badge">${escHtml(shelfLabel)}</span>
+          </div>
+          <div class="book-card-body">
+            <div class="book-card-title">${escHtml(book.title)}</div>
+            <div class="book-card-author">${escHtml(book.author)}</div>
+            <div class="book-card-genres">${genreTags}</div>
+            ${ratingHtml}
+            ${completedDate}
+          </div>
+          <div class="book-card-actions">
+            <button class="btn-icon btn-edit" type="button" aria-label="Edit ${escAttr(book.title)}" data-book-id="${escAttr(book.id)}">&#9998;</button>
+            <button class="btn-icon btn-icon-danger btn-delete" type="button" aria-label="Delete ${escAttr(book.title)}" data-book-id="${escAttr(book.id)}">&#10005;</button>
+          </div>
+        </article>`;
+    }
+
+    function renderShelf(containerId, books) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      if (books.length === 0) {
+        const messages = {
+          'books-read':    'No conquered tomes yet. Begin your legend!',
+          'books-reading': 'No current sagas. Pick up a tome and begin!',
+          'books-want':    'No scrolls of desire. Add books you wish to conquer!',
+        };
+        el.innerHTML = `<p class="empty-state">${messages[containerId] || 'No books here yet.'}</p>`;
+      } else {
+        el.innerHTML = books.map(buildBookCard).join('');
+      }
+    }
+
+    function renderAllShelves(books) {
+      renderShelf('books-read',    books.filter(b => b.shelf === 'read'));
+      renderShelf('books-reading', books.filter(b => b.shelf === 'currently_reading'));
+      renderShelf('books-want',    books.filter(b => b.shelf === 'want_to_read'));
+
+      // Wire edit/delete buttons
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bookId = btn.dataset.bookId;
+          const book = allBooks.find(b => b.id === bookId);
+          if (book) openEditModal(book);
+        });
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bookId = btn.dataset.bookId;
+          const book = allBooks.find(b => b.id === bookId);
+          if (book) openDeleteModal(book.id, book.title);
+        });
+      });
+    }
+
+    // -------------------------------------------------------
+    // Goodreads import section
+    // -------------------------------------------------------
+    const toggleBtn  = document.getElementById('import-section-toggle');
+    const sectionBody = document.getElementById('import-section-body');
+    const toggleIcon  = toggleBtn ? toggleBtn.querySelector('.toggle-icon') : null;
+
+    if (toggleBtn && sectionBody) {
+      toggleBtn.addEventListener('click', () => {
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+        sectionBody.hidden = isExpanded;
+        if (toggleIcon) toggleIcon.textContent = isExpanded ? '\u25BA' : '\u25BC';
+      });
+    }
+
+    const importBtn  = document.getElementById('btn-import-tomes');
+    const fileInput  = document.getElementById('goodreads-file');
+    const progressEl = document.getElementById('import-progress');
+    const summaryEl  = document.getElementById('import-summary');
+    const errorEl    = document.getElementById('import-error');
+
+    if (importBtn && fileInput) {
+      importBtn.addEventListener('click', async () => {
+        if (errorEl) errorEl.textContent = '';
+        if (summaryEl) summaryEl.hidden = true;
+
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) { if (errorEl) errorEl.textContent = 'Please select a Goodreads CSV file.'; return; }
+
+        const user = getCurrentUser();
+        if (!user) { if (errorEl) errorEl.textContent = 'You must be logged in.'; return; }
+
+        if (progressEl) progressEl.hidden = false;
+        importBtn.disabled = true;
+
+        try {
+          const existingBooks = allBooks;
+          const { importedCount, skippedCount } = await importGoodreadsFile(user.uid, file, existingBooks);
+          if (progressEl) progressEl.hidden = true;
+          if (summaryEl) {
+            summaryEl.hidden = false;
+            summaryEl.innerHTML = `
+              <p class="import-summary-success">&#9876; <strong>${importedCount} tome${importedCount !== 1 ? 's' : ''} added to your chronicle!</strong></p>
+              <p class="import-summary-skipped">${skippedCount === 0 ? 'No scrolls were already in your collection.' : `${skippedCount} scroll${skippedCount !== 1 ? 's' : ''} already in your collection were skipped.`}</p>`;
+          }
+          fileInput.value = '';
+        } catch (err) {
+          if (progressEl) progressEl.hidden = true;
+          if (errorEl) errorEl.textContent = err.message || 'An unexpected error occurred.';
+        } finally {
+          importBtn.disabled = false;
+        }
+      });
+    }
+
+    // -------------------------------------------------------
+    // HTML escape helpers
+    // -------------------------------------------------------
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function escAttr(str) { return escHtml(str); }
+
+    // -------------------------------------------------------
+    // Main init
+    // -------------------------------------------------------
+    let allBooks = [];
+    let unsubscribeBooks = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (!staticData.quests) await loadStaticData();
+
+      // Firestore onSnapshot for real-time updates
+      if (unsubscribeBooks) unsubscribeBooks();
+      unsubscribeBooks = onSnapshot(
+        collection(db, 'users', user.uid, 'books'),
+        (snapshot) => {
+          allBooks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderAllShelves(allBooks);
+        },
+        (err) => console.error('onSnapshot error:', err)
+      );
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,634 @@
+/* =============================================================================
+   Fantasy Reading Tracker — main.css
+   Global styles, CSS custom properties (design tokens), resets, typography,
+   layout primitives, and utility classes.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. CSS Custom Properties (Design Tokens)
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* --- Color Palette: Dark Parchment & Sword-and-Sorcery --- */
+
+  /* Backgrounds */
+  --color-bg-page:          #1a1208;   /* near-black, aged ink */
+  --color-bg-surface:       #2c1f0e;   /* dark leather */
+  --color-bg-panel:         #3d2b14;   /* aged parchment dark */
+  --color-bg-parchment:     #f5e6c8;   /* light parchment */
+  --color-bg-parchment-alt: #ede0b0;   /* slightly darker parchment */
+
+  /* Primary Palette */
+  --color-gold:             #c9a227;   /* burnished gold */
+  --color-gold-light:       #e8c84a;   /* bright gold highlight */
+  --color-gold-dark:        #8a6d10;   /* deep gold shadow */
+  --color-crimson:          #8b1a1a;   /* deep blood red */
+  --color-crimson-light:    #c0392b;   /* brighter red */
+  --color-crimson-dark:     #5a0f0f;   /* darkest red */
+
+  /* Accent Colors */
+  --color-ember:            #d4520a;   /* ember orange */
+  --color-ember-light:      #f07030;   /* bright ember */
+  --color-arcane:           #6b3fa0;   /* arcane purple */
+  --color-arcane-light:     #9b6fd0;   /* lighter arcane */
+  --color-steel:            #8a9ba8;   /* cold steel grey */
+  --color-steel-light:      #b8c8d4;   /* polished steel */
+  --color-bone:             #d4c5a0;   /* aged bone */
+
+  /* Text Colors */
+  --color-text-primary:     #f0e6d0;   /* warm off-white on dark */
+  --color-text-secondary:   #b8a880;   /* muted parchment */
+  --color-text-muted:       #7a6a50;   /* faded ink */
+  --color-text-on-parchment: #2c1f0e;  /* dark text on light parchment */
+  --color-text-heading:     #c9a227;   /* gold headings */
+  --color-text-link:        #e8c84a;   /* gold links */
+  --color-text-link-hover:  #f5e6c8;   /* parchment on hover */
+
+  /* Semantic Colors */
+  --color-success:          #4a7c3f;   /* forest green */
+  --color-success-light:    #6aad5a;
+  --color-error:            #8b1a1a;   /* crimson error */
+  --color-error-light:      #c0392b;
+  --color-warning:          #c9a227;   /* gold warning */
+  --color-info:             #3a6a8a;   /* steel blue info */
+
+  /* Borders */
+  --color-border:           #5a4020;   /* dark leather border */
+  --color-border-light:     #8a6d40;   /* lighter border */
+  --color-border-gold:      #c9a227;   /* gold accent border */
+  --color-border-parchment: #c8b080;   /* parchment border */
+
+  /* --- Typography --- */
+
+  /* Font Families */
+  --font-heading:   'Palatino Linotype', 'Book Antiqua', Palatino, 'Times New Roman', serif;
+  --font-body:      'Georgia', 'Times New Roman', serif;
+  --font-ui:        'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:      'Courier New', Courier, monospace;
+
+  /* Font Sizes (fluid scale) */
+  --text-xs:    0.75rem;    /* 12px */
+  --text-sm:    0.875rem;   /* 14px */
+  --text-base:  1rem;       /* 16px */
+  --text-md:    1.125rem;   /* 18px */
+  --text-lg:    1.25rem;    /* 20px */
+  --text-xl:    1.5rem;     /* 24px */
+  --text-2xl:   1.875rem;   /* 30px */
+  --text-3xl:   2.25rem;    /* 36px */
+  --text-4xl:   3rem;       /* 48px */
+
+  /* Font Weights */
+  --weight-normal:  400;
+  --weight-medium:  500;
+  --weight-semibold: 600;
+  --weight-bold:    700;
+
+  /* Line Heights */
+  --leading-tight:  1.25;
+  --leading-snug:   1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose:  2;
+
+  /* Letter Spacing */
+  --tracking-tight:  -0.025em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.025em;
+  --tracking-wider:   0.05em;
+  --tracking-widest:  0.1em;
+
+  /* --- Spacing Tokens --- */
+  --space-1:   0.25rem;   /* 4px */
+  --space-2:   0.5rem;    /* 8px */
+  --space-3:   0.75rem;   /* 12px */
+  --space-4:   1rem;      /* 16px */
+  --space-5:   1.25rem;   /* 20px */
+  --space-6:   1.5rem;    /* 24px */
+  --space-8:   2rem;      /* 32px */
+  --space-10:  2.5rem;    /* 40px */
+  --space-12:  3rem;      /* 48px */
+  --space-16:  4rem;      /* 64px */
+  --space-20:  5rem;      /* 80px */
+  --space-24:  6rem;      /* 96px */
+
+  /* --- Border Radius --- */
+  --radius-sm:   0.125rem;  /* 2px */
+  --radius-md:   0.25rem;   /* 4px */
+  --radius-lg:   0.5rem;    /* 8px */
+  --radius-xl:   0.75rem;   /* 12px */
+  --radius-2xl:  1rem;      /* 16px */
+  --radius-full: 9999px;
+
+  /* --- Shadow Tokens --- */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.6), 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.7), 0 10px 10px rgba(0, 0, 0, 0.4);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-gold:  0 0 12px rgba(201, 162, 39, 0.4);
+  --shadow-glow:  0 0 20px rgba(201, 162, 39, 0.6);
+
+  /* --- Transitions --- */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* --- Z-Index Scale --- */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-dropdown: 100;
+  --z-sticky:  200;
+  --z-overlay: 300;
+  --z-modal:   400;
+  --z-toast:   500;
+
+  /* --- Layout --- */
+  --max-width-content: 1200px;
+  --max-width-narrow:  720px;
+  --nav-height:        64px;
+  --sidebar-width:     260px;
+}
+
+/* ---------------------------------------------------------------------------
+   2. CSS Reset & Base Styles
+   --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-page);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover,
+a:focus {
+  color: var(--color-text-link-hover);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Typography
+   --------------------------------------------------------------------------- */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-heading);
+  letter-spacing: var(--tracking-wide);
+}
+
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+h4 { font-size: var(--text-lg); }
+h5 { font-size: var(--text-md); }
+h6 { font-size: var(--text-base); }
+
+.title-rune {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  color: var(--color-gold);
+  text-shadow: 0 0 10px rgba(201, 162, 39, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: var(--tracking-wider);
+}
+
+.subtitle-lore {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  line-height: var(--leading-relaxed);
+}
+
+.lore-text {
+  font-style: italic;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* ---------------------------------------------------------------------------
+   4. Layout
+   --------------------------------------------------------------------------- */
+
+#main-nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  height: var(--nav-height);
+  background-color: var(--color-bg-surface);
+  border-bottom: 2px solid var(--color-border-gold);
+  box-shadow: var(--shadow-md);
+}
+
+#main-content {
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+.page-header {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-header h1 {
+  margin-bottom: var(--space-2);
+}
+
+/* ---------------------------------------------------------------------------
+   5. Panels & Surfaces
+   --------------------------------------------------------------------------- */
+
+.panel-parchment {
+  background-color: var(--color-bg-parchment);
+  color: var(--color-text-on-parchment);
+  border: 2px solid var(--color-border-parchment);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+
+.panel-parchment h1,
+.panel-parchment h2,
+.panel-parchment h3,
+.panel-parchment h4 {
+  color: var(--color-crimson-dark);
+}
+
+.panel-dark {
+  background-color: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------------------------------------------------------------------------
+   6. Buttons
+   --------------------------------------------------------------------------- */
+
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  min-height: 44px; /* WCAG touch target */
+  min-width: 44px;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--color-crimson);
+  color: var(--color-gold-light);
+  border: 2px solid var(--color-gold-dark);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background-color: var(--color-crimson-light);
+  box-shadow: var(--shadow-gold);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--color-bg-panel);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border-light);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-gold);
+  color: var(--color-gold-light);
+}
+
+.btn-danger {
+  background-color: var(--color-crimson-dark);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-crimson);
+}
+
+.btn-danger:hover,
+.btn-danger:focus-visible {
+  background-color: var(--color-crimson);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-text-link);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+}
+
+.btn-link:hover,
+.btn-link:focus-visible {
+  color: var(--color-text-link-hover);
+}
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   7. Forms
+   --------------------------------------------------------------------------- */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.form-field label {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.panel-parchment .form-field label {
+  color: var(--color-text-on-parchment);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  min-height: 44px;
+}
+
+.panel-parchment input[type="text"],
+.panel-parchment input[type="email"],
+.panel-parchment input[type="password"],
+.panel-parchment input[type="number"],
+.panel-parchment input[type="search"],
+.panel-parchment input[type="date"],
+.panel-parchment textarea,
+.panel-parchment select {
+  background-color: var(--color-bg-parchment-alt);
+  color: var(--color-text-on-parchment);
+  border-color: var(--color-border-parchment);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+}
+
+.field-error {
+  font-size: var(--text-sm);
+  color: var(--color-error-light);
+  min-height: 1.25em;
+}
+
+.panel-parchment .field-error {
+  color: var(--color-crimson);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+.form-footer {
+  margin-top: var(--space-3);
+  text-align: center;
+}
+
+.error-message {
+  color: var(--color-error-light);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+  min-height: 1.25em;
+}
+
+.panel-parchment .error-message {
+  color: var(--color-crimson);
+}
+
+.success-message {
+  color: var(--color-success-light);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+}
+
+.panel-parchment .success-message {
+  color: var(--color-success);
+}
+
+/* ---------------------------------------------------------------------------
+   8. Modals
+   --------------------------------------------------------------------------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  padding: var(--space-4);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  margin-top: var(--space-4);
+}
+
+/* ---------------------------------------------------------------------------
+   9. Utility Classes
+   --------------------------------------------------------------------------- */
+
+/* Skip-to-content link for keyboard / screen reader users */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-4);
+  z-index: calc(var(--z-toast) + 10);
+  background: var(--color-gold);
+  color: var(--color-bg-page);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  text-decoration: none;
+  transition: top var(--transition-fast);
+  /* Contrast: #c9a227 on #1a1208 = ~7.5:1 — passes AA and AAA */
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--color-crimson);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   10. Responsive Breakpoints
+   --------------------------------------------------------------------------- */
+
+/* Mobile first — base styles above target 320px+ */
+
+/* Tablet: 768px+ */
+@media (min-width: 768px) {
+  #main-content {
+    padding: var(--space-10) var(--space-8);
+  }
+
+  .title-rune {
+    font-size: var(--text-4xl);
+  }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+  #main-content {
+    padding: var(--space-12) var(--space-10);
+  }
+}
+
+/* Wide: 1440px+ */
+@media (min-width: 1440px) {
+  #main-content {
+    padding: var(--space-16) var(--space-12);
+  }
+}
+
+/* Ultra-wide: 2560px+ */
+@media (min-width: 2560px) {
+  :root {
+    font-size: 18px;
+  }
+
+  --max-width-content: 1600px;
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ach_first_book",
+    "name": "The First Rune",
+    "description": "You have logged your first tome in the Grand Library. Every legend begins with a single word — yours has begun.",
+    "hintText": "Log your first book to unlock this mark of glory.",
+    "iconUrl": "img/achievements/first_rune.svg"
+  },
+  {
+    "id": "ach_ten_books",
+    "name": "The Blade of Ten Sagas",
+    "description": "Ten tomes lie conquered at your feet. The scribes of the ancient order have inscribed your name in the Hall of Readers. You are no longer a novice.",
+    "hintText": "Read 10 books to unlock this mark of glory.",
+    "iconUrl": "img/achievements/blade_ten_sagas.svg"
+  },
+  {
+    "id": "ach_fifty_books",
+    "name": "The Dragon's Hoard",
+    "description": "Fifty volumes of lore and legend — a hoard worthy of the greatest dragon. You have consumed more knowledge than most warriors see in a lifetime.",
+    "hintText": "Read 50 books to unlock this mark of glory.",
+    "iconUrl": "img/achievements/dragons_hoard.svg"
+  },
+  {
+    "id": "ach_first_quest",
+    "name": "The Quest Begins",
+    "description": "You have completed your first quest and proven yourself worthy of the adventurer's path. The ancient order takes notice — a new champion stirs.",
+    "hintText": "Complete your first quest to unlock this mark of glory.",
+    "iconUrl": "img/achievements/quest_begins.svg"
+  },
+  {
+    "id": "ach_first_friend",
+    "name": "The Oath of Fellowship",
+    "description": "No warrior walks alone. You have found your first companion on the road of reading and sworn the oath of fellowship. Together, your legends will be greater.",
+    "hintText": "Add your first friend to unlock this mark of glory.",
+    "iconUrl": "img/achievements/oath_fellowship.svg"
+  },
+  {
+    "id": "ach_hundred_books",
+    "name": "The Centurion of Scrolls",
+    "description": "One hundred tomes! The great library itself trembles at your dedication. You have earned the title of Centurion of Scrolls — a warrior of unmatched literary prowess.",
+    "hintText": "Read 100 books to unlock this mark of glory.",
+    "iconUrl": "img/achievements/centurion_scrolls.svg"
+  },
+  {
+    "id": "ach_five_genres",
+    "name": "The Loremaster's Breadth",
+    "description": "You have explored five distinct realms of literature. From the darkest horror to the brightest fantasy, you have walked them all. The Loremaster's seal is yours.",
+    "hintText": "Read books from 5 different genres to unlock this mark of glory.",
+    "iconUrl": "img/achievements/loremaster_breadth.svg"
+  },
+  {
+    "id": "ach_reading_streak_3",
+    "name": "The Unbroken Vigil",
+    "description": "For three consecutive moons you have not let the flame of reading die. The bard Thalindor sings of your dedication in every tavern from here to the Frozen Peaks.",
+    "hintText": "Complete a book every month for 3 consecutive months to unlock this mark of glory.",
+    "iconUrl": "img/achievements/unbroken_vigil.svg"
+  },
+  {
+    "id": "ach_goal_completed",
+    "name": "The Oath Fulfilled",
+    "description": "You swore an oath to read, and you have kept it. The gods of the ancient library smile upon you. Your word is your bond, and your bond is iron.",
+    "hintText": "Complete a reading goal to unlock this mark of glory.",
+    "iconUrl": "img/achievements/oath_fulfilled.svg"
+  }
+]

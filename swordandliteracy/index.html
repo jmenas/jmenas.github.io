@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Chronicle of Legends — Enter the Realm</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/fantasy-theme.css" />
+  <style>
+    /* -----------------------------------------------------------------------
+       Login page layout — centered card on dark parchment background
+       ----------------------------------------------------------------------- */
+
+    body.page-login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: var(--color-bg-page);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(139, 26, 26, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(201, 162, 39, 0.06) 0%, transparent 50%);
+      padding: var(--space-6) var(--space-4);
+    }
+
+    .auth-wrapper {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .auth-header .title-rune {
+      display: block;
+      margin-bottom: var(--space-3);
+    }
+
+    /* Tab switcher */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: var(--space-6);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      overflow: hidden;
+      border: 2px solid var(--color-border-parchment);
+      border-bottom: none;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-bg-parchment-alt);
+      color: var(--color-text-muted);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+      min-height: 44px;
+    }
+
+    .auth-tab:hover {
+      background-color: var(--color-bg-parchment);
+      color: var(--color-text-on-parchment);
+    }
+
+    .auth-tab[aria-selected="true"] {
+      background-color: var(--color-bg-parchment);
+      color: var(--color-crimson-dark);
+      border-bottom: 3px solid var(--color-crimson);
+    }
+
+    /* Panel that connects to tabs */
+    .auth-panel {
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    /* Reset panel has its own rounded corners */
+    .auth-panel-reset {
+      border-radius: var(--radius-lg);
+      margin-top: var(--space-4);
+    }
+
+    .auth-panel h2 {
+      margin-bottom: var(--space-6);
+      font-size: var(--text-xl);
+    }
+
+    .form-actions-full {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+
+    .form-actions-full .btn-primary {
+      width: 100%;
+    }
+
+    .auth-divider {
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      margin: var(--space-2) 0;
+    }
+
+    .auth-switch-link {
+      text-align: center;
+      margin-top: var(--space-4);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .auth-switch-link button {
+      background: none;
+      border: none;
+      color: var(--color-crimson);
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .auth-switch-link button:hover {
+      color: var(--color-crimson-light);
+    }
+
+    .reset-link-wrapper {
+      text-align: center;
+      margin-top: var(--space-3);
+    }
+
+    /* Error / success message areas */
+    .auth-error {
+      color: var(--color-crimson);
+      font-size: var(--text-sm);
+      margin-top: var(--space-3);
+      min-height: 1.25em;
+      font-weight: var(--weight-medium);
+    }
+
+    .auth-success {
+      color: var(--color-success);
+      font-size: var(--text-sm);
+      margin-top: var(--space-3);
+      min-height: 1.25em;
+      font-weight: var(--weight-medium);
+    }
+
+    /* Responsive: slightly wider on tablet+ */
+    @media (min-width: 540px) {
+      .auth-wrapper {
+        max-width: 520px;
+      }
+    }
+  </style>
+</head>
+<body class="page-login">
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <main id="main-content" role="main">
+    <div class="auth-wrapper">
+
+      <!-- App header -->
+      <header class="auth-header">
+        <span class="title-rune" aria-label="The Chronicle of Legends">The Chronicle of Legends</span>
+        <p class="subtitle-lore">Forge your legend. Track your tomes. Rise through the ranks of the Barbarian Readers.</p>
+      </header>
+
+      <!-- Tab switcher (Login / Register) -->
+      <div class="auth-tabs" role="tablist" aria-label="Authentication options">
+        <button
+          id="tab-login"
+          class="auth-tab"
+          role="tab"
+          aria-selected="true"
+          aria-controls="login-panel"
+          type="button"
+        >Enter the Realm</button>
+        <button
+          id="tab-register"
+          class="auth-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="register-panel"
+          type="button"
+        >Begin Your Legend</button>
+      </div>
+
+      <!-- ----------------------------------------------------------------
+           Login form
+           ---------------------------------------------------------------- -->
+      <section
+        id="login-panel"
+        class="panel-parchment auth-panel"
+        role="tabpanel"
+        aria-labelledby="tab-login"
+      >
+        <h2>Enter the Realm</h2>
+        <form id="login-form" novalidate aria-label="Login form">
+
+          <div class="form-field">
+            <label for="login-email">Your Sigil (Email)</label>
+            <input
+              type="email"
+              id="login-email"
+              name="email"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="login-email-error"
+            />
+            <span id="login-email-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="login-password">Your Passphrase</label>
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+              aria-describedby="login-password-error"
+            />
+            <span id="login-password-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-actions-full">
+            <button type="submit" class="btn-primary">Enter the Realm</button>
+          </div>
+
+          <div id="login-error" class="auth-error" role="alert" aria-live="assertive"></div>
+
+          <div class="reset-link-wrapper">
+            <button type="button" id="show-reset" class="btn-link">Forgot your passphrase?</button>
+          </div>
+
+          <div class="auth-switch-link">
+            New to the realm?
+            <button type="button" id="login-to-register">Begin Your Legend</button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- ----------------------------------------------------------------
+           Register form (hidden by default)
+           ---------------------------------------------------------------- -->
+      <section
+        id="register-panel"
+        class="panel-parchment auth-panel"
+        role="tabpanel"
+        aria-labelledby="tab-register"
+        hidden
+      >
+        <h2>Begin Your Legend</h2>
+        <form id="register-form" novalidate aria-label="Registration form">
+
+          <div class="form-field">
+            <label for="reg-email">Your Sigil (Email)</label>
+            <input
+              type="email"
+              id="reg-email"
+              name="email"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="reg-email-error"
+            />
+            <span id="reg-email-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="reg-password">Choose Your Passphrase (min. 8 characters)</label>
+            <input
+              type="password"
+              id="reg-password"
+              name="password"
+              autocomplete="new-password"
+              required
+              aria-required="true"
+              minlength="8"
+              aria-describedby="reg-password-error"
+            />
+            <span id="reg-password-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="reg-username">Your Warrior Name</label>
+            <input
+              type="text"
+              id="reg-username"
+              name="username"
+              autocomplete="username"
+              required
+              aria-required="true"
+              aria-describedby="reg-username-error"
+            />
+            <span id="reg-username-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="reg-displayname">Your Title (Display Name)</label>
+            <input
+              type="text"
+              id="reg-displayname"
+              name="displayName"
+              autocomplete="name"
+              aria-describedby="reg-displayname-hint"
+            />
+            <span id="reg-displayname-hint" class="field-error" style="color: var(--color-text-muted);">Optional — defaults to your warrior name</span>
+          </div>
+
+          <div class="form-actions-full">
+            <button type="submit" class="btn-primary">Begin Your Legend</button>
+          </div>
+
+          <div id="register-error" class="auth-error" role="alert" aria-live="assertive"></div>
+
+          <div class="auth-switch-link">
+            Already a warrior?
+            <button type="button" id="register-to-login">Enter the Realm</button>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- ----------------------------------------------------------------
+           Password reset section (hidden by default)
+           ---------------------------------------------------------------- -->
+      <section
+        id="reset-panel"
+        class="panel-parchment auth-panel-reset"
+        hidden
+        aria-label="Password reset"
+      >
+        <h2>Reclaim Your Passphrase</h2>
+        <p class="lore-text" style="margin-bottom: var(--space-4);">
+          Enter your sigil and a reset scroll shall be dispatched to your keep.
+        </p>
+        <form id="reset-form" novalidate aria-label="Password reset form">
+
+          <div class="form-field">
+            <label for="reset-email">Your Sigil (Email)</label>
+            <input
+              type="email"
+              id="reset-email"
+              name="email"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="reset-email-error"
+            />
+            <span id="reset-email-error" class="field-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-actions-full">
+            <button type="submit" class="btn-primary">Send Reset Scroll</button>
+          </div>
+
+          <div id="reset-success" class="auth-success" role="status" aria-live="polite"></div>
+          <div id="reset-error" class="auth-error" role="alert" aria-live="assertive"></div>
+
+          <div class="auth-switch-link" style="margin-top: var(--space-4);">
+            <button type="button" id="back-to-login">← Return to the Gate</button>
+          </div>
+
+        </form>
+      </section>
+
+    </div><!-- /.auth-wrapper -->
+  </main>
+
+  <script type="module">
+    import { register, login, sendPasswordReset } from './js/auth.js';
+
+    // -----------------------------------------------------------------------
+    // Element references
+    // -----------------------------------------------------------------------
+
+    const tabLogin    = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+
+    const loginPanel    = document.getElementById('login-panel');
+    const registerPanel = document.getElementById('register-panel');
+    const resetPanel    = document.getElementById('reset-panel');
+
+    const loginForm    = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const resetForm    = document.getElementById('reset-form');
+
+    const loginError    = document.getElementById('login-error');
+    const registerError = document.getElementById('register-error');
+    const resetError    = document.getElementById('reset-error');
+    const resetSuccess  = document.getElementById('reset-success');
+
+    // -----------------------------------------------------------------------
+    // Tab switching helpers
+    // -----------------------------------------------------------------------
+
+    function showLogin() {
+      loginPanel.hidden    = false;
+      registerPanel.hidden = true;
+      resetPanel.hidden    = true;
+
+      tabLogin.setAttribute('aria-selected', 'true');
+      tabRegister.setAttribute('aria-selected', 'false');
+
+      clearMessages();
+      loginPanel.querySelector('input').focus();
+    }
+
+    function showRegister() {
+      loginPanel.hidden    = true;
+      registerPanel.hidden = false;
+      resetPanel.hidden    = true;
+
+      tabLogin.setAttribute('aria-selected', 'false');
+      tabRegister.setAttribute('aria-selected', 'true');
+
+      clearMessages();
+      registerPanel.querySelector('input').focus();
+    }
+
+    function showReset() {
+      loginPanel.hidden    = true;
+      registerPanel.hidden = true;
+      resetPanel.hidden    = false;
+
+      tabLogin.setAttribute('aria-selected', 'false');
+      tabRegister.setAttribute('aria-selected', 'false');
+
+      clearMessages();
+      document.getElementById('reset-email').focus();
+    }
+
+    function clearMessages() {
+      loginError.textContent    = '';
+      registerError.textContent = '';
+      resetError.textContent    = '';
+      resetSuccess.textContent  = '';
+    }
+
+    // -----------------------------------------------------------------------
+    // Tab click handlers
+    // -----------------------------------------------------------------------
+
+    tabLogin.addEventListener('click', showLogin);
+    tabRegister.addEventListener('click', showRegister);
+
+    document.getElementById('show-reset').addEventListener('click', showReset);
+    document.getElementById('back-to-login').addEventListener('click', showLogin);
+    document.getElementById('login-to-register').addEventListener('click', showRegister);
+    document.getElementById('register-to-login').addEventListener('click', showLogin);
+
+    // -----------------------------------------------------------------------
+    // Login form submit
+    // -----------------------------------------------------------------------
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.textContent = '';
+
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email) {
+        loginError.textContent = 'Please enter your email sigil.';
+        document.getElementById('login-email').focus();
+        return;
+      }
+      if (!password) {
+        loginError.textContent = 'Please enter your passphrase.';
+        document.getElementById('login-password').focus();
+        return;
+      }
+
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Entering…';
+
+      try {
+        await login(email, password);
+        // onAuthStateChanged in app.js will redirect to dashboard.html
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        loginError.textContent = err.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enter the Realm';
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // Register form submit
+    // -----------------------------------------------------------------------
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      registerError.textContent = '';
+
+      const email       = document.getElementById('reg-email').value.trim();
+      const password    = document.getElementById('reg-password').value;
+      const username    = document.getElementById('reg-username').value.trim();
+      const displayName = document.getElementById('reg-displayname').value.trim();
+
+      // Client-side validation
+      if (!email) {
+        registerError.textContent = 'Please enter your email sigil.';
+        document.getElementById('reg-email').focus();
+        return;
+      }
+      if (password.length < 8) {
+        registerError.textContent = 'Your passphrase must be at least 8 characters.';
+        document.getElementById('reg-password').focus();
+        return;
+      }
+      if (!username) {
+        registerError.textContent = 'Please enter your warrior name.';
+        document.getElementById('reg-username').focus();
+        return;
+      }
+
+      const submitBtn = registerForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Forging legend…';
+
+      try {
+        await register(email, password, username, displayName || username);
+        // onAuthStateChanged in app.js will redirect to dashboard.html
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        registerError.textContent = err.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Begin Your Legend';
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // Password reset form submit
+    // -----------------------------------------------------------------------
+
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      resetError.textContent   = '';
+      resetSuccess.textContent = '';
+
+      const email = document.getElementById('reset-email').value.trim();
+
+      if (!email) {
+        resetError.textContent = 'Please enter your email sigil.';
+        document.getElementById('reset-email').focus();
+        return;
+      }
+
+      const submitBtn = resetForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Dispatching scroll…';
+
+      try {
+        await sendPasswordReset(email);
+        resetSuccess.textContent = 'A reset scroll has been sent to your sigil.';
+        resetForm.reset();
+      } catch (err) {
+        resetError.textContent = err.message;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Reset Scroll';
+      }
+    });
+  </script>
+
+</body>
+</html>

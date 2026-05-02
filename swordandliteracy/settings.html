@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Reading Tracker — The Forge of Legends</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/fantasy-theme.css" />
+  <style>
+    /* -----------------------------------------------------------------------
+       Settings / Forge page — inline styles for customization layout
+       ----------------------------------------------------------------------- */
+
+    .customization-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+      margin-top: var(--space-6);
+    }
+
+    @media (min-width: 768px) {
+      .customization-layout {
+        grid-template-columns: 240px 1fr;
+        align-items: start;
+      }
+    }
+
+    .customization-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .barbarian-avatar {
+      width: 200px;
+      height: 240px;
+      background-color: var(--color-bg-panel);
+      border: 2px solid var(--color-border-gold);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-gold);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .customization-group {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .customization-group legend {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: var(--weight-semibold);
+      color: var(--color-gold);
+      letter-spacing: var(--tracking-wider);
+      text-transform: uppercase;
+      padding: 0 var(--space-2);
+    }
+
+    .customization-panel,
+    .goal-settings-panel,
+    .visibility-panel,
+    .account-panel {
+      background-color: var(--color-bg-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .customization-panel h2,
+    .goal-settings-panel h2,
+    .visibility-panel h2,
+    .account-panel h2 {
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border-gold);
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: background-color var(--transition-fast);
+    }
+
+    .radio-label:hover {
+      background-color: var(--color-bg-surface);
+    }
+
+    .radio-label input[type="radio"] {
+      width: auto;
+      min-height: auto;
+      accent-color: var(--color-gold);
+    }
+
+    #customization-success {
+      color: var(--color-success-light);
+      font-style: italic;
+      margin-top: var(--space-3);
+    }
+
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-secondary);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-4);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .nav-back:hover {
+      color: var(--color-gold-light);
+      text-decoration: none;
+    }
+
+    .nav-back::before {
+      content: '←';
+    }
+  </style>
+</head>
+<body class="page-settings">
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation placeholder -->
+  <nav id="main-nav" aria-label="Main navigation">
+    <!-- Populated by app.js -->
+  </nav>
+
+  <main id="main-content">
+    <a href="dashboard.html" class="nav-back">Return to Dashboard</a>
+
+    <header class="page-header">
+      <h1 class="title-rune">The Forge of Legends</h1>
+      <p class="subtitle-lore">Shape your warrior's appearance</p>
+    </header>
+
+    <!-- Barbarian Customization -->
+    <section class="customization-panel" aria-labelledby="customization-heading">
+      <h2 id="customization-heading">Forge Your Barbarian</h2>
+
+      <div class="customization-layout">
+        <!-- Live Preview -->
+        <div class="customization-preview">
+          <div
+            id="barbarian-preview"
+            class="barbarian-avatar"
+            role="img"
+            aria-label="Live barbarian preview"
+          >
+            <!-- Rendered by barbarian.js -->
+          </div>
+          <p class="subtitle-lore" style="font-size: var(--text-sm); text-align: center;">
+            Live preview
+          </p>
+        </div>
+
+        <!-- Customization Controls -->
+        <div class="customization-controls">
+          <form id="customization-form" novalidate>
+
+            <fieldset class="customization-group">
+              <legend>Hair</legend>
+              <div class="form-field">
+                <label for="hair-style">Style</label>
+                <select id="hair-style" name="hairStyle" aria-describedby="hair-style-desc">
+                  <!-- Options populated by script below -->
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="hair-color">Color</label>
+                <select id="hair-color" name="hairColor">
+                  <!-- Options populated by script below -->
+                </select>
+              </div>
+            </fieldset>
+
+            <fieldset class="customization-group">
+              <legend>Appearance</legend>
+              <div class="form-field">
+                <label for="skin-tone">Skin Tone</label>
+                <select id="skin-tone" name="skinTone">
+                  <!-- Options populated by script below -->
+                </select>
+              </div>
+            </fieldset>
+
+            <fieldset class="customization-group">
+              <legend>Equipment</legend>
+              <div class="form-field">
+                <label for="armor-style">Armor</label>
+                <select id="armor-style" name="armorStyle">
+                  <!-- Options populated by script below -->
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="weapon-type">Weapon</label>
+                <select id="weapon-type" name="weaponType">
+                  <!-- Options populated by script below -->
+                </select>
+              </div>
+            </fieldset>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" id="btn-save-customization">
+                Forge Changes
+              </button>
+            </div>
+
+            <div
+              id="customization-success"
+              class="success-message"
+              aria-live="polite"
+              hidden
+            >
+              Your warrior's appearance has been forged!
+            </div>
+
+            <div
+              id="customization-error"
+              class="error-message"
+              aria-live="assertive"
+            ></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reading Goal Settings -->
+    <section class="goal-settings-panel" aria-labelledby="goal-settings-heading">
+      <h2 id="goal-settings-heading">Reading Oath</h2>
+      <div id="current-goal-display">
+        <!-- Populated by goals.js -->
+        <p class="empty-state">No oath sworn.</p>
+      </div>
+      <form id="goal-form" novalidate>
+        <div class="form-field">
+          <label for="goal-target">Target Tomes</label>
+          <input type="number" id="goal-target" name="targetBooks" min="1" required />
+        </div>
+        <div class="form-field">
+          <label for="goal-start">Oath Begins</label>
+          <input type="date" id="goal-start" name="startDate" required />
+        </div>
+        <div class="form-field">
+          <label for="goal-end">Oath Ends</label>
+          <input type="date" id="goal-end" name="endDate" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Swear the Oath</button>
+          <button type="button" id="btn-delete-goal" class="btn-danger" hidden>Break the Oath</button>
+        </div>
+        <div id="goal-error" class="error-message" aria-live="assertive"></div>
+      </form>
+    </section>
+
+    <!-- Profile Visibility -->
+    <section class="visibility-panel" aria-labelledby="visibility-heading">
+      <h2 id="visibility-heading">Chronicle Visibility</h2>
+      <p>Control who may gaze upon your legend.</p>
+      <form id="visibility-form">
+        <fieldset>
+          <legend class="sr-only">Profile visibility</legend>
+          <label class="radio-label">
+            <input type="radio" name="profileVisibility" value="public" />
+            Public — All warriors may read your chronicle
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="profileVisibility" value="friends_only" />
+            Fellowship Only — Only sworn companions may enter
+          </label>
+        </fieldset>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Account Settings -->
+    <section class="account-panel" aria-labelledby="account-heading">
+      <h2 id="account-heading">Account Runes</h2>
+      <div class="form-actions">
+        <button id="btn-logout" class="btn-secondary">Depart the Realm (Log Out)</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+    import {
+      renderBarbarian,
+      saveCustomization,
+      getAvailableOptions,
+      CUSTOMIZATION_OPTIONS,
+    } from './js/barbarian.js';
+    import { getCurrentUser } from './js/auth.js';
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Capitalise the first letter of a string and replace underscores/hyphens
+     * with spaces for display.
+     *
+     * @param {string} value
+     * @returns {string}
+     */
+    function formatLabel(value) {
+      return value
+        .replace(/[_-]/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    /**
+     * Populate a <select> element with option values.
+     *
+     * @param {HTMLSelectElement} selectEl
+     * @param {string[]} values
+     * @param {string} currentValue - the currently selected value
+     */
+    function populateSelect(selectEl, values, currentValue) {
+      selectEl.innerHTML = '';
+      for (const value of values) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = formatLabel(value);
+        if (value === currentValue) option.selected = true;
+        selectEl.appendChild(option);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+
+    let currentUser = null;
+    let currentCustomization = {
+      hairStyle:  'long',
+      hairColor:  'brown',
+      skinTone:   'medium',
+      armorStyle: 'leather',
+      weaponType: 'sword',
+      unlockedCosmetics: [],
+    };
+
+    // -------------------------------------------------------------------------
+    // DOM references
+    // -------------------------------------------------------------------------
+
+    const previewEl       = document.getElementById('barbarian-preview');
+    const form            = document.getElementById('customization-form');
+    const successMsg      = document.getElementById('customization-success');
+    const errorMsg        = document.getElementById('customization-error');
+
+    const hairStyleSel    = document.getElementById('hair-style');
+    const hairColorSel    = document.getElementById('hair-color');
+    const skinToneSel     = document.getElementById('skin-tone');
+    const armorStyleSel   = document.getElementById('armor-style');
+    const weaponTypeSel   = document.getElementById('weapon-type');
+
+    // -------------------------------------------------------------------------
+    // Read current selection from form
+    // -------------------------------------------------------------------------
+
+    function readFormSelection() {
+      return {
+        hairStyle:  hairStyleSel.value,
+        hairColor:  hairColorSel.value,
+        skinTone:   skinToneSel.value,
+        armorStyle: armorStyleSel.value,
+        weaponType: weaponTypeSel.value,
+        unlockedCosmetics: currentCustomization.unlockedCosmetics,
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // Update preview on any selector change
+    // -------------------------------------------------------------------------
+
+    function onSelectionChange() {
+      const selection = readFormSelection();
+      renderBarbarian(previewEl, selection);
+    }
+
+    hairStyleSel.addEventListener('change',  onSelectionChange);
+    hairColorSel.addEventListener('change',  onSelectionChange);
+    skinToneSel.addEventListener('change',   onSelectionChange);
+    armorStyleSel.addEventListener('change', onSelectionChange);
+    weaponTypeSel.addEventListener('change', onSelectionChange);
+
+    // -------------------------------------------------------------------------
+    // Form submit — save customization
+    // -------------------------------------------------------------------------
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      successMsg.hidden = true;
+      errorMsg.textContent = '';
+
+      const selection = readFormSelection();
+
+      try {
+        await saveCustomization(currentUser.uid, selection);
+        currentCustomization = { ...currentCustomization, ...selection };
+        successMsg.hidden = false;
+        // Auto-hide success message after 4 seconds
+        setTimeout(() => { successMsg.hidden = true; }, 4000);
+      } catch (err) {
+        console.error('[settings.html] saveCustomization failed:', err);
+        errorMsg.textContent = 'The forge fire faltered. Please try again.';
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // Page initialisation
+    // -------------------------------------------------------------------------
+
+    async function init() {
+      // Wait for Firebase auth to resolve
+      // getCurrentUser() may return null on first load before onAuthStateChanged fires.
+      // We poll briefly or rely on app.js redirect for unauthenticated users.
+      currentUser = getCurrentUser();
+
+      if (!currentUser) {
+        // app.js will redirect unauthenticated users; render with defaults in the meantime
+        renderBarbarian(previewEl, currentCustomization);
+        populateSelectors(CUSTOMIZATION_OPTIONS, currentCustomization);
+        return;
+      }
+
+      try {
+        // Fetch available options (includes unlocked cosmetics)
+        const availableOptions = await getAvailableOptions(currentUser.uid);
+
+        // Fetch current barbarian data from Firestore via getAvailableOptions
+        // (we need the user doc for current values — fetch it separately)
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const { db } = await import('./js/app.js');
+        const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const barbarian = userData.barbarian || {};
+          currentCustomization = {
+            hairStyle:  barbarian.hairStyle  || 'long',
+            hairColor:  barbarian.hairColor  || 'brown',
+            skinTone:   barbarian.skinTone   || 'medium',
+            armorStyle: barbarian.armorStyle || 'leather',
+            weaponType: barbarian.weaponType || 'sword',
+            unlockedCosmetics: barbarian.unlockedCosmetics || [],
+          };
+        }
+
+        populateSelectors(availableOptions, currentCustomization);
+        renderBarbarian(previewEl, currentCustomization);
+
+      } catch (err) {
+        console.error('[settings.html] init failed:', err);
+        // Fall back to defaults
+        populateSelectors(CUSTOMIZATION_OPTIONS, currentCustomization);
+        renderBarbarian(previewEl, currentCustomization);
+      }
+    }
+
+    /**
+     * Populate all selector elements with available options.
+     *
+     * @param {Object.<string, string[]>} availableOptions
+     * @param {object} currentValues
+     */
+    function populateSelectors(availableOptions, currentValues) {
+      populateSelect(hairStyleSel,  availableOptions.hairStyle  || CUSTOMIZATION_OPTIONS.hairStyle,  currentValues.hairStyle);
+      populateSelect(hairColorSel,  availableOptions.hairColor  || CUSTOMIZATION_OPTIONS.hairColor,  currentValues.hairColor);
+      populateSelect(skinToneSel,   availableOptions.skinTone   || CUSTOMIZATION_OPTIONS.skinTone,   currentValues.skinTone);
+      populateSelect(armorStyleSel, availableOptions.armorStyle || CUSTOMIZATION_OPTIONS.armorStyle, currentValues.armorStyle);
+      populateSelect(weaponTypeSel, availableOptions.weaponType || CUSTOMIZATION_OPTIONS.weaponType, currentValues.weaponType);
+    }
+
+    init();
+  </script>
+</body>
+</html>

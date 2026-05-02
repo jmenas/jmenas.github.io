@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Reading Tracker — Hall of Chronicles</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/fantasy-theme.css" />
+  <style>
+    /* =========================================================
+       Dashboard — inline styles
+       ========================================================= */
+
+    /* --- Navigation --- */
+    .nav-inner {
+      max-width: var(--max-width-content);
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .nav-brand {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-gold);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-links {
+      display: flex;
+      gap: var(--space-2);
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--color-gold-light);
+      background-color: rgba(201,162,39,0.1);
+    }
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--color-gold);
+      font-size: var(--text-xl);
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (max-width: 767px) {
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0; right: 0;
+        background: var(--color-bg-surface);
+        border-bottom: 2px solid var(--color-border-gold);
+        flex-direction: column;
+        padding: var(--space-4);
+        gap: var(--space-1);
+        z-index: var(--z-dropdown);
+      }
+      .nav-links.open { display: flex; }
+    }
+
+    /* --- Hero / Barbarian section --- */
+    .hero-section {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-8);
+      align-items: start;
+      background: var(--color-bg-panel);
+      border: 2px solid var(--color-border-gold);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-gold);
+    }
+    @media (max-width: 767px) {
+      .hero-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .barbarian-avatar-wrap { display: flex; justify-content: center; }
+    }
+    .barbarian-avatar-wrap {
+      width: 160px;
+      flex-shrink: 0;
+    }
+    .hero-info { display: flex; flex-direction: column; gap: var(--space-4); }
+    .hero-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-2xl);
+      color: var(--color-gold);
+      margin: 0;
+    }
+    .hero-title {
+      font-family: var(--font-body);
+      font-size: var(--text-md);
+      color: var(--color-text-secondary);
+      font-style: italic;
+      margin: 0;
+    }
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--color-crimson-dark);
+      border: 2px solid var(--color-gold);
+      border-radius: var(--radius-full);
+      padding: var(--space-1) var(--space-4);
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-gold-light);
+      letter-spacing: var(--tracking-wide);
+      width: fit-content;
+    }
+    .xp-section { display: flex; flex-direction: column; gap: var(--space-2); }
+    .xp-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .xp-bar-track {
+      height: 14px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-light));
+      border-radius: var(--radius-full);
+      transition: width var(--transition-slow);
+      min-width: 4px;
+    }
+    .active-rewards-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+    .reward-chip {
+      background: rgba(201,162,39,0.15);
+      border: 1px solid var(--color-gold-dark);
+      border-radius: var(--radius-full);
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--text-xs);
+      color: var(--color-gold-light);
+    }
+    .npc-companion-mini {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: rgba(107,63,160,0.15);
+      border: 1px solid var(--color-arcane);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-4);
+      margin-top: var(--space-2);
+    }
+    .npc-companion-portrait {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--color-arcane-light);
+      object-fit: cover;
+      background: var(--color-bg-panel);
+    }
+    .npc-companion-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-arcane-light);
+    }
+
+    /* --- Section headings --- */
+    .section-heading {
+      font-family: var(--font-heading);
+      font-size: var(--text-xl);
+      color: var(--color-gold);
+      border-bottom: 1px solid var(--color-border-gold);
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    /* --- Quests --- */
+    .quests-section { margin-bottom: var(--space-8); }
+    .quest-card {
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+    }
+    .quest-card-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-md);
+      color: var(--color-gold-light);
+      margin-bottom: var(--space-1);
+    }
+    .quest-card-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      font-style: italic;
+      margin-bottom: var(--space-3);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .quest-progress-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .quest-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .quest-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-crimson-dark), var(--color-crimson-light));
+      border-radius: var(--radius-full);
+      transition: width var(--transition-slow);
+      min-width: 2px;
+    }
+    .quest-progress-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    /* Chronicle */
+    .chronicle-section { margin-bottom: var(--space-8); }
+    .chronicle-card {
+      background: var(--color-bg-surface);
+      border-left: 3px solid var(--color-gold-dark);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-2);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+    .chronicle-card-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-base);
+      color: var(--color-gold);
+      margin-bottom: var(--space-1);
+    }
+    .chronicle-card-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+
+    /* --- Goal --- */
+    .goal-section { margin-bottom: var(--space-8); }
+    .goal-card {
+      background: var(--color-bg-panel);
+      border: 1px solid var(--color-border-gold);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    .goal-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+    }
+    .goal-bar-track {
+      height: 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--space-2);
+    }
+    .goal-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-light));
+      border-radius: var(--radius-full);
+      transition: width var(--transition-slow);
+      min-width: 4px;
+    }
+    .goal-numeric {
+      text-align: center;
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      color: var(--color-gold-light);
+    }
+    .goal-no-goal {
+      text-align: center;
+      padding: var(--space-4);
+    }
+    .goal-no-goal a {
+      color: var(--color-gold);
+      text-decoration: underline;
+    }
+
+    /* --- Stats grid --- */
+    .stats-section { margin-bottom: var(--space-8); }
+    .stats-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-5);
+    }
+    .stats-filters label {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+    .stats-filters select,
+    .stats-filters input {
+      min-width: 120px;
+      max-width: 180px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+    @media (min-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat-card {
+      background: var(--color-bg-parchment);
+      color: var(--color-text-on-parchment);
+      border: 2px solid var(--color-border-parchment);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-light));
+    }
+    .stat-card-icon {
+      font-size: var(--text-xl);
+      line-height: 1;
+    }
+    .stat-card-label {
+      font-family: var(--font-heading);
+      font-size: var(--text-xs);
+      color: var(--color-crimson-dark);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+    }
+    .stat-card-value {
+      font-family: var(--font-heading);
+      font-size: var(--text-2xl);
+      color: var(--color-text-on-parchment);
+      font-weight: var(--weight-bold);
+      line-height: 1;
+    }
+    .stat-card-sub {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+    /* Wide stat card for genres/authors */
+    .stat-card-wide {
+      grid-column: span 2;
+    }
+    @media (max-width: 767px) {
+      .stat-card-wide { grid-column: span 2; }
+    }
+    .genre-list, .author-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      margin-top: var(--space-1);
+    }
+    .genre-list li, .author-list li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--color-text-on-parchment);
+    }
+    .genre-rank, .author-rank {
+      font-family: var(--font-heading);
+      font-size: var(--text-xs);
+      color: var(--color-gold-dark);
+      min-width: 1.5em;
+    }
+  </style>
+</head>
+<body class="page-dashboard">
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="dashboard.html" class="nav-brand">&#9876; Fantasy Reading Tracker</a>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">&#9776;</button>
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="library.html">Library</a></li>
+        <li><a href="friends.html">Friends</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="settings.html">Settings</a></li>
+        <li><button id="nav-logout" class="btn-link" type="button">Logout</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <header class="page-header">
+      <h1 class="title-rune">Hall of Chronicles</h1>
+      <p class="subtitle-lore">Your deeds are written in the eternal scrolls, warrior.</p>
+    </header>
+
+    <!-- ===== 1. Hero Section: Barbarian + RPG Status ===== -->
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <h2 id="hero-heading" class="sr-only">Warrior Status</h2>
+
+      <!-- Barbarian Avatar -->
+      <div class="barbarian-avatar-wrap">
+        <div id="barbarian-avatar" aria-label="Your Barbarian avatar"></div>
+      </div>
+
+      <!-- RPG Info -->
+      <div class="hero-info">
+        <div>
+          <p id="hero-display-name" class="hero-name">Warrior</p>
+          <p id="hero-warrior-title" class="hero-title">Seeker of Knowledge</p>
+        </div>
+
+        <div id="level-badge" class="level-badge" aria-label="Current level">
+          &#9876; Level <span id="hero-level">1</span> &mdash; <span id="hero-level-title">Apprentice Reader</span>
+        </div>
+
+        <!-- XP Progress Bar -->
+        <div class="xp-section">
+          <div class="xp-label-row">
+            <span>XP: <strong id="hero-xp">0</strong></span>
+            <span id="hero-xp-to-next">0 XP to next level</span>
+          </div>
+          <div class="xp-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="xp-progressbar" aria-label="XP progress to next level">
+            <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Active Reward Abilities -->
+        <div id="active-rewards-hero" class="active-rewards-list" aria-label="Active reward abilities" aria-live="polite">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- NPC Companion (if earned) -->
+        <div id="npc-companion-mini" class="npc-companion-mini" hidden aria-label="NPC companion">
+          <img id="npc-companion-portrait" class="npc-companion-portrait" src="" alt="" width="40" height="40" />
+          <span id="npc-companion-name" class="npc-companion-name"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. Active Quests ===== -->
+    <section class="quests-section" aria-labelledby="quests-heading">
+      <h2 id="quests-heading" class="section-heading">&#9876; Active Quests</h2>
+      <div id="active-quests-list" aria-live="polite">
+        <p class="empty-state">No active quests. Begin your journey by adding books to your library.</p>
+      </div>
+    </section>
+
+    <!-- Chronicle (Completed Quests) -->
+    <section class="chronicle-section" aria-labelledby="chronicle-heading">
+      <h2 id="chronicle-heading" class="section-heading">&#128218; The Chronicle</h2>
+      <div id="completed-quests-list" aria-live="polite">
+        <p class="empty-state">Your chronicle is empty. Complete quests to write your legend.</p>
+      </div>
+    </section>
+
+    <!-- ===== 3. Reading Goal ===== -->
+    <section class="goal-section" aria-labelledby="goal-heading">
+      <h2 id="goal-heading" class="section-heading">&#127942; Reading Oath</h2>
+      <div id="reading-goal-display" aria-live="polite">
+        <div class="goal-no-goal">
+          <p class="empty-state">No oath sworn yet.</p>
+          <p><a href="settings.html">Set a reading goal</a> to track your progress.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. Reading Statistics ===== -->
+    <section class="stats-section" aria-labelledby="stats-heading">
+      <h2 id="stats-heading" class="section-heading">&#128220; The Annals of Your Deeds</h2>
+
+      <!-- Filter Controls -->
+      <div class="stats-filters" role="group" aria-label="Filter statistics">
+        <label for="filter-year">Year</label>
+        <select id="filter-year" aria-label="Filter by year">
+          <option value="">All Years</option>
+        </select>
+
+        <label for="filter-genre">Realm</label>
+        <select id="filter-genre" aria-label="Filter by genre">
+          <option value="">All Realms</option>
+          <option value="Fantasy">Fantasy</option>
+          <option value="Horror">Horror</option>
+          <option value="Science Fiction">Science Fiction</option>
+          <option value="Historical Fiction">Historical Fiction</option>
+          <option value="Mystery">Mystery</option>
+          <option value="Thriller">Thriller</option>
+          <option value="Romance">Romance</option>
+          <option value="Non-Fiction">Non-Fiction</option>
+          <option value="Biography">Biography</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label for="filter-author">Scribe</label>
+        <input type="text" id="filter-author" placeholder="Search author&hellip;" aria-label="Filter by author" />
+      </div>
+
+      <!-- Stat Cards Grid -->
+      <div class="stats-grid" aria-live="polite" aria-label="Reading statistics">
+
+        <div class="stat-card" aria-label="Total tomes conquered">
+          <span class="stat-card-icon" aria-hidden="true">&#128218;</span>
+          <span class="stat-card-label">Total Tomes Conquered</span>
+          <span id="stat-total-books" class="stat-card-value">0</span>
+          <span class="stat-card-sub">books read</span>
+        </div>
+
+        <div class="stat-card" aria-label="Tomes read this year">
+          <span class="stat-card-icon" aria-hidden="true">&#128197;</span>
+          <span class="stat-card-label">Tomes This Year</span>
+          <span id="stat-books-this-year" class="stat-card-value">0</span>
+          <span class="stat-card-sub">books in <span id="stat-current-year"></span></span>
+        </div>
+
+        <div class="stat-card" aria-label="Average tomes per moon">
+          <span class="stat-card-icon" aria-hidden="true">&#127769;</span>
+          <span class="stat-card-label">Avg Tomes per Moon</span>
+          <span id="stat-avg-per-month" class="stat-card-value">0</span>
+          <span class="stat-card-sub">books per month</span>
+        </div>
+
+        <div class="stat-card" aria-label="Pages traversed">
+          <span class="stat-card-icon" aria-hidden="true">&#128196;</span>
+          <span class="stat-card-label">Pages Traversed</span>
+          <span id="stat-total-pages" class="stat-card-value">0</span>
+          <span class="stat-card-sub">total pages read</span>
+        </div>
+
+        <div class="stat-card" aria-label="Unbroken vigil reading streak">
+          <span class="stat-card-icon" aria-hidden="true">&#128293;</span>
+          <span class="stat-card-label">Unbroken Vigil</span>
+          <span id="stat-streak" class="stat-card-value">0</span>
+          <span class="stat-card-sub">consecutive months</span>
+        </div>
+
+        <!-- Favored Realms (Genres) — wide card -->
+        <div class="stat-card stat-card-wide" aria-label="Favored realms (genres)">
+          <span class="stat-card-icon" aria-hidden="true">&#9876;</span>
+          <span class="stat-card-label">Favored Realms</span>
+          <ul id="stat-genres" class="genre-list" aria-label="Top genres">
+            <li class="stat-card-sub">No genres yet</li>
+          </ul>
+        </div>
+
+        <!-- Favored Scribes (Authors) — wide card -->
+        <div class="stat-card stat-card-wide" aria-label="Favored scribes (authors)">
+          <span class="stat-card-icon" aria-hidden="true">&#9997;</span>
+          <span class="stat-card-label">Favored Scribes</span>
+          <ul id="stat-authors" class="author-list" aria-label="Top authors">
+            <li class="stat-card-sub">No authors yet</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- NPC Dialog Modal -->
+  <div id="npc-dialog-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="npc-dialog-name" hidden>
+    <div class="modal-content panel-parchment">
+      <img id="npc-dialog-portrait" src="" alt="" class="npc-portrait" width="80" height="80" />
+      <div class="npc-dialog-text">
+        <h3 id="npc-dialog-name"></h3>
+        <p id="npc-dialog-line" class="lore-text"></p>
+      </div>
+      <button class="btn-primary modal-close" aria-label="Dismiss NPC dialog">So it is written.</button>
+    </div>
+  </div>
+
+  <!-- Level-Up Modal -->
+  <div id="levelup-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="levelup-heading" hidden>
+    <div class="modal-content panel-parchment" style="text-align:center;">
+      <h2 id="levelup-heading" class="title-rune" style="font-size:2rem;">&#9876; The Runes Blaze!</h2>
+      <p id="levelup-message" class="lore-text" style="margin:1rem 0;"></p>
+      <button class="btn-primary modal-close" aria-label="Dismiss level up notification">Embrace the Power</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+    // =========================================================
+    // Dashboard — inline module script
+    // =========================================================
+    import { getCurrentUser } from './js/auth.js';
+    import { logout } from './js/auth.js';
+    import { getBooks } from './js/library.js';
+    import { getGoals, computeGoalProgress } from './js/goals.js';
+    import { computeStats } from './js/stats.js';
+    import { renderBarbarian } from './js/barbarian.js';
+    import { triggerNpcInteraction } from './js/npc.js';
+    import { XP_TABLE, deriveLevel, xpToNextLevel, questProgress } from './js/rpgEngine.js';
+    import { staticData, loadStaticData } from './js/app.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      getDocs,
+      onSnapshot,
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { app } from './js/app.js';
+
+    // -------------------------------------------------------
+    // Firebase refs
+    // -------------------------------------------------------
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // -------------------------------------------------------
+    // Hamburger nav
+    // -------------------------------------------------------
+    const hamburger = document.getElementById('nav-hamburger');
+    const navLinks  = document.getElementById('nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', String(open));
+      });
+    }
+
+    // -------------------------------------------------------
+    // Logout
+    // -------------------------------------------------------
+    const logoutBtn = document.getElementById('nav-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => logout());
+    }
+
+    // -------------------------------------------------------
+    // Level title helper
+    // -------------------------------------------------------
+    const LEVEL_TITLES = [
+      'Apprentice Reader', 'Novice Scholar', 'Wandering Scholar',
+      'Keeper of Scrolls', 'Lore Seeker', 'Tome Warrior',
+      'Saga Weaver', 'Chronicle Knight', 'Grand Archivist',
+      'Legendary Chronicler',
+    ];
+    function getLevelTitle(level) {
+      const idx = Math.min(Math.floor((level - 1) / 5), LEVEL_TITLES.length - 1);
+      return LEVEL_TITLES[idx];
+    }
+
+    // -------------------------------------------------------
+    // Render hero section
+    // -------------------------------------------------------
+    function renderHero(userData, books, earnedRewards, npcs) {
+      const rpg = userData.rpg || {};
+      const totalXp    = rpg.totalXp || 0;
+      const level      = rpg.currentLevel || 1;
+      const levelTitle = getLevelTitle(level);
+
+      // Display name
+      const nameEl = document.getElementById('hero-display-name');
+      if (nameEl) nameEl.textContent = userData.displayName || userData.username || 'Warrior';
+
+      const titleEl = document.getElementById('hero-warrior-title');
+      if (titleEl) titleEl.textContent = `${levelTitle}`;
+
+      // Level badge
+      const levelEl = document.getElementById('hero-level');
+      if (levelEl) levelEl.textContent = level;
+      const levelTitleEl = document.getElementById('hero-level-title');
+      if (levelTitleEl) levelTitleEl.textContent = levelTitle;
+
+      // XP
+      const xpEl = document.getElementById('hero-xp');
+      if (xpEl) xpEl.textContent = totalXp.toLocaleString();
+
+      const xpToNext = xpToNextLevel(totalXp, XP_TABLE);
+      const xpToNextEl = document.getElementById('hero-xp-to-next');
+      if (xpToNextEl) {
+        xpToNextEl.textContent = xpToNext > 0
+          ? `${xpToNext.toLocaleString()} XP to next level`
+          : 'Max level reached!';
+      }
+
+      // XP progress bar
+      const currentLevelThreshold = XP_TABLE[level - 1] || 0;
+      const nextLevelThreshold    = XP_TABLE[level] || currentLevelThreshold;
+      const xpInLevel = totalXp - currentLevelThreshold;
+      const xpNeeded  = nextLevelThreshold - currentLevelThreshold;
+      const pct = xpNeeded > 0 ? Math.min(100, Math.round((xpInLevel / xpNeeded) * 100)) : 100;
+
+      const barFill = document.getElementById('xp-bar-fill');
+      if (barFill) barFill.style.width = pct + '%';
+      const progressbar = document.getElementById('xp-progressbar');
+      if (progressbar) {
+        progressbar.setAttribute('aria-valuenow', pct);
+        progressbar.setAttribute('aria-valuetext', `${pct}% — ${totalXp.toLocaleString()} XP`);
+      }
+
+      // Active reward abilities
+      const rewardsEl = document.getElementById('active-rewards-hero');
+      if (rewardsEl) {
+        rewardsEl.innerHTML = '';
+        const now = new Date();
+        const activeXpRewards = (earnedRewards || []).filter(r =>
+          r.type === 'xp_multiplier' && r.expiresAt && r.expiresAt.toDate() > now
+        );
+        if (activeXpRewards.length === 0) {
+          rewardsEl.innerHTML = '';
+        } else {
+          activeXpRewards.forEach(r => {
+            const chip = document.createElement('span');
+            chip.className = 'reward-chip';
+            const daysLeft = Math.ceil((r.expiresAt.toDate() - now) / (1000 * 60 * 60 * 24));
+            chip.textContent = `⚡ XP Multiplier x${r.multiplier || '?'} — ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`;
+            rewardsEl.appendChild(chip);
+          });
+        }
+      }
+
+      // NPC companion
+      const companionNpcId = userData.rpg?.companionNpcId || null;
+      const companionMini  = document.getElementById('npc-companion-mini');
+      if (companionMini && companionNpcId && npcs) {
+        const npc = npcs.find(n => n.id === companionNpcId);
+        if (npc) {
+          const portrait = document.getElementById('npc-companion-portrait');
+          const nameSpan = document.getElementById('npc-companion-name');
+          if (portrait) { portrait.src = npc.portraitUrl || ''; portrait.alt = npc.name || ''; }
+          if (nameSpan) nameSpan.textContent = npc.name || '';
+          companionMini.hidden = false;
+        }
+      }
+
+      // Barbarian avatar
+      const avatarEl = document.getElementById('barbarian-avatar');
+      if (avatarEl && userData.barbarian) {
+        renderBarbarian(avatarEl, userData.barbarian);
+      }
+    }
+
+    // -------------------------------------------------------
+    // Render quests
+    // -------------------------------------------------------
+    function renderQuests(quests, libraryStats, completedQuestIds) {
+      const completedSet = new Set(completedQuestIds);
+      const activeEl     = document.getElementById('active-quests-list');
+      const chronicleEl  = document.getElementById('completed-quests-list');
+
+      const activeQuests    = (quests || []).filter(q => !completedSet.has(q.id));
+      const completedQuests = (quests || []).filter(q => completedSet.has(q.id));
+
+      // Active quests
+      if (activeEl) {
+        if (activeQuests.length === 0) {
+          activeEl.innerHTML = '<p class="empty-state">All quests completed! You are a legend.</p>';
+        } else {
+          activeEl.innerHTML = activeQuests.map(q => {
+            const progress = questProgress(q, libraryStats);
+            const pct = Math.round(progress * 100);
+            const statVal = getStatForCategory(q.category, libraryStats);
+            return `
+              <div class="quest-card" role="article" aria-label="Quest: ${escHtml(q.title)}">
+                <div class="quest-card-title">${escHtml(q.title)}</div>
+                <div class="quest-card-desc">${escHtml(q.narrativeDesc || '')}</div>
+                <div class="quest-progress-row">
+                  <div class="quest-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escHtml(q.title)} progress">
+                    <div class="quest-bar-fill" style="width:${pct}%"></div>
+                  </div>
+                  <span class="quest-progress-label">${statVal} / ${q.completionValue}</span>
+                </div>
+              </div>`;
+          }).join('');
+        }
+      }
+
+      // Chronicle
+      if (chronicleEl) {
+        if (completedQuests.length === 0) {
+          chronicleEl.innerHTML = '<p class="empty-state">Your chronicle is empty. Complete quests to write your legend.</p>';
+        } else {
+          chronicleEl.innerHTML = completedQuests.map(q => `
+            <div class="chronicle-card" role="article" aria-label="Completed quest: ${escHtml(q.title)}">
+              <div class="chronicle-card-title">&#10003; ${escHtml(q.title)}</div>
+              <div class="chronicle-card-desc">${escHtml(q.narrativeDesc || '')}</div>
+            </div>`).join('');
+        }
+      }
+    }
+
+    function getStatForCategory(category, libraryStats) {
+      switch (category) {
+        case 'books_read':      return libraryStats.booksRead ?? 0;
+        case 'genres_explored': return libraryStats.genresExplored ?? 0;
+        case 'reading_streak':  return libraryStats.readingStreak ?? 0;
+        case 'social':          return libraryStats.friendCount ?? 0;
+        default:                return 0;
+      }
+    }
+
+    // -------------------------------------------------------
+    // Render goal
+    // -------------------------------------------------------
+    function renderGoal(goals, books) {
+      const goalEl = document.getElementById('reading-goal-display');
+      if (!goalEl) return;
+
+      const now = new Date();
+      const activeGoal = (goals || []).find(g => {
+        const end = g.endDate && typeof g.endDate.toDate === 'function' ? g.endDate.toDate() : null;
+        return end && end >= now;
+      });
+
+      if (!activeGoal) {
+        goalEl.innerHTML = `
+          <div class="goal-no-goal">
+            <p class="empty-state">No oath sworn yet.</p>
+            <p><a href="settings.html">Set a reading goal</a> to track your progress.</p>
+          </div>`;
+        return;
+      }
+
+      const progress = computeGoalProgress(activeGoal, books);
+      const pct = Math.round(progress * 100);
+      const readBooks = books.filter(b => b.shelf === 'read');
+      const startDate = activeGoal.startDate && typeof activeGoal.startDate.toDate === 'function'
+        ? activeGoal.startDate.toDate() : null;
+      const endDate = activeGoal.endDate && typeof activeGoal.endDate.toDate === 'function'
+        ? activeGoal.endDate.toDate() : null;
+
+      // Count books within goal period
+      let count = 0;
+      if (startDate && endDate) {
+        const endOfDay = new Date(endDate); endOfDay.setHours(23,59,59,999);
+        count = readBooks.filter(b => {
+          const d = b.completedAt && typeof b.completedAt.toDate === 'function'
+            ? b.completedAt.toDate() : (b.completedAt instanceof Date ? b.completedAt : null);
+          return d && d >= startDate && d <= endOfDay;
+        }).length;
+      }
+
+      goalEl.innerHTML = `
+        <div class="goal-card">
+          <div class="goal-label-row">
+            <span>Reading Oath Progress</span>
+            <span>${endDate ? endDate.toLocaleDateString() : ''}</span>
+          </div>
+          <div class="goal-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Reading goal progress: ${count} of ${activeGoal.targetBooks} tomes">
+            <div class="goal-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="goal-numeric">${count} / ${activeGoal.targetBooks} tomes</div>
+        </div>`;
+    }
+
+    // -------------------------------------------------------
+    // Render stats
+    // -------------------------------------------------------
+    function renderStats(books, filter) {
+      const stats = computeStats(books, filter);
+
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      set('stat-total-books', stats.totalBooksRead.toLocaleString());
+      set('stat-books-this-year', stats.booksReadThisYear.toLocaleString());
+      set('stat-avg-per-month', stats.averageBooksPerMonth.toFixed(1));
+      set('stat-total-pages', stats.totalPagesRead.toLocaleString());
+      set('stat-streak', stats.readingStreak);
+
+      // Genres
+      const genresEl = document.getElementById('stat-genres');
+      if (genresEl) {
+        const top3 = stats.favoriteGenres.slice(0, 3);
+        if (top3.length === 0) {
+          genresEl.innerHTML = '<li class="stat-card-sub">No genres yet</li>';
+        } else {
+          genresEl.innerHTML = top3.map((g, i) =>
+            `<li><span class="genre-rank">${i + 1}.</span> ${escHtml(g.genre)} <span class="stat-card-sub">(${g.count})</span></li>`
+          ).join('');
+        }
+      }
+
+      // Authors
+      const authorsEl = document.getElementById('stat-authors');
+      if (authorsEl) {
+        const top3 = stats.topAuthors.slice(0, 3);
+        if (top3.length === 0) {
+          authorsEl.innerHTML = '<li class="stat-card-sub">No authors yet</li>';
+        } else {
+          authorsEl.innerHTML = top3.map((a, i) =>
+            `<li><span class="author-rank">${i + 1}.</span> ${escHtml(a.author)} <span class="stat-card-sub">(${a.count})</span></li>`
+          ).join('');
+        }
+      }
+    }
+
+    // -------------------------------------------------------
+    // Populate year filter
+    // -------------------------------------------------------
+    function populateYearFilter(books) {
+      const yearSelect = document.getElementById('filter-year');
+      if (!yearSelect) return;
+      const years = new Set();
+      books.forEach(b => {
+        if (b.shelf === 'read' && b.completedAt) {
+          const d = typeof b.completedAt.toDate === 'function'
+            ? b.completedAt.toDate() : (b.completedAt instanceof Date ? b.completedAt : null);
+          if (d) years.add(d.getFullYear());
+        }
+      });
+      const sorted = Array.from(years).sort((a, b) => b - a);
+      // Remove old dynamic options
+      while (yearSelect.options.length > 1) yearSelect.remove(1);
+      sorted.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      });
+    }
+
+    // -------------------------------------------------------
+    // HTML escape helper
+    // -------------------------------------------------------
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // -------------------------------------------------------
+    // Main init
+    // -------------------------------------------------------
+    let unsubscribeBooks = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Set current year display
+      const yearSpan = document.getElementById('stat-current-year');
+      if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+      // Ensure static data is loaded
+      if (!staticData.quests) await loadStaticData();
+
+      // Load user document
+      let userData = {};
+      try {
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+        if (userSnap.exists()) userData = userSnap.data();
+      } catch (e) { console.error('Failed to load user doc:', e); }
+
+      // Load earned rewards
+      let earnedRewards = [];
+      try {
+        const snap = await getDocs(collection(db, 'users', user.uid, 'earnedRewards'));
+        earnedRewards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) { console.warn('Failed to load earned rewards:', e); }
+
+      // Load completed quest IDs
+      let completedQuestIds = [];
+      try {
+        const snap = await getDocs(collection(db, 'users', user.uid, 'questProgress'));
+        completedQuestIds = snap.docs
+          .map(d => d.data())
+          .filter(q => q.completedAt != null)
+          .map(q => q.questId);
+      } catch (e) { console.warn('Failed to load quest progress:', e); }
+
+      // Load goals
+      let goals = [];
+      try {
+        const snap = await getDocs(collection(db, 'users', user.uid, 'readingGoals'));
+        goals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) { console.warn('Failed to load goals:', e); }
+
+      // Initial render with current books
+      let books = [];
+      try {
+        const snap = await getDocs(collection(db, 'users', user.uid, 'books'));
+        books = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) { console.warn('Failed to load books:', e); }
+
+      function fullRender(bookList) {
+        const filter = getFilter();
+        renderHero(userData, bookList, earnedRewards, staticData.npcs);
+        renderQuests(staticData.quests, computeLibraryStats(bookList), completedQuestIds);
+        renderGoal(goals, bookList);
+        renderStats(bookList, filter);
+        populateYearFilter(bookList);
+      }
+
+      fullRender(books);
+
+      // Daily login NPC check
+      try {
+        const lastLogin = userData.lastLoginDate;
+        const today = new Date().toDateString();
+        if (lastLogin !== today && staticData.npcs) {
+          const companionId = userData.rpg?.companionNpcId || null;
+          await triggerNpcInteraction(staticData.npcs, 'daily_login', companionId);
+          // Update lastLoginDate
+          const { getFirestore, doc: fsDoc, updateDoc, serverTimestamp } =
+            await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+          const fsDb = getFirestore(app);
+          await updateDoc(fsDoc(fsDb, 'users', user.uid), {
+            lastLoginDate: today,
+          }).catch(() => {});
+        }
+      } catch (e) { console.warn('Daily login NPC check failed:', e); }
+
+      // Firestore onSnapshot for real-time updates
+      if (unsubscribeBooks) unsubscribeBooks();
+      unsubscribeBooks = onSnapshot(
+        collection(db, 'users', user.uid, 'books'),
+        (snapshot) => {
+          const updatedBooks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          books = updatedBooks;
+          fullRender(updatedBooks);
+        },
+        (err) => console.error('onSnapshot error:', err)
+      );
+
+      // Filter controls
+      const filterYear   = document.getElementById('filter-year');
+      const filterGenre  = document.getElementById('filter-genre');
+      const filterAuthor = document.getElementById('filter-author');
+
+      function getFilter() {
+        return {
+          year:   filterYear  && filterYear.value  ? parseInt(filterYear.value, 10) : undefined,
+          genre:  filterGenre && filterGenre.value  ? filterGenre.value : undefined,
+          author: filterAuthor && filterAuthor.value ? filterAuthor.value : undefined,
+        };
+      }
+
+      function onFilterChange() {
+        renderStats(books, getFilter());
+      }
+
+      if (filterYear)   filterYear.addEventListener('change', onFilterChange);
+      if (filterGenre)  filterGenre.addEventListener('change', onFilterChange);
+      if (filterAuthor) {
+        let debounceTimer;
+        filterAuthor.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(onFilterChange, 300);
+        });
+      }
+    });
+
+    // -------------------------------------------------------
+    // computeLibraryStats (inline, mirrors stats.js)
+    // -------------------------------------------------------
+    function computeLibraryStats(books) {
+      const readBooks = (books || []).filter(b => b.shelf === 'read');
+      const genreSet = new Set();
+      readBooks.forEach(b => {
+        (Array.isArray(b.genres) ? b.genres : []).forEach(g => { if (g) genreSet.add(g); });
+      });
+      return {
+        booksRead: readBooks.length,
+        genresExplored: genreSet.size,
+        readingStreak: 0, // simplified; full streak computed by stats.js
+        friendCount: 0,
+        questsCompleted: 0,
+        goalsCompleted: 0,
+      };
+    }
+  </script>
+
+</body>
+</html>

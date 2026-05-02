@@ -1,0 +1,111 @@
+[
+  {
+    "id": "reward_apprentice_scroll",
+    "name": "The Apprentice's Scroll",
+    "description": "A worn scroll bearing the seal of the Scribes' Guild. It marks you as one who has begun the journey of knowledge.",
+    "type": "profile_badge",
+    "metadata": {
+      "badgeSlot": "profile_frame",
+      "value": "apprentice_scroll_frame"
+    }
+  },
+  {
+    "id": "reward_leather_satchel",
+    "name": "Satchel of the Wandering Reader",
+    "description": "A well-worn leather satchel, large enough to carry five tomes and still leave room for a flask of mead. Grants a small XP bonus for your next five books.",
+    "type": "xp_multiplier",
+    "metadata": {
+      "multiplier": 1.25,
+      "durationDays": 14
+    }
+  },
+  {
+    "id": "reward_iron_helm",
+    "name": "Iron Helm of the Wanderer",
+    "description": "A battered helm worn by a thousand-mile traveler. Its visor is etched with tiny runes — each one a title of a book its previous owner read.",
+    "type": "cosmetic",
+    "metadata": {
+      "cosmeticSlot": "armorStyle",
+      "value": "iron_helm_wanderer"
+    }
+  },
+  {
+    "id": "reward_wanderer_cloak",
+    "name": "Cloak of the Wandering Scholar",
+    "description": "A deep grey cloak that seems to shift color in different lights — sometimes the blue of a clear sky, sometimes the brown of ancient parchment. Scholars say it was woven from the pages of a thousand books.",
+    "type": "cosmetic",
+    "metadata": {
+      "cosmeticSlot": "armorStyle",
+      "value": "wanderer_scholar_cloak"
+    }
+  },
+  {
+    "id": "reward_dragon_scale_armor",
+    "name": "Armor of the Grand Chronicler",
+    "description": "Forged from the scales of a dragon who was himself a great reader — the beast had consumed entire libraries before being slain. The armor grants its wearer an aura of ancient wisdom and a significant XP boost.",
+    "type": "xp_multiplier",
+    "metadata": {
+      "multiplier": 1.5,
+      "durationDays": 30
+    }
+  },
+  {
+    "id": "reward_realm_walker_badge",
+    "name": "Badge of the Realm Walker",
+    "description": "A silver badge bearing three interlocking rings, each representing a different realm of literature. It marks you as one who does not confine themselves to a single genre.",
+    "type": "profile_badge",
+    "metadata": {
+      "badgeSlot": "profile_badge",
+      "value": "realm_walker_badge"
+    }
+  },
+  {
+    "id": "reward_loremaster_seal",
+    "name": "The Loremaster's Seal",
+    "description": "A golden seal bearing the crest of the Loremaster's Order — five stars arranged in a pentagram, each representing a different realm of knowledge. Only those who have explored five genres may bear this mark.",
+    "type": "profile_badge",
+    "metadata": {
+      "badgeSlot": "profile_badge",
+      "value": "loremaster_seal_badge"
+    }
+  },
+  {
+    "id": "reward_vigil_candle",
+    "name": "The Vigil Candle",
+    "description": "A candle that never burns out, said to have been lit by the first reader in the age before memory. It casts a warm golden light that makes all books easier to read — and grants a modest XP multiplier for your dedication.",
+    "type": "xp_multiplier",
+    "metadata": {
+      "multiplier": 1.15,
+      "durationDays": 21
+    }
+  },
+  {
+    "id": "reward_eternal_flame_torch",
+    "name": "Torch of the Eternal Flame",
+    "description": "A torch that burns with an undying flame, fueled not by oil but by the passion of reading. It is said that as long as this torch burns, the reader who carries it will never lose their love of books.",
+    "type": "cosmetic",
+    "metadata": {
+      "cosmeticSlot": "weaponType",
+      "value": "eternal_flame_torch"
+    }
+  },
+  {
+    "id": "reward_fellowship_ring",
+    "name": "Ring of Fellowship",
+    "description": "A simple iron ring, unadorned but for a single word etched on the inside: 'Together'. It is given to those who have found their first companion on the road of reading.",
+    "type": "cosmetic",
+    "metadata": {
+      "cosmeticSlot": "armorStyle",
+      "value": "fellowship_ring_accent"
+    }
+  },
+  {
+    "id": "reward_thalindor_companion",
+    "name": "Thalindor the Bard",
+    "description": "The jovial bard Thalindor has heard of your fellowship and wishes to join your journey. He will appear on your dashboard to offer encouragement, recommendations, and the occasional terrible pun.",
+    "type": "npc_companion",
+    "metadata": {
+      "npcId": "npc_thalindor"
+    }
+  }
+]
