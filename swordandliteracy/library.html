@@ -151,48 +151,29 @@
       background: transparent;
     }
 
-    /* The book.svg frame — always shown */
-    .book-frame {
+    /* The cover image fills the full wrap area — the SVG overlay masks it to the cutout shape */
+    .book-cover {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      display: block;
-    }
-
-    /*
-     * The cover image sits inside the white rectangle of book.svg.
-     * White rect in SVG: x=93.788 y=145.01 w=839.59 h=1244.421
-     * As percentages of viewBox 1123×1461:
-     *   left:   93.788/1123  = 8.35%
-     *   top:    145.01/1461  = 9.93%
-     *   width:  839.59/1123  = 74.76%
-     *   height: 1244.421/1461 = 85.18%
-     */
-    .book-cover {
-      position: absolute;
-      left: 8.35%;
-      top: 9.93%;
-      width: 74.76%;
-      height: 85.18%;
       object-fit: cover;
       display: block;
     }
 
-    /* Placeholder text shown inside the white rect when no cover */
+    /* Placeholder shown behind the SVG when no cover is available */
     .book-cover-placeholder {
       position: absolute;
-      left: 8.35%;
-      top: 9.93%;
-      width: 74.76%;
-      height: 85.18%;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6%;
-      padding: 8%;
-      background: #f5e6c8; /* match the white rect color */
+      gap: 4%;
+      padding: 14% 12% 10%;
+      background: #f5e6c8;
       overflow: hidden;
     }
     .book-cover-placeholder .placeholder-title {
@@ -227,6 +208,17 @@
       background: linear-gradient(90deg, transparent, #8a6d10, transparent);
       flex-shrink: 0;
     }
+
+    /* The book.svg overlay sits on top of everything, framing the cover through its cutout */
+    .book-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+      pointer-events: none; /* clicks pass through to edit/delete buttons */
+    }
     .book-shelf-badge {
       position: absolute;
       top: var(--space-2);
@@ -239,8 +231,7 @@
       border-radius: var(--radius-sm);
       letter-spacing: var(--tracking-wide);
       z-index: 2;
-    }
-    .book-card-body {
+    }    .book-card-body {
       padding: var(--space-3);
       flex: 1;
       display: flex;
@@ -1405,9 +1396,10 @@
             <div class="placeholder-author">${escHtml(book.author)}</div>
           </div>`;
 
+      // SVG overlay sits on top — its transparent cutout reveals the cover behind it
       return `
-        <img class="book-frame" src="img/book.svg" alt="" aria-hidden="true" />
-        ${coverContent}`;
+        ${coverContent}
+        <img class="book-frame" src="img/book.svg" alt="" aria-hidden="true" />`;
     }
 
     function buildBookCard(book) {
