@@ -291,6 +291,27 @@
 
     /* --- Read fields toggle --- */
     .read-fields { margin-top: var(--space-2); }
+
+    /* --- Sort controls --- */
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .sort-bar label {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .sort-bar select {
+      min-width: 180px;
+      width: auto;
+    }
   </style>
 </head>
 <body class="page-library">
@@ -340,6 +361,22 @@
       <button id="btn-import-csv" class="btn-secondary" aria-haspopup="dialog" type="button">
         Import from Goodreads
       </button>
+    </div>
+
+    <!-- Sort controls -->
+    <div class="sort-bar" role="group" aria-label="Sort books">
+      <label for="sort-select">&#9878; Order by</label>
+      <select id="sort-select" aria-label="Sort books by">
+        <option value="completed-desc">Date Completed (newest first)</option>
+        <option value="completed-asc">Date Completed (oldest first)</option>
+        <option value="rating-desc">My Rating (highest first)</option>
+        <option value="rating-asc">My Rating (lowest first)</option>
+        <option value="author-asc">Author (A–Z)</option>
+        <option value="author-desc">Author (Z–A)</option>
+        <option value="pages-desc">Pages (most first)</option>
+        <option value="pages-asc">Pages (fewest first)</option>
+        <option value="title-asc">Title (A–Z)</option>
+      </select>
     </div>
 
     <!-- Shelf Panels -->
@@ -799,6 +836,75 @@
     }
 
     // -------------------------------------------------------
+    // Sort books
+    // -------------------------------------------------------
+
+    /**
+     * Sort a book array by the current sort selection.
+     * Non-applicable fields (e.g. completedAt on want_to_read) sort to the end.
+     */
+    function sortBooks(books, sortValue) {
+      const sorted = [...books];
+
+      const toDate = (val) => {
+        if (!val) return null;
+        if (val instanceof Date) return val;
+        if (typeof val.toDate === 'function') return val.toDate();
+        return null;
+      };
+
+      sorted.sort((a, b) => {
+        switch (sortValue) {
+          case 'completed-desc': {
+            const da = toDate(a.completedAt), db = toDate(b.completedAt);
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return db - da;
+          }
+          case 'completed-asc': {
+            const da = toDate(a.completedAt), db = toDate(b.completedAt);
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return da - db;
+          }
+          case 'rating-desc': {
+            const ra = a.rating || 0, rb = b.rating || 0;
+            return rb - ra;
+          }
+          case 'rating-asc': {
+            const ra = a.rating || 0, rb = b.rating || 0;
+            if (!a.rating && !b.rating) return 0;
+            if (!a.rating) return 1;
+            if (!b.rating) return -1;
+            return ra - rb;
+          }
+          case 'author-asc':
+            return (a.author || '').localeCompare(b.author || '');
+          case 'author-desc':
+            return (b.author || '').localeCompare(a.author || '');
+          case 'pages-desc': {
+            const pa = a.pageCount || 0, pb = b.pageCount || 0;
+            return pb - pa;
+          }
+          case 'pages-asc': {
+            const pa = a.pageCount || 0, pb = b.pageCount || 0;
+            if (!a.pageCount && !b.pageCount) return 0;
+            if (!a.pageCount) return 1;
+            if (!b.pageCount) return -1;
+            return pa - pb;
+          }
+          case 'title-asc':
+          default:
+            return (a.title || '').localeCompare(b.title || '');
+        }
+      });
+
+      return sorted;
+    }
+
+    // -------------------------------------------------------
     // Render books
     // -------------------------------------------------------
     function renderStars(rating) {
@@ -870,9 +976,11 @@
     }
 
     function renderAllShelves(books) {
-      renderShelf('books-read',    books.filter(b => b.shelf === 'read'));
-      renderShelf('books-reading', books.filter(b => b.shelf === 'currently_reading'));
-      renderShelf('books-want',    books.filter(b => b.shelf === 'want_to_read'));
+      const sortValue = document.getElementById('sort-select')?.value || 'completed-desc';
+      const sorted = sortBooks(books, sortValue);
+      renderShelf('books-read',    sorted.filter(b => b.shelf === 'read'));
+      renderShelf('books-reading', sorted.filter(b => b.shelf === 'currently_reading'));
+      renderShelf('books-want',    sorted.filter(b => b.shelf === 'want_to_read'));
 
       // Wire edit/delete buttons
       document.querySelectorAll('.btn-edit').forEach(btn => {
@@ -889,6 +997,12 @@
           if (book) openDeleteModal(book.id, book.title);
         });
       });
+    }
+
+    // Wire sort dropdown
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+      sortSelect.addEventListener('change', () => renderAllShelves(allBooks));
     }
 
     // -------------------------------------------------------

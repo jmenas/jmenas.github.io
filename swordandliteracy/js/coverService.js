@@ -55,20 +55,39 @@ function openLibraryCoverUrl(coverId) {
 }
 
 // ---------------------------------------------------------------------------
-// Step 1: Open Library by ISBN
+// Step 1: Open Library by ISBN (direct URL — no API call needed)
 // ---------------------------------------------------------------------------
 
 /**
  * Try to fetch a cover URL from Open Library using an ISBN.
- * Uses the search API to get a cover_i (cover ID), then constructs the cover URL.
+ *
+ * Open Library supports a direct cover URL by ISBN:
+ *   https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg
+ *
+ * This returns a 1x1 pixel image when no cover exists, so we verify
+ * the image is real by checking Content-Length or falling back to the
+ * search API if the direct URL returns a tiny image.
  *
  * @param {string} isbn
  * @returns {Promise<string|null>}
  */
 async function fetchCoverByIsbn(isbn) {
   try {
-    const url = `https://openlibrary.org/search.json?isbn=${encodeURIComponent(isbn)}&fields=cover_i&limit=1`;
-    const response = await fetchWithTimeout(url);
+    // First try the direct ISBN cover URL — fastest, no rate limiting
+    const directUrl = `https://covers.openlibrary.org/b/isbn/${encodeURIComponent(isbn)}-L.jpg`;
+    const headResponse = await fetchWithTimeout(directUrl, { method: 'HEAD' });
+
+    if (headResponse && headResponse.ok) {
+      // Open Library returns a 1x1 gif (807 bytes) when no cover exists
+      const contentLength = headResponse.headers.get('content-length');
+      if (contentLength && parseInt(contentLength, 10) > 1000) {
+        return directUrl;
+      }
+    }
+
+    // Fall back to search API for a more reliable cover_i lookup
+    const searchUrl = `https://openlibrary.org/search.json?isbn=${encodeURIComponent(isbn)}&fields=cover_i&limit=1`;
+    const response = await fetchWithTimeout(searchUrl);
     if (!response || !response.ok) return null;
 
     const data = await response.json();

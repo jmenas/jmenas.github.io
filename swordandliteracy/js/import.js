@@ -174,11 +174,25 @@ export async function importGoodreadsFile(userId, file, existingBooks) {
     }
 
     // -----------------------------------------------------------------------
-    // Step 6: Fetch cover URLs in parallel for all unique rows
+    // Step 6: Fetch cover URLs in small batches to avoid rate limiting
     // -----------------------------------------------------------------------
-    const coverUrls = await Promise.all(
-      uniqueRows.map((row) => fetchCoverUrl(row.title, row.author, row.isbn))
-    );
+    // Fetching all covers in parallel (Promise.all) hammers the API and causes
+    // most requests to fail. Instead, fetch in batches of 5 with a small delay.
+    const COVER_BATCH_SIZE = 5;
+    const COVER_BATCH_DELAY_MS = 300;
+    const coverUrls = [];
+
+    for (let i = 0; i < uniqueRows.length; i += COVER_BATCH_SIZE) {
+      const batch = uniqueRows.slice(i, i + COVER_BATCH_SIZE);
+      const batchUrls = await Promise.all(
+        batch.map((row) => fetchCoverUrl(row.title, row.author, row.isbn))
+      );
+      coverUrls.push(...batchUrls);
+      // Small delay between batches to respect API rate limits
+      if (i + COVER_BATCH_SIZE < uniqueRows.length) {
+        await new Promise((resolve) => setTimeout(resolve, COVER_BATCH_DELAY_MS));
+      }
+    }
 
     // -----------------------------------------------------------------------
     // Step 7: Build book records
