@@ -717,6 +717,16 @@
     const db   = getFirestore(app);
 
     // -------------------------------------------------------
+    // Shared DOM references (declared once, used throughout)
+    // -------------------------------------------------------
+    const titleInput     = document.getElementById('book-title');
+    const authorInput    = document.getElementById('book-author');
+    const isbnInput      = document.getElementById('book-isbn');
+    const coverPreviewEl = document.getElementById('cover-preview');
+    const readFields     = document.getElementById('read-fields');
+    const shelfSelect    = document.getElementById('book-shelf');
+
+    // -------------------------------------------------------
     // Hamburger nav
     // -------------------------------------------------------
     const hamburger = document.getElementById('nav-hamburger');
@@ -784,17 +794,6 @@
         });
       }
     });
-
-    // -------------------------------------------------------
-    // Book form — shelf change shows/hides read fields
-    // -------------------------------------------------------
-    const shelfSelect = document.getElementById('book-shelf');
-    const readFields  = document.getElementById('read-fields');
-    if (shelfSelect && readFields) {
-      shelfSelect.addEventListener('change', () => {
-        readFields.hidden = shelfSelect.value !== 'read';
-      });
-    }
 
     // -------------------------------------------------------
     // Book title autocomplete (Google Books API)
@@ -1056,10 +1055,6 @@
     // Cover preview on title/author change
     // -------------------------------------------------------
     let coverPreviewTimer = null;
-    const titleInput  = document.getElementById('book-title');
-    const authorInput = document.getElementById('book-author');
-    const isbnInput   = document.getElementById('book-isbn');
-    const coverPreviewEl = document.getElementById('cover-preview');
 
     function scheduleCoverPreview() {
       clearTimeout(coverPreviewTimer);
@@ -1078,6 +1073,13 @@
     if (titleInput)  titleInput.addEventListener('input', scheduleCoverPreview);
     if (authorInput) authorInput.addEventListener('input', scheduleCoverPreview);
     if (isbnInput)   isbnInput.addEventListener('input', scheduleCoverPreview);
+
+    // Show/hide rating+review fields when shelf changes to/from "read"
+    if (shelfSelect && readFields) {
+      shelfSelect.addEventListener('change', () => {
+        readFields.hidden = shelfSelect.value !== 'read';
+      });
+    }
 
     // -------------------------------------------------------
     // Open Add Book modal

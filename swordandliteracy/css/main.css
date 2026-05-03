@@ -530,6 +530,11 @@ select:focus {
   display: none;
 }
 
+/* Ensure the HTML hidden attribute always hides elements */
+[hidden] {
+  display: none !important;
+}
+
 .modal-content {
   width: 100%;
   max-width: 560px;
