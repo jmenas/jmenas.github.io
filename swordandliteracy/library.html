@@ -339,8 +339,92 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* --- Read fields toggle --- */
-    .read-fields { margin-top: var(--space-2); }
+    /* --- Book title autocomplete --- */
+    .title-field-wrap {
+      position: relative;
+    }
+    .book-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: var(--z-dropdown);
+      background: var(--color-bg-parchment);
+      border: 2px solid var(--color-border-gold);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      max-height: 320px;
+      overflow-y: auto;
+      list-style: none;
+      margin: 0;
+      padding: var(--space-1) 0;
+    }
+    .book-suggestions[hidden] { display: none; }
+    .book-suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      border-bottom: 1px solid var(--color-border-parchment);
+      transition: background-color var(--transition-fast);
+    }
+    .book-suggestion-item:last-child { border-bottom: none; }
+    .book-suggestion-item:hover,
+    .book-suggestion-item:focus,
+    .book-suggestion-item[aria-selected="true"] {
+      background-color: var(--color-bg-parchment-alt);
+      outline: none;
+    }
+    .suggestion-thumb {
+      width: 36px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-parchment);
+      flex-shrink: 0;
+      background: var(--color-bg-surface);
+    }
+    .suggestion-thumb-placeholder {
+      width: 36px;
+      height: 54px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #2c1f0e, #1a1208);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: var(--color-text-muted);
+    }
+    .suggestion-info { flex: 1; min-width: 0; }
+    .suggestion-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      color: var(--color-text-on-parchment);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .suggestion-author {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .suggestion-meta {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+    .suggestion-searching {
+      padding: var(--space-3) var(--space-4);
+      color: var(--color-text-muted);
+      font-style: italic;
+      font-size: var(--text-sm);
+    }
 
     /* --- Sort controls --- */
     .sort-bar {
@@ -361,6 +445,29 @@
     .sort-bar select {
       min-width: 180px;
       width: auto;
+    }
+
+    /* --- Drag and drop --- */
+    .books-grid.drag-enabled .book-card {
+      cursor: grab;
+    }
+    .books-grid.drag-enabled .book-card:active {
+      cursor: grabbing;
+    }
+    .book-card.dragging {
+      opacity: 0.4;
+      transform: scale(0.97);
+      border: 2px dashed var(--color-gold);
+    }
+    .book-card.drag-over {
+      border: 2px solid var(--color-gold);
+      box-shadow: var(--shadow-gold);
+    }
+    .drag-hint {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-bottom: var(--space-3);
     }
   </style>
 </head>
@@ -413,14 +520,27 @@
       </button>
     </div>
 
-    <!-- Sort controls -->
-    <div class="sort-bar" role="group" aria-label="Sort books">
+    <!-- Sort controls — Read / Currently Reading shelves -->
+    <div id="sort-bar-read" class="sort-bar" role="group" aria-label="Sort books">
       <label for="sort-select">&#9878; Order by</label>
       <select id="sort-select" aria-label="Sort books by">
         <option value="completed-desc">Date Completed (newest first)</option>
         <option value="completed-asc">Date Completed (oldest first)</option>
         <option value="rating-desc">My Rating (highest first)</option>
         <option value="rating-asc">My Rating (lowest first)</option>
+        <option value="author-asc">Author (A–Z)</option>
+        <option value="author-desc">Author (Z–A)</option>
+        <option value="pages-desc">Pages (most first)</option>
+        <option value="pages-asc">Pages (fewest first)</option>
+        <option value="title-asc">Title (A–Z)</option>
+      </select>
+    </div>
+
+    <!-- Sort controls — Want to Read shelf -->
+    <div id="sort-bar-want" class="sort-bar" role="group" aria-label="Sort want to read books" hidden>
+      <label for="sort-select-want">&#9878; Order by</label>
+      <select id="sort-select-want" aria-label="Sort want to read books by">
+        <option value="priority">My Priority (drag to reorder)</option>
         <option value="author-asc">Author (A–Z)</option>
         <option value="author-desc">Author (Z–A)</option>
         <option value="pages-desc">Pages (most first)</option>
@@ -458,7 +578,13 @@
 
         <div class="form-field">
           <label for="book-title">Title of the Tome <span aria-hidden="true">*</span></label>
-          <input type="text" id="book-title" name="title" required autocomplete="off" />
+          <div class="title-field-wrap">
+            <input type="text" id="book-title" name="title" required autocomplete="off"
+              role="combobox" aria-expanded="false" aria-autocomplete="list"
+              aria-controls="book-title-suggestions" aria-haspopup="listbox" />
+            <ul id="book-title-suggestions" class="book-suggestions" role="listbox"
+              aria-label="Book suggestions" hidden></ul>
+          </div>
           <span class="field-error" aria-live="polite" id="err-title"></span>
         </div>
 
@@ -607,13 +733,16 @@
     // -------------------------------------------------------
     // Tab switching
     // -------------------------------------------------------
+    const sortBarRead = document.getElementById('sort-bar-read');
+    const sortBarWant = document.getElementById('sort-bar-want');
+
     const tabs = [
       { tab: 'tab-read',    panel: 'shelf-read',    shelf: 'read' },
       { tab: 'tab-reading', panel: 'shelf-reading', shelf: 'currently_reading' },
       { tab: 'tab-want',    panel: 'shelf-want',    shelf: 'want_to_read' },
     ];
 
-    tabs.forEach(({ tab, panel }) => {
+    tabs.forEach(({ tab, panel, shelf }) => {
       const tabEl   = document.getElementById(tab);
       const panelEl = document.getElementById(panel);
       if (!tabEl || !panelEl) return;
@@ -627,6 +756,10 @@
         tabEl.setAttribute('aria-selected', 'true');
         tabEl.classList.add('tab-active');
         panelEl.hidden = false;
+
+        // Swap sort bars based on active shelf
+        if (sortBarRead) sortBarRead.hidden = (shelf === 'want_to_read');
+        if (sortBarWant) sortBarWant.hidden = (shelf !== 'want_to_read');
       });
     });
 
@@ -660,6 +793,262 @@
     if (shelfSelect && readFields) {
       shelfSelect.addEventListener('change', () => {
         readFields.hidden = shelfSelect.value !== 'read';
+      });
+    }
+
+    // -------------------------------------------------------
+    // Book title autocomplete (Google Books API)
+    // -------------------------------------------------------
+    const suggestionsEl = document.getElementById('book-title-suggestions');
+    let autocompleteTimer = null;
+    let activeSuggestionIndex = -1;
+
+    function hideSuggestions() {
+      if (suggestionsEl) suggestionsEl.hidden = true;
+      if (titleInput) titleInput.setAttribute('aria-expanded', 'false');
+      activeSuggestionIndex = -1;
+    }
+
+    function showSuggestions() {
+      if (suggestionsEl) suggestionsEl.hidden = false;
+      if (titleInput) titleInput.setAttribute('aria-expanded', 'true');
+    }
+
+    /**
+     * Search Google Books API for matching titles.
+     * Returns up to 8 results with title, author, isbn, pageCount, coverUrl.
+     */
+    async function searchGoogleBooks(query) {
+      try {
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=8&printType=books`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (!data.items) return [];
+
+        return data.items.map(item => {
+          const info = item.volumeInfo || {};
+          const isbn = (info.industryIdentifiers || [])
+            .find(id => id.type === 'ISBN_13' || id.type === 'ISBN_10')?.identifier || null;
+          const thumb = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || null;
+          return {
+            title:     info.title || '',
+            author:    (info.authors || []).join(', '),
+            isbn,
+            pageCount: info.pageCount || null,
+            coverUrl:  thumb ? thumb.replace(/^http:\/\//, 'https://') : null,
+            categories: info.categories || [],
+          };
+        }).filter(b => b.title);
+      } catch {
+        return [];
+      }
+    }
+
+    /**
+     * Populate the suggestions dropdown with results.
+     */
+    function renderSuggestions(results) {
+      if (!suggestionsEl) return;
+      suggestionsEl.innerHTML = '';
+      activeSuggestionIndex = -1;
+
+      if (results.length === 0) {
+        hideSuggestions();
+        return;
+      }
+
+      results.forEach((book, i) => {
+        const li = document.createElement('li');
+        li.className = 'book-suggestion-item';
+        li.setAttribute('role', 'option');
+        li.setAttribute('aria-selected', 'false');
+        li.setAttribute('tabindex', '-1');
+        li.dataset.index = i;
+
+        const thumbHtml = book.coverUrl
+          ? `<img class="suggestion-thumb" src="${escAttr(book.coverUrl)}" alt="" loading="lazy" />`
+          : `<div class="suggestion-thumb-placeholder" aria-hidden="true">📖</div>`;
+
+        const pages = book.pageCount ? `· ${book.pageCount} pp` : '';
+        li.innerHTML = `
+          ${thumbHtml}
+          <div class="suggestion-info">
+            <div class="suggestion-title">${escHtml(book.title)}</div>
+            <div class="suggestion-author">${escHtml(book.author)}</div>
+            <div class="suggestion-meta">${escHtml(pages)}</div>
+          </div>`;
+
+        li.addEventListener('mousedown', (e) => {
+          // mousedown fires before blur — prevent the input losing focus
+          e.preventDefault();
+          selectSuggestion(book);
+        });
+
+        suggestionsEl.appendChild(li);
+      });
+
+      showSuggestions();
+    }
+
+    /**
+     * Fill the form with the selected book's details.
+     */
+    function selectSuggestion(book) {
+      if (titleInput)  titleInput.value  = book.title;
+      if (authorInput) authorInput.value = book.author;
+      if (isbnInput)   isbnInput.value   = book.isbn || '';
+
+      const pagesEl = document.getElementById('book-pages');
+      if (pagesEl && book.pageCount) pagesEl.value = book.pageCount;
+
+      // Auto-select genres from Google Books categories
+      const genreSelect = document.getElementById('book-genres');
+      if (genreSelect && book.categories.length > 0) {
+        const GENRE_MAP = {
+          'fiction': 'Fantasy', 'fantasy': 'Fantasy',
+          'horror': 'Horror', 'science fiction': 'Science Fiction',
+          'history': 'Historical Fiction', 'historical': 'Historical Fiction',
+          'mystery': 'Mystery', 'thriller': 'Thriller', 'crime': 'Thriller',
+          'romance': 'Romance', 'biography': 'Biography',
+          'nonfiction': 'Non-Fiction', 'non-fiction': 'Non-Fiction', 'self-help': 'Non-Fiction',
+        };
+        const matched = new Set();
+        book.categories.forEach(cat => {
+          const lower = cat.toLowerCase();
+          for (const [key, val] of Object.entries(GENRE_MAP)) {
+            if (lower.includes(key)) matched.add(val);
+          }
+        });
+        if (matched.size > 0) {
+          Array.from(genreSelect.options).forEach(opt => {
+            opt.selected = matched.has(opt.value);
+          });
+        }
+      }
+
+      // Show cover preview
+      if (coverPreviewEl && book.coverUrl) {
+        coverPreviewEl.innerHTML = `<img src="${escAttr(book.coverUrl)}" alt="Cover of ${escHtml(book.title)}" />`;
+      }
+
+      hideSuggestions();
+      // Move focus to author field if it was auto-filled, otherwise keep on title
+      if (book.author && authorInput) authorInput.focus();
+    }
+
+    // Trigger search as user types in the title field
+    if (titleInput) {
+      titleInput.addEventListener('input', () => {
+        const q = titleInput.value.trim();
+        clearTimeout(autocompleteTimer);
+
+        if (q.length < 3) {
+          hideSuggestions();
+          return;
+        }
+
+        // Show "searching..." immediately
+        if (suggestionsEl) {
+          suggestionsEl.innerHTML = `<li class="suggestion-searching" role="option">Searching the ancient tomes…</li>`;
+          showSuggestions();
+        }
+
+        autocompleteTimer = setTimeout(async () => {
+          const results = await searchGoogleBooks(q);
+          // Only render if the input hasn't changed since we started
+          if (titleInput.value.trim() === q) {
+            renderSuggestions(results);
+          }
+        }, 350);
+      });
+
+      // Keyboard navigation within the dropdown
+      titleInput.addEventListener('keydown', (e) => {
+        if (!suggestionsEl || suggestionsEl.hidden) return;
+        const items = suggestionsEl.querySelectorAll('.book-suggestion-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
+          items.forEach((el, i) => el.setAttribute('aria-selected', i === activeSuggestionIndex ? 'true' : 'false'));
+          items[activeSuggestionIndex].focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+          items.forEach((el, i) => el.setAttribute('aria-selected', i === activeSuggestionIndex ? 'true' : 'false'));
+          items[activeSuggestionIndex].focus();
+        } else if (e.key === 'Escape') {
+          hideSuggestions();
+        }
+      });
+
+      // Handle keyboard selection from a focused suggestion item
+      if (suggestionsEl) {
+        suggestionsEl.addEventListener('keydown', (e) => {
+          const items = suggestionsEl.querySelectorAll('.book-suggestion-item');
+          const idx = parseInt(e.target.dataset.index ?? '-1', 10);
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const results = Array.from(items).map(el => ({
+              title:     el.querySelector('.suggestion-title')?.textContent || '',
+              author:    el.querySelector('.suggestion-author')?.textContent || '',
+              isbn:      null,
+              pageCount: null,
+              coverUrl:  el.querySelector('.suggestion-thumb')?.src || null,
+              categories: [],
+            }));
+            // Re-select from the stored results via index
+            if (idx >= 0 && _lastSuggestions[idx]) selectSuggestion(_lastSuggestions[idx]);
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = Math.min(idx + 1, items.length - 1);
+            items[next].focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (idx <= 0) { titleInput.focus(); hideSuggestions(); }
+            else items[idx - 1].focus();
+          } else if (e.key === 'Escape') {
+            hideSuggestions();
+            titleInput.focus();
+          }
+        });
+      }
+
+      // Hide suggestions when focus leaves the field and dropdown
+      titleInput.addEventListener('blur', () => {
+        setTimeout(hideSuggestions, 150);
+      });
+    }
+
+    // Store last suggestions for keyboard selection
+    let _lastSuggestions = [];
+    const _origRenderSuggestions = renderSuggestions;
+    // Wrap to capture results
+    function renderSuggestionsAndStore(results) {
+      _lastSuggestions = results;
+      _origRenderSuggestions(results);
+    }
+    // Replace the reference used by the input handler
+    if (titleInput) {
+      // Re-wire the input handler to use the storing version
+      titleInput.removeEventListener('input', titleInput._autocompleteHandler);
+      titleInput.addEventListener('input', () => {
+        const q = titleInput.value.trim();
+        clearTimeout(autocompleteTimer);
+        if (q.length < 3) { hideSuggestions(); return; }
+        if (suggestionsEl) {
+          suggestionsEl.innerHTML = `<li class="suggestion-searching" role="option">Searching the ancient tomes…</li>`;
+          showSuggestions();
+        }
+        autocompleteTimer = setTimeout(async () => {
+          const results = await searchGoogleBooks(q);
+          if (titleInput.value.trim() === q) {
+            _lastSuggestions = results;
+            renderSuggestions(results);
+          }
+        }, 350);
       });
     }
 
@@ -714,6 +1103,7 @@
       document.getElementById('book-id').value = '';
       if (readFields) readFields.hidden = true;
       if (coverPreviewEl) coverPreviewEl.innerHTML = '';
+      hideSuggestions();
       const errTitle  = document.getElementById('err-title');
       const errAuthor = document.getElementById('err-author');
       const errGenres = document.getElementById('err-genres');
@@ -1049,10 +1439,50 @@
 
     function renderAllShelves(books) {
       const sortValue = document.getElementById('sort-select')?.value || 'completed-desc';
+      const wantSortValue = document.getElementById('sort-select-want')?.value || 'priority';
+
       const sorted = sortBooks(books, sortValue);
+
+      // Want to Read: sort by priority field, then fall back to createdAt
+      let wantBooks = books.filter(b => b.shelf === 'want_to_read');
+      if (wantSortValue === 'priority') {
+        wantBooks = [...wantBooks].sort((a, b) => {
+          const pa = a.priority ?? 999999;
+          const pb = b.priority ?? 999999;
+          if (pa !== pb) return pa - pb;
+          // Fallback: createdAt ascending for books without priority
+          const ca = a.createdAt?.toDate?.() ?? new Date(0);
+          const cb = b.createdAt?.toDate?.() ?? new Date(0);
+          return ca - cb;
+        });
+      } else {
+        wantBooks = sortBooks(wantBooks, wantSortValue);
+      }
+
       renderShelf('books-read',    sorted.filter(b => b.shelf === 'read'));
       renderShelf('books-reading', sorted.filter(b => b.shelf === 'currently_reading'));
-      renderShelf('books-want',    sorted.filter(b => b.shelf === 'want_to_read'));
+      renderShelf('books-want',    wantBooks);
+
+      // Enable drag-and-drop on the Want to Read grid when in priority mode
+      const wantGrid = document.getElementById('books-want');
+      if (wantGrid) {
+        if (wantSortValue === 'priority') {
+          wantGrid.classList.add('drag-enabled');
+          initDragAndDrop(wantGrid, wantBooks);
+          // Show drag hint
+          const existing = wantGrid.previousElementSibling;
+          if (!existing || !existing.classList.contains('drag-hint')) {
+            const hint = document.createElement('p');
+            hint.className = 'drag-hint';
+            hint.textContent = '✦ Drag books to set your reading priority';
+            wantGrid.parentNode.insertBefore(hint, wantGrid);
+          }
+        } else {
+          wantGrid.classList.remove('drag-enabled');
+          const hint = wantGrid.previousElementSibling;
+          if (hint && hint.classList.contains('drag-hint')) hint.remove();
+        }
+      }
 
       // Wire edit/delete buttons
       document.querySelectorAll('.btn-edit').forEach(btn => {
@@ -1071,10 +1501,100 @@
       });
     }
 
-    // Wire sort dropdown
+    // Wire sort dropdowns
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
       sortSelect.addEventListener('change', () => renderAllShelves(allBooks));
+    }
+    const sortSelectWant = document.getElementById('sort-select-want');
+    if (sortSelectWant) {
+      sortSelectWant.addEventListener('change', () => renderAllShelves(allBooks));
+    }
+
+    // -------------------------------------------------------
+    // Drag and drop for Want to Read priority ordering
+    // -------------------------------------------------------
+    let dragSrcId = null;
+
+    function initDragAndDrop(grid, orderedBooks) {
+      const cards = grid.querySelectorAll('.book-card');
+
+      cards.forEach(card => {
+        card.setAttribute('draggable', 'true');
+
+        card.addEventListener('dragstart', (e) => {
+          dragSrcId = card.dataset.bookId;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', dragSrcId);
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          grid.querySelectorAll('.book-card').forEach(c => c.classList.remove('drag-over'));
+        });
+
+        card.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (card.dataset.bookId !== dragSrcId) {
+            grid.querySelectorAll('.book-card').forEach(c => c.classList.remove('drag-over'));
+            card.classList.add('drag-over');
+          }
+        });
+
+        card.addEventListener('dragleave', () => {
+          card.classList.remove('drag-over');
+        });
+
+        card.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          card.classList.remove('drag-over');
+
+          const targetId = card.dataset.bookId;
+          if (!dragSrcId || dragSrcId === targetId) return;
+
+          // Reorder the DOM
+          const allCards = Array.from(grid.querySelectorAll('.book-card'));
+          const srcIndex = allCards.findIndex(c => c.dataset.bookId === dragSrcId);
+          const tgtIndex = allCards.findIndex(c => c.dataset.bookId === targetId);
+
+          if (srcIndex === -1 || tgtIndex === -1) return;
+
+          const srcCard = allCards[srcIndex];
+          if (srcIndex < tgtIndex) {
+            grid.insertBefore(srcCard, card.nextSibling);
+          } else {
+            grid.insertBefore(srcCard, card);
+          }
+
+          // Persist new priority order to Firestore
+          await savePriorityOrder(grid);
+        });
+      });
+    }
+
+    async function savePriorityOrder(grid) {
+      const user = getCurrentUser();
+      if (!user) return;
+
+      const cards = Array.from(grid.querySelectorAll('.book-card'));
+      const { getFirestore, doc, updateDoc } =
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const firestoreDb = getFirestore(app);
+
+      // Write priority values in parallel
+      await Promise.all(cards.map((card, index) => {
+        const bookId = card.dataset.bookId;
+        if (!bookId) return Promise.resolve();
+        // Update local cache
+        const cached = allBooks.find(b => b.id === bookId);
+        if (cached) cached.priority = index;
+        // Persist to Firestore
+        return updateDoc(doc(firestoreDb, 'users', user.uid, 'books', bookId), {
+          priority: index,
+        }).catch(err => console.warn(`Priority save failed for ${bookId}:`, err));
+      }));
     }
 
     // -------------------------------------------------------
