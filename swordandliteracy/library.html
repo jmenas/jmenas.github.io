@@ -214,6 +214,10 @@
       color: var(--color-text-muted);
       font-style: italic;
     }
+    .book-card-pages {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
     .book-card-actions {
       display: flex;
       gap: var(--space-2);
@@ -949,6 +953,7 @@
           <div class="book-card-body">
             <div class="book-card-title">${escHtml(book.title)}</div>
             <div class="book-card-author">${escHtml(book.author)}</div>
+            ${book.pageCount ? `<div class="book-card-pages">${book.pageCount} pages</div>` : ''}
             <div class="book-card-genres">${genreTags}</div>
             ${ratingHtml}
             ${completedDate}
@@ -1003,6 +1008,66 @@
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
       sortSelect.addEventListener('change', () => renderAllShelves(allBooks));
+    }
+
+    // -------------------------------------------------------
+    // Background cover retry
+    // Finds books with no cover and fetches them quietly,
+    // updating Firestore so they persist for next time.
+    // -------------------------------------------------------
+    const _coverRetryInProgress = new Set();
+
+    async function retryCoversForeground(books, userId) {
+      const missing = books.filter(b =>
+        !b.customCoverUrl &&
+        (!b.coverUrl || b.coverUrl === PLACEHOLDER_COVER_URL) &&
+        !_coverRetryInProgress.has(b.id)
+      );
+
+      if (missing.length === 0) return;
+
+      // Import Firestore updateDoc lazily
+      const { getFirestore, doc, updateDoc } =
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const firestoreDb = getFirestore(app);
+
+      // Process in small batches to avoid hammering the API
+      const BATCH = 5;
+      const DELAY = 400;
+
+      for (let i = 0; i < missing.length; i += BATCH) {
+        const chunk = missing.slice(i, i + BATCH);
+
+        await Promise.all(chunk.map(async (book) => {
+          _coverRetryInProgress.add(book.id);
+          try {
+            const url = await fetchCoverUrl(book.title, book.author, book.isbn || null);
+            if (url && url !== PLACEHOLDER_COVER_URL) {
+              // Update the img tag in the DOM immediately
+              const card = document.querySelector(`[data-book-id="${book.id}"] .book-cover`);
+              if (card) card.src = url;
+
+              // Persist to Firestore so it loads correctly next time
+              await updateDoc(doc(firestoreDb, 'users', userId, 'books', book.id), {
+                coverUrl: url,
+              });
+
+              // Update local cache so re-renders use the new URL
+              const cached = allBooks.find(b => b.id === book.id);
+              if (cached) cached.coverUrl = url;
+            }
+          } catch (err) {
+            console.warn(`Cover retry failed for "${book.title}":`, err);
+          } finally {
+            _coverRetryInProgress.delete(book.id);
+          }
+        }));
+
+        // Pause between batches
+        if (i + BATCH < missing.length) {
+          await new Promise(r => setTimeout(r, DELAY));
+        }
+      }
     }
 
     // -------------------------------------------------------
@@ -1078,6 +1143,7 @@
     // -------------------------------------------------------
     let allBooks = [];
     let unsubscribeBooks = null;
+    let currentUserId = null;
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -1085,6 +1151,7 @@
         return;
       }
 
+      currentUserId = user.uid;
       if (!staticData.quests) await loadStaticData();
 
       // Firestore onSnapshot for real-time updates
@@ -1094,6 +1161,8 @@
         (snapshot) => {
           allBooks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
           renderAllShelves(allBooks);
+          // Quietly retry covers for any books that are missing them
+          retryCoversForeground(allBooks, user.uid);
         },
         (err) => console.error('onSnapshot error:', err)
       );
