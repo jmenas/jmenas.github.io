@@ -131,7 +131,7 @@
 
     /* --- Book Card --- */
     .book-card {
-      background: var(--color-bg-panel);
+      background: #1a1208;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-lg);
       overflow: hidden;
@@ -139,10 +139,15 @@
       flex-direction: column;
       transition: box-shadow var(--transition-fast), transform var(--transition-fast);
       position: relative;
+      cursor: pointer;
     }
     .book-card:hover {
       box-shadow: var(--shadow-gold);
       transform: translateY(-2px);
+    }
+    .book-card:focus-visible {
+      outline: 3px solid var(--color-gold);
+      outline-offset: 2px;
     }
     .book-cover-wrap {
       position: relative;
@@ -214,21 +219,9 @@
       height: 100%;
       display: block;
       z-index: 1;
-      pointer-events: none; /* clicks pass through to edit/delete buttons */
+      pointer-events: none;
     }
-    .book-shelf-badge {
-      position: absolute;
-      top: var(--space-2);
-      left: var(--space-2);
-      background: var(--color-crimson-dark);
-      color: var(--color-gold-light);
-      font-family: var(--font-heading);
-      font-size: var(--text-xs);
-      padding: 2px var(--space-2);
-      border-radius: var(--radius-sm);
-      letter-spacing: var(--tracking-wide);
-      z-index: 2;
-    }    .book-card-body {
+    .book-card-body {
       padding: var(--space-3);
       flex: 1;
       display: flex;
@@ -278,27 +271,6 @@
       font-size: var(--text-xs);
       color: var(--color-text-muted);
     }
-
-    .book-card-actions {
-      display: flex;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-top: 1px solid var(--color-border);
-    }
-    .btn-icon {
-      background: none;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      padding: var(--space-1) var(--space-2);
-      font-size: var(--text-sm);
-      min-width: 44px;
-      min-height: 36px;
-      transition: color var(--transition-fast), border-color var(--transition-fast);
-    }
-    .btn-icon:hover { color: var(--color-gold-light); border-color: var(--color-gold); }
-    .btn-icon-danger:hover { color: var(--color-crimson-light); border-color: var(--color-crimson); }
 
     /* --- Cover Preview --- */
     .cover-preview {
@@ -663,6 +635,7 @@
         <div class="form-actions">
           <button type="submit" class="btn-primary" id="book-form-submit">Inscribe</button>
           <button type="button" class="btn-secondary" id="book-modal-close">Abandon</button>
+          <button type="button" class="btn-danger" id="book-form-delete" hidden>Erase from Chronicles</button>
         </div>
         <div id="book-form-error" class="error-message" aria-live="assertive"></div>
       </form>
@@ -1121,6 +1094,9 @@
       if (readFields) readFields.hidden = true;
       if (coverPreviewEl) coverPreviewEl.innerHTML = '';
       hideSuggestions();
+      // Hide delete button — only shown when editing an existing book
+      const deleteBtn = document.getElementById('book-form-delete');
+      if (deleteBtn) deleteBtn.hidden = true;
       const errTitle  = document.getElementById('err-title');
       const errAuthor = document.getElementById('err-author');
       const errGenres = document.getElementById('err-genres');
@@ -1129,6 +1105,19 @@
       if (errAuthor) errAuthor.textContent = '';
       if (errGenres) errGenres.textContent = '';
       if (errForm)   errForm.textContent   = '';
+    }
+
+    // Wire the in-modal delete button
+    const bookFormDeleteBtn = document.getElementById('book-form-delete');
+    if (bookFormDeleteBtn) {
+      bookFormDeleteBtn.addEventListener('click', () => {
+        const bookId = document.getElementById('book-id').value;
+        const book = allBooks.find(b => b.id === bookId);
+        if (book) {
+          closeModal('book-modal');
+          openDeleteModal(book.id, book.title);
+        }
+      });
     }
 
     // -------------------------------------------------------
@@ -1254,6 +1243,10 @@
 
       openModal('book-modal');
       if (titleInput) titleInput.focus();
+
+      // Show the delete button when editing an existing book
+      const deleteBtn = document.getElementById('book-form-delete');
+      if (deleteBtn) deleteBtn.hidden = false;
     }
 
     // -------------------------------------------------------
@@ -1424,7 +1417,6 @@
     }
 
     function buildBookCard(book) {
-      const shelfLabel = SHELF_LABELS[book.shelf] || book.shelf;
       const genres = Array.isArray(book.genres) ? book.genres : [];
       const genreTags = genres.slice(0, 3).map(g =>
         `<span class="genre-tag">${escHtml(g)}</span>`
@@ -1443,10 +1435,11 @@
         : '';
 
       return `
-        <article class="book-card" data-book-id="${escAttr(book.id)}" aria-label="${escAttr(book.title)} by ${escAttr(book.author)}">
+        <article class="book-card" data-book-id="${escAttr(book.id)}"
+          role="button" tabindex="0"
+          aria-label="View details for ${escAttr(book.title)} by ${escAttr(book.author)}">
           <div class="book-cover-wrap">
             ${buildCoverHtml(book)}
-            <span class="book-shelf-badge">${escHtml(shelfLabel)}</span>
           </div>
           <div class="book-card-body">
             <div class="book-card-title">${escHtml(book.title)}</div>
@@ -1455,10 +1448,6 @@
             <div class="book-card-genres">${genreTags}</div>
             ${ratingHtml}
             ${completedDate}
-          </div>
-          <div class="book-card-actions">
-            <button class="btn-icon btn-edit" type="button" aria-label="Edit ${escAttr(book.title)}" data-book-id="${escAttr(book.id)}">&#9998;</button>
-            <button class="btn-icon btn-icon-danger btn-delete" type="button" aria-label="Delete ${escAttr(book.title)}" data-book-id="${escAttr(book.id)}">&#10005;</button>
           </div>
         </article>`;
     }
@@ -1525,19 +1514,21 @@
         }
       }
 
-      // Wire edit/delete buttons
-      document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const bookId = btn.dataset.bookId;
+      // Wire card clicks to open edit modal (click anywhere on card)
+      document.querySelectorAll('.book-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const bookId = card.dataset.bookId;
           const book = allBooks.find(b => b.id === bookId);
           if (book) openEditModal(book);
         });
-      });
-      document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const bookId = btn.dataset.bookId;
-          const book = allBooks.find(b => b.id === bookId);
-          if (book) openDeleteModal(book.id, book.title);
+        // Also support keyboard activation
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const bookId = card.dataset.bookId;
+            const book = allBooks.find(b => b.id === bookId);
+            if (book) openEditModal(book);
+          }
         });
       });
     }
