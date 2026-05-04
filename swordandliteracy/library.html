@@ -152,29 +152,18 @@
     }
 
     /* The cover image fills only the cutout area of book.svg.
-     * Pink rect in SVG viewBox (613×822):
-     *   x=132.057 → 21.54%
-     *   y=48.365  → 5.88%
-     *   w=422.449 → 68.91%
-     *   h=641.156 → 77.99%
+     * Position is set per-book via inline style in buildCoverHtml()
+     * based on the frame's pink rect coordinates.
      */
     .book-cover {
-      position: absolute;
-      left: 21.54%;
-      top: 5.88%;
-      width: 68.91%;
-      height: 77.99%;
       object-fit: cover;
       display: block;
     }
 
-    /* Placeholder shown behind the SVG when no cover is available */
+    /* Placeholder shown behind the SVG when no cover is available.
+     * Position is set per-book via inline style in buildCoverHtml().
+     */
     .book-cover-placeholder {
-      position: absolute;
-      left: 21.54%;
-      top: 5.88%;
-      width: 68.91%;
-      height: 77.99%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1388,6 +1377,27 @@
     };
 
     /**
+     * Book frame definitions.
+     * Each frame has a file path and the cover area as percentages of the SVG viewBox.
+     * Pink rect coords for both frames: x=132/613=21.54%, y=48/822=5.88%, w=422/613=68.91%, h=641/822=77.99%
+     */
+    const BOOK_FRAMES = [
+      { src: 'img/book.svg',  left: '21.54%', top: '5.88%', width: '68.91%', height: '77.99%' },
+      { src: 'img/book2.svg', left: '21.54%', top: '5.88%', width: '68.91%', height: '77.99%' },
+    ];
+
+    /**
+     * Pick a stable frame for a book based on its ID.
+     * Same book always gets the same frame; different books get different frames.
+     */
+    function getFrameForBook(bookId) {
+      if (!bookId) return BOOK_FRAMES[0];
+      // Sum char codes for a stable hash
+      const hash = bookId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      return BOOK_FRAMES[hash % BOOK_FRAMES.length];
+    }
+
+    /**
      * Build the cover area HTML for a book card.
      * If a real cover URL exists, renders an <img>.
      * Otherwise renders a styled placeholder showing the book title.
@@ -1395,10 +1405,13 @@
     function buildCoverHtml(book) {
       const cover = book.customCoverUrl || book.coverUrl;
       const hasRealCover = cover && cover !== PLACEHOLDER_COVER_URL;
+      const frame = getFrameForBook(book.id);
+
+      const coverStyle = `position:absolute;left:${frame.left};top:${frame.top};width:${frame.width};height:${frame.height};`;
 
       const coverContent = hasRealCover
-        ? `<img class="book-cover" src="${escAttr(cover)}" alt="Cover of ${escAttr(book.title)}" loading="lazy" />`
-        : `<div class="book-cover-placeholder" aria-label="No cover yet for ${escAttr(book.title)}">
+        ? `<img class="book-cover" style="${coverStyle}" src="${escAttr(cover)}" alt="Cover of ${escAttr(book.title)}" loading="lazy" />`
+        : `<div class="book-cover-placeholder" style="${coverStyle}" aria-label="No cover yet for ${escAttr(book.title)}">
             <div class="placeholder-title">${escHtml(book.title)}</div>
             <div class="placeholder-divider"></div>
             <div class="placeholder-author">${escHtml(book.author)}</div>
@@ -1407,7 +1420,7 @@
       // SVG overlay sits on top — its transparent cutout reveals the cover behind it
       return `
         ${coverContent}
-        <img class="book-frame" src="img/book.svg" alt="" aria-hidden="true" />`;
+        <img class="book-frame" src="${escAttr(frame.src)}" alt="" aria-hidden="true" />`;
     }
 
     function buildBookCard(book) {
@@ -1663,8 +1676,10 @@
               if (coverWrap) {
                 const existing = coverWrap.querySelector('.book-cover-placeholder, .book-cover');
                 if (existing) {
+                  const frame = getFrameForBook(book.id);
                   const img = document.createElement('img');
                   img.className = 'book-cover';
+                  img.style.cssText = `position:absolute;left:${frame.left};top:${frame.top};width:${frame.width};height:${frame.height};`;
                   img.src = url;
                   img.alt = `Cover of ${book.title}`;
                   img.loading = 'lazy';
