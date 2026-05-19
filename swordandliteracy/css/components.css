@@ -141,7 +141,7 @@
 .book-cover-wrap {
   position: relative;
   width: 100%;
-  padding-top: 150%; /* 2:3 aspect ratio */
+  padding-top: 100%; /* 2:3 aspect ratio */
   overflow: hidden;
   background: var(--color-bg-surface);
 }
