@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f1117;
+      --surface:    #1a1d27;
+      --surface2:   #22263a;
+      --border:     #2e3248;
+      --accent:     #7c6af7;
+      --accent2:    #f76a8c;
+      --accent3:    #6af7c4;
+      --text:       #e8eaf6;
+      --muted:      #8b8fa8;
+      --radius:     14px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.35);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .75rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+    .logo-icon { font-size: 1.5rem; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    #sync-status {
+      font-size: .78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    #sync-status .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background .3s;
+    }
+    #sync-status.synced .dot  { background: var(--accent3); }
+    #sync-status.error .dot   { background: var(--accent2); }
+    #sync-status.loading .dot { background: var(--accent); animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .btn {
+      padding: .45rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: .84rem;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .btn:hover { background: var(--border); }
+    .btn-accent {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover { background: #6858e0; }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    /* ── Config Panel ─────────────────────────────────────────── */
+    #config-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    #config-panel h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .config-row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+    .config-field { flex: 1; min-width: 220px; }
+    .config-field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .35rem; }
+    .config-field input, .config-field select {
+      width: 100%;
+      padding: .55rem .75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .9rem;
+    }
+    .config-field input:focus, .config-field select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .help-text {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: .5rem;
+      line-height: 1.5;
+    }
+    .help-text code {
+      background: var(--surface2);
+      padding: .1em .35em;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: .85em;
+    }
+
+    /* ── Section titles ───────────────────────────────────────── */
+    .section-title {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 2rem 0 .9rem;
+    }
+
+    /* ── Stat Cards ───────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      transition: border-color .2s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-icon { font-size: 1.4rem; }
+    .stat-label { font-size: .75rem; color: var(--muted); }
+    .stat-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; }
+    .stat-sub   { font-size: .75rem; color: var(--muted); }
+
+    /* ── Charts Grid ──────────────────────────────────────────── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .chart-card h3 { font-size: .85rem; color: var(--muted); margin-bottom: 1rem; }
+    .chart-wrap { position: relative; height: 220px; }
+
+    .chart-card.wide {
+      grid-column: span 2;
+    }
+    @media (max-width: 720px) {
+      .chart-card.wide { grid-column: span 1; }
+    }
+
+    /* ── Book Table ───────────────────────────────────────────── */
+    .table-controls {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: .9rem;
+    }
+
+    #search-input {
+      flex: 1;
+      min-width: 180px;
+      padding: .5rem .8rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .88rem;
+    }
+    #search-input:focus { outline: none; border-color: var(--accent); }
+
+    #filter-genre, #sort-by {
+      padding: .5rem .7rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .85rem;
+      cursor: pointer;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      min-width: 600px;
+    }
+    thead { background: var(--surface2); }
+    th {
+      padding: .75rem 1rem;
+      text-align: left;
+      font-size: .75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      white-space: nowrap;
+    }
+    td {
+      padding: .7rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tbody tr:hover { background: var(--surface2); }
+
+    .stars { color: #f5c842; letter-spacing: 1px; }
+    .badge {
+      display: inline-block;
+      padding: .2em .6em;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Empty / Error states ─────────────────────────────────── */
+    #empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--muted);
+    }
+    #empty-state .big { font-size: 3rem; margin-bottom: .75rem; }
+    #empty-state p { max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+    #error-banner {
+      display: none;
+      background: rgba(247,106,140,.12);
+      border: 1px solid var(--accent2);
+      border-radius: 10px;
+      padding: .85rem 1.1rem;
+      margin-bottom: 1rem;
+      font-size: .88rem;
+      color: var(--accent2);
+    }
+
+    /* ── Tabs ─────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: .25rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: .55rem 1.1rem;
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .9rem;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Currently Reading ────────────────────────────────────── */
+    .reading-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .book-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .book-card .book-title { font-weight: 600; font-size: .95rem; line-height: 1.3; }
+    .book-card .book-author { font-size: .8rem; color: var(--muted); }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Loading overlay ──────────────────────────────────────── */
+    #loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,17,23,.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #loading.show { display: flex; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      header { padding: .85rem 1rem; }
+      main { padding: 1rem .75rem 2rem; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loading"><div class="spinner"></div><span style="color:var(--muted);font-size:.9rem">Fetching your books…</span></div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <span class="logo-icon">📚</span>
+    Reading Tracker
+  </div>
+  <div class="header-right">
+    <div id="sync-status">
+      <span class="dot"></span>
+      <span id="sync-text">Not connected</span>
+    </div>
+    <button class="btn" onclick="toggleConfig()">⚙ Settings</button>
+    <button class="btn btn-accent" onclick="fetchData()">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Config Panel -->
+  <div id="config-panel">
+    <h2>📋 Google Sheet Setup</h2>
+    <div class="config-row">
+      <div class="config-field" style="flex:2">
+        <label for="sheet-url">Google Sheet CSV URL</label>
+        <input id="sheet-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/SHEET_ID/export?format=csv&gid=0" />      </div>
+      <div>
+        <button class="btn btn-accent" onclick="saveAndFetch()">Connect Sheet</button>
+      </div>
+    </div>
+    <p class="help-text">
+      <strong>How to connect:</strong>
+      In Google Sheets, go to <strong>File → Share → Publish to web</strong>, choose <em>Comma-separated values (.csv)</em>, then click <em>Publish</em>.
+      Copy the generated link and paste it above. Or use the export URL format:
+      <code>https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv</code><br><br>
+      <strong>Expected columns (in order):</strong>
+      <code>Title</code> · <code>Author</code> · <code>Genre</code> · <code>Pages</code> · <code>Publication Year</code> · <code>Date Read</code> · <code>Rating (1-5)</code> · <code>Status</code>
+      — Status options: <code>Read</code>, <code>Reading</code>, <code>Want to Read</code>
+    </p>
+    <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
+      <button class="btn" onclick="loadDemo()">📖 Load demo data</button>
+      <span style="font-size:.78rem;color:var(--muted)">Try the app with sample data before connecting your sheet.</span>
+    </div>
+  </div>
+
+  <div id="error-banner"></div>
+
+  <!-- Main content (hidden until data loads) -->
+  <div id="app-content" style="display:none">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="tab-btn" onclick="switchTab('books')">📚 Books</button>
+      <button class="tab-btn" onclick="switchTab('charts')">📈 Charts</button>
+    </div>
+
+    <!-- ── DASHBOARD TAB ──────────────────────────────────────── -->
+    <div class="tab-panel active" id="tab-dashboard">
+
+      <p class="section-title">Overview</p>
+      <div class="stat-grid" id="stat-grid"></div>
+
+      <p class="section-title">Highlights</p>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Books by Genre</h3>
+          <div class="chart-wrap"><canvas id="chart-genre"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Rating Distribution</h3>
+          <div class="chart-wrap"><canvas id="chart-rating"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <h3>Books Read per Month</h3>
+          <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Currently Reading -->
+      <div id="currently-reading-section" style="display:none">
+        <p class="section-title">Currently Reading</p>
+        <div class="reading-grid" id="currently-reading-grid"></div>
+      </div>
+
+      <!-- Want to Read -->
+      <div id="want-to-read-section" style="display:none">
+        <p class="section-title">Want to Read</p>
+        <div class="reading-grid" id="want-to-read-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── BOOKS TAB ──────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-books">
+      <div class="table-controls">
+        <input id="search-input" type="text" placeholder="🔍  Search title or author…" oninput="renderTable()" />
+        <select id="filter-genre" onchange="renderTable()"><option value="">All Genres</option></select>
+        <select id="filter-status" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option value="Read">Read</option>
+          <option value="Reading">Reading</option>
+          <option value="Want to Read">Want to Read</option>
+        </select>
+        <select id="sort-by" onchange="renderTable()">
+          <option value="date-desc">Date (newest)</option>
+          <option value="date-asc">Date (oldest)</option>
+          <option value="rating-desc">Rating (high)</option>
+          <option value="rating-asc">Rating (low)</option>
+          <option value="pages-desc">Pages (most)</option>
+          <option value="title-asc">Title (A–Z)</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Genre</th>
+              <th>Pages</th>
+              <th>Pub. Year</th>
+              <th>Date Read</th>
+              <th>Rating</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="book-table-body"></tbody>
+        </table>
+      </div>
+      <p id="table-count" style="font-size:.78rem;color:var(--muted);margin-top:.6rem;"></p>
+    </div>
+
+    <!-- ── CHARTS TAB ─────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-charts">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Pages Read per Month</h3>
+          <div class="chart-wrap"><canvas id="chart-pages-monthly"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Books Read per Year</h3>
+          <div class="chart-wrap"><canvas id="chart-yearly"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Average Rating by Genre</h3>
+          <div class="chart-wrap"><canvas id="chart-genre-rating"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Reading Status Breakdown</h3>
+          <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <h3>Pages per Book (Read)</h3>
+          <div class="chart-wrap" style="height:260px"><canvas id="chart-pages-book"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-content -->
+
+  <!-- Empty state (shown before data) -->
+  <div id="empty-state">
+    <div class="big">📖</div>
+    <h2 style="margin-bottom:.5rem">No books loaded yet</h2>
+    <p>Enter your Google Sheet CSV URL in the settings above and click <strong>Connect Sheet</strong>, or try the demo data to see what the tracker looks like.</p>
+  </div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────
+let allBooks = [];
+let charts = {};
+
+const STORAGE_KEY = 'reading-tracker-url';
+const PALETTE = [
+  '#7c6af7','#f76a8c','#6af7c4','#f7c46a','#6ab8f7',
+  '#f76af7','#c4f76a','#f79c6a','#6af7f7','#d46af7'
+];
+
+// ─────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVCiWDGpsxSwWsNPwImMgaTHUuf4f3dIFLierUsescunvQE_1arxgKntfJg9SROfktbeK5txIcCGYn/pub?output=csv';
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(STORAGE_KEY) || DEFAULT_SHEET_URL;
+  document.getElementById('sheet-url').value = saved;
+  fetchData();
+});
+
+// ─────────────────────────────────────────────────────────────────
+// Config panel toggle
+// ─────────────────────────────────────────────────────────────────
+function toggleConfig() {
+  const p = document.getElementById('config-panel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+function saveAndFetch() {
+  const url = document.getElementById('sheet-url').value.trim();
+  if (!url) { showError('Please enter a Google Sheet CSV URL.'); return; }
+  localStorage.setItem(STORAGE_KEY, url);
+  fetchData();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Fetch CSV from Google Sheets
+// ─────────────────────────────────────────────────────────────────
+async function fetchData() {
+  const url = document.getElementById('sheet-url').value.trim();
+  if (!url) return;
+
+  setSyncStatus('loading', 'Syncing…');
+  setLoading(true);
+  clearError();
+
+  // Add cache-busting param
+  const fetchUrl = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+
+  try {
+    const res = await fetch(fetchUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const csv = await res.text();
+    const books = parseCSV(csv);
+    if (books.length === 0) throw new Error('No data rows found. Check your sheet has a header row and at least one book.');
+    allBooks = books;
+    renderAll();
+    setSyncStatus('synced', `Synced · ${new Date().toLocaleTimeString()}`);
+    document.getElementById('config-panel').style.display = 'none';
+  } catch (err) {
+    setSyncStatus('error', 'Sync failed');
+    showError(`Could not load sheet: ${err.message}. Make sure the sheet is published publicly as CSV.`);
+    if (allBooks.length === 0) showEmptyState(true);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CSV Parser
+// ─────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+
+  // Flexible column mapping
+  const col = name => {
+    const idx = headers.findIndex(h => h.includes(name));
+    return idx >= 0 ? idx : -1;
+  };
+
+  const iTitle   = col('title');
+  const iAuthor  = col('author');
+  const iGenre   = col('genre');
+  const iPages   = col('page');
+  const iPubYear = col('pub');
+  const iDate    = col('date');
+  const iRating  = col('rating');
+  const iStatus  = col('status');
+
+  if (iTitle === -1) throw new Error('Could not find a "Title" column in your sheet.');
+
+  const books = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cells = splitCSVLine(lines[i]);
+    const get = idx => (idx >= 0 && idx < cells.length) ? cells[idx].trim() : '';
+
+    const title = get(iTitle);
+    if (!title) continue;
+
+    const pagesRaw = parseInt(get(iPages), 10);
+    const ratingRaw = parseFloat(get(iRating));
+    const dateRaw = get(iDate);
+    const status = get(iStatus) || 'Read';
+    const pubYearRaw = parseInt(get(iPubYear), 10);
+
+    books.push({
+      title,
+      author:  get(iAuthor) || 'Unknown',
+      genre:   get(iGenre)  || 'Uncategorized',
+      pages:   isNaN(pagesRaw) ? 0 : pagesRaw,
+      pubYear: isNaN(pubYearRaw) ? null : pubYearRaw,
+      dateStr: dateRaw,
+      date:    parseDate(dateRaw),
+      rating:  isNaN(ratingRaw) ? 0 : Math.min(5, Math.max(0, ratingRaw)),
+      status:  normalizeStatus(status),
+    });
+  }
+  return books;
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (c === ',' && !inQuote) {
+      result.push(cur); cur = '';
+    } else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeStatus(s) {
+  const l = s.toLowerCase();
+  if (l.includes('reading') && !l.includes('want')) return 'Reading';
+  if (l.includes('want') || l.includes('tbr') || l.includes('wish')) return 'Want to Read';
+  return 'Read';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Render everything
+// ─────────────────────────────────────────────────────────────────
+function renderAll() {
+  showEmptyState(false);
+  document.getElementById('app-content').style.display = 'block';
+  renderStats();
+  renderGenreFilter();
+  renderTable();
+  buildCharts();
+  renderCurrentlyReading();
+  renderWantToRead();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Stats
+// ─────────────────────────────────────────────────────────────────
+function renderStats() {
+  const read = allBooks.filter(b => b.status === 'Read');
+  const totalBooks  = read.length;
+  const totalPages  = read.reduce((s, b) => s + b.pages, 0);
+  const rated       = read.filter(b => b.rating > 0);
+  const avgRating   = rated.length ? (rated.reduce((s,b)=>s+b.rating,0)/rated.length) : 0;
+  const genres      = [...new Set(read.map(b => b.genre))].length;
+  const authors     = [...new Set(read.map(b => b.author))].length;
+
+  // Books this year
+  const year = new Date().getFullYear();
+  const thisYear = read.filter(b => b.date && b.date.getFullYear() === year).length;
+
+  // Avg pages
+  const avgPages = totalBooks ? Math.round(totalPages / totalBooks) : 0;
+
+  // Best rated book
+  const best = read.filter(b=>b.rating===5)[0];
+
+  // Longest book
+  const longest = read.sort((a,b)=>b.pages-a.pages)[0];
+
+  // Reading pace (books per month based on dated books)
+  const datedBooks = read.filter(b => b.date);
+  let pace = '—';
+  if (datedBooks.length >= 2) {
+    const dates = datedBooks.map(b=>b.date).sort((a,b)=>a-b);
+    const monthsDiff = (dates[dates.length-1] - dates[0]) / (1000*60*60*24*30.5);
+    if (monthsDiff > 0) pace = (datedBooks.length / monthsDiff).toFixed(1) + '/mo';
+  }
+
+  const stats = [
+    { icon:'📗', label:'Books Read',      value: totalBooks,              sub: `${thisYear} this year` },
+    { icon:'📄', label:'Pages Read',      value: totalPages.toLocaleString(), sub: `avg ${avgPages} per book` },
+    { icon:'⭐', label:'Avg Rating',      value: avgRating.toFixed(1)+'/5', sub: `${rated.length} rated` },
+    { icon:'🎭', label:'Genres',          value: genres,                  sub: `${authors} authors` },
+    { icon:'⚡', label:'Reading Pace',    value: pace,                    sub: 'books per month' },
+    { icon:'📖', label:'Currently Reading',value: allBooks.filter(b=>b.status==='Reading').length, sub: '' },
+    { icon:'🔖', label:'Want to Read',    value: allBooks.filter(b=>b.status==='Want to Read').length, sub: '' },
+    { icon:'🏆', label:'5-Star Books',    value: read.filter(b=>b.rating===5).length, sub: best ? `"${best.title.slice(0,20)}…"` : '' },
+  ];
+
+  document.getElementById('stat-grid').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <span class="stat-icon">${s.icon}</span>
+      <span class="stat-label">${s.label}</span>
+      <span class="stat-value">${s.value}</span>
+      ${s.sub ? `<span class="stat-sub">${s.sub}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Genre Filter dropdown
+// ─────────────────────────────────────────────────────────────────
+function renderGenreFilter() {
+  const genres = [...new Set(allBooks.map(b => b.genre))].sort();
+  const sel = document.getElementById('filter-genre');
+  sel.innerHTML = '<option value="">All Genres</option>' +
+    genres.map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Book Table
+// ─────────────────────────────────────────────────────────────────
+function renderTable() {
+  const query  = document.getElementById('search-input').value.toLowerCase();
+  const genre  = document.getElementById('filter-genre').value;
+  const status = document.getElementById('filter-status').value;
+  const sort   = document.getElementById('sort-by').value;
+
+  let books = [...allBooks];
+
+  if (query)  books = books.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query));
+  if (genre)  books = books.filter(b => b.genre === genre);
+  if (status) books = books.filter(b => b.status === status);
+
+  books.sort((a, b) => {
+    switch(sort) {
+      case 'date-asc':    return (a.date||0) - (b.date||0);
+      case 'date-desc':   return (b.date||0) - (a.date||0);
+      case 'rating-desc': return b.rating - a.rating;
+      case 'rating-asc':  return a.rating - b.rating;
+      case 'pages-desc':  return b.pages - a.pages;
+      case 'title-asc':   return a.title.localeCompare(b.title);
+      default:            return 0;
+    }
+  });
+
+  const tbody = document.getElementById('book-table-body');
+  tbody.innerHTML = books.map((b, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><strong>${esc(b.title)}</strong></td>
+      <td>${esc(b.author)}</td>
+      <td><span class="badge">${esc(b.genre)}</span></td>
+      <td>${b.pages || '—'}</td>
+      <td>${b.pubYear || '—'}</td>
+      <td style="white-space:nowrap">${b.date ? formatDate(b.date) : '—'}</td>
+      <td>${b.rating ? renderStars(b.rating) : '—'}</td>
+      <td><span class="badge" style="${statusColor(b.status)}">${b.status}</span></td>
+    </tr>
+  `).join('') || `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">No books match your filters.</td></tr>`;
+
+  document.getElementById('table-count').textContent = `Showing ${books.length} of ${allBooks.length} books`;
+}
+
+function renderStars(r) {
+  const full = Math.round(r);
+  return `<span class="stars">${'★'.repeat(full)}${'☆'.repeat(5-full)}</span> <small style="color:var(--muted)">${r.toFixed(1)}</small>`;
+}
+
+function statusColor(s) {
+  if (s === 'Reading')      return 'border-color:var(--accent);color:var(--accent)';
+  if (s === 'Want to Read') return 'border-color:var(--accent2);color:var(--accent2)';
+  return 'border-color:var(--accent3);color:var(--accent3)';
+}
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Currently Reading & Want to Read
+// ─────────────────────────────────────────────────────────────────
+function renderCurrentlyReading() {
+  const books = allBooks.filter(b => b.status === 'Reading');
+  const section = document.getElementById('currently-reading-section');
+  if (!books.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  document.getElementById('currently-reading-grid').innerHTML = books.map(b => `
+    <div class="book-card">
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author)}</div>
+      ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+      ${b.pages ? `<small style="color:var(--muted)">${b.pages} pages</small>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderWantToRead() {
+  const books = allBooks.filter(b => b.status === 'Want to Read');
+  const section = document.getElementById('want-to-read-section');
+  if (!books.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  document.getElementById('want-to-read-grid').innerHTML = books.map(b => `
+    <div class="book-card">
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author)}</div>
+      ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Charts
+// ─────────────────────────────────────────────────────────────────
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#8b8fa8', font: { size: 11 } } } },
+};
+
+function mkChart(id, config) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, config);
+}
+
+function buildCharts() {
+  const read = allBooks.filter(b => b.status === 'Read');
+
+  // ── Genre pie ────
+  const genreCount = countBy(read, 'genre');
+  mkChart('chart-genre', {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(genreCount),
+      datasets: [{ data: Object.values(genreCount), backgroundColor: PALETTE, borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS }
+  });
+
+  // ── Rating bar ────
+  const ratingBuckets = {1:0,2:0,3:0,4:0,5:0};
+  read.filter(b=>b.rating>0).forEach(b => { ratingBuckets[Math.round(b.rating)]++; });
+  mkChart('chart-rating', {
+    type: 'bar',
+    data: {
+      labels: ['★1','★2','★3','★4','★5'],
+      datasets: [{ data: Object.values(ratingBuckets), backgroundColor: PALETTE, borderRadius: 6, borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
+  });
+
+  // ── Monthly books ────
+  const monthly = monthlyCount(read);
+  mkChart('chart-monthly', {
+    type: 'bar',
+    data: {
+      labels: monthly.labels,
+      datasets: [{ label: 'Books', data: monthly.values, backgroundColor: '#7c6af7', borderRadius: 5, borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
+  });
+
+  // ── Pages monthly (Charts tab) ────
+  const pagesM = monthlyCount(read, 'pages');
+  mkChart('chart-pages-monthly', {
+    type: 'line',
+    data: {
+      labels: pagesM.labels,
+      datasets: [{
+        label: 'Pages', data: pagesM.values,
+        borderColor: '#6af7c4', backgroundColor: 'rgba(106,247,196,.1)',
+        fill: true, tension: .35, pointRadius: 3
+      }]
+    },
+    options: { ...CHART_DEFAULTS, scales: axisScales() }
+  });
+
+  // ── Yearly ────
+  const yearly = yearlyCount(read);
+  mkChart('chart-yearly', {
+    type: 'bar',
+    data: {
+      labels: yearly.labels,
+      datasets: [{ label:'Books', data: yearly.values, backgroundColor: '#f76a8c', borderRadius: 6, borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
+  });
+
+  // ── Avg rating by genre ────
+  const genreRating = avgByGroup(read.filter(b=>b.rating>0), 'genre', 'rating');
+  mkChart('chart-genre-rating', {
+    type: 'bar',
+    data: {
+      labels: Object.keys(genreRating),
+      datasets: [{ label:'Avg Rating', data: Object.values(genreRating).map(v=>v.toFixed(2)), backgroundColor: PALETTE, borderRadius: 6, borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales(0, 5) }
+  });
+
+  // ── Status donut ────
+  const statusCount = countBy(allBooks, 'status');
+  mkChart('chart-status', {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(statusCount),
+      datasets: [{ data: Object.values(statusCount), backgroundColor: ['#7c6af7','#6af7c4','#f76a8c'], borderWidth: 0 }]
+    },
+    options: { ...CHART_DEFAULTS }
+  });
+
+  // ── Pages per book (horizontal bar, top 20) ────
+  const top = [...read].filter(b=>b.pages>0).sort((a,b)=>b.pages-a.pages).slice(0,20);
+  mkChart('chart-pages-book', {
+    type: 'bar',
+    data: {
+      labels: top.map(b => b.title.length > 28 ? b.title.slice(0,26)+'…' : b.title),
+      datasets: [{ label:'Pages', data: top.map(b=>b.pages), backgroundColor: '#f7c46a', borderRadius: 4, borderWidth: 0 }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: axisScales()
+    }
+  });
+}
+
+function axisScales(min=0, max=undefined) {
+  const scale = {
+    ticks: { color: '#8b8fa8', font: { size: 10 } },
+    grid:  { color: 'rgba(46,50,72,.7)' },
+  };
+  if (min !== undefined) scale.min = min;
+  if (max !== undefined) scale.max = max;
+  return { x: { ...scale }, y: { ...scale } };
+}
+
+function countBy(arr, key) {
+  const out = {};
+  arr.forEach(b => { out[b[key]] = (out[b[key]] || 0) + 1; });
+  return out;
+}
+
+function avgByGroup(arr, groupKey, valueKey) {
+  const sums = {}, counts = {};
+  arr.forEach(b => {
+    const g = b[groupKey];
+    sums[g]   = (sums[g]   || 0) + b[valueKey];
+    counts[g] = (counts[g] || 0) + 1;
+  });
+  const out = {};
+  Object.keys(sums).forEach(g => out[g] = sums[g] / counts[g]);
+  return out;
+}
+
+function monthlyCount(books, sumKey=null) {
+  const datedBooks = books.filter(b => b.date);
+  if (!datedBooks.length) return { labels: [], values: [] };
+
+  const map = {};
+  datedBooks.forEach(b => {
+    const key = `${b.date.getFullYear()}-${String(b.date.getMonth()+1).padStart(2,'0')}`;
+    map[key] = (map[key] || 0) + (sumKey ? b[sumKey] : 1);
+  });
+
+  const keys = Object.keys(map).sort();
+  // Fill gaps
+  if (keys.length > 1) {
+    const [y1,m1] = keys[0].split('-').map(Number);
+    const [y2,m2] = keys[keys.length-1].split('-').map(Number);
+    let y=y1, m=m1;
+    while (y < y2 || (y===y2 && m<=m2)) {
+      const k = `${y}-${String(m).padStart(2,'0')}`;
+      if (!map[k]) map[k] = 0;
+      m++; if (m>12) { m=1; y++; }
+    }
+  }
+  const sorted = Object.keys(map).sort();
+  return {
+    labels: sorted.map(k => { const [y,m]=k.split('-'); return new Date(+y,+m-1).toLocaleDateString('en-US',{month:'short',year:'2-digit'}); }),
+    values: sorted.map(k => map[k])
+  };
+}
+
+function yearlyCount(books) {
+  const map = {};
+  books.filter(b=>b.date).forEach(b => {
+    const y = b.date.getFullYear();
+    map[y] = (map[y] || 0) + 1;
+  });
+  const keys = Object.keys(map).sort();
+  return { labels: keys, values: keys.map(k=>map[k]) };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Tabs
+// ─────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(name)));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  // Rebuild charts when Charts tab is activated (canvas sizing)
+  if (name === 'charts' && allBooks.length) setTimeout(buildCharts, 50);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Status helpers
+// ─────────────────────────────────────────────────────────────────
+function setSyncStatus(state, text) {
+  const el = document.getElementById('sync-status');
+  el.className = state;
+  document.getElementById('sync-text').textContent = text;
+}
+
+function setLoading(show) {
+  document.getElementById('loading').classList.toggle('show', show);
+}
+
+function showEmptyState(show) {
+  document.getElementById('empty-state').style.display = show ? 'block' : 'none';
+  if (show) document.getElementById('app-content').style.display = 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function clearError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Demo data
+// ─────────────────────────────────────────────────────────────────
+function loadDemo() {
+  allBooks = [
+    { title:"The Pragmatic Programmer",  author:"Hunt & Thomas",    genre:"Technology",  pages:352,  pubYear:1999, date:new Date("2023-01-15"), dateStr:"2023-01-15", rating:5, status:"Read"         },
+    { title:"Dune",                       author:"Frank Herbert",    genre:"Sci-Fi",      pages:688,  pubYear:1965, date:new Date("2023-02-03"), dateStr:"2023-02-03", rating:5, status:"Read"         },
+    { title:"Atomic Habits",              author:"James Clear",      genre:"Self-Help",   pages:320,  pubYear:2018, date:new Date("2023-02-28"), dateStr:"2023-02-28", rating:4, status:"Read"         },
+    { title:"The Name of the Wind",       author:"Patrick Rothfuss", genre:"Fantasy",     pages:662,  pubYear:2007, date:new Date("2023-03-20"), dateStr:"2023-03-20", rating:5, status:"Read"         },
+    { title:"Sapiens",                    author:"Yuval Noah Harari",genre:"History",     pages:443,  pubYear:2011, date:new Date("2023-04-10"), dateStr:"2023-04-10", rating:4, status:"Read"         },
+    { title:"Project Hail Mary",          author:"Andy Weir",        genre:"Sci-Fi",      pages:476,  pubYear:2021, date:new Date("2023-04-30"), dateStr:"2023-04-30", rating:5, status:"Read"         },
+    { title:"Deep Work",                  author:"Cal Newport",      genre:"Self-Help",   pages:296,  pubYear:2016, date:new Date("2023-05-18"), dateStr:"2023-05-18", rating:4, status:"Read"         },
+    { title:"The Hobbit",                 author:"J.R.R. Tolkien",   genre:"Fantasy",     pages:310,  pubYear:1937, date:new Date("2023-06-01"), dateStr:"2023-06-01", rating:4, status:"Read"         },
+    { title:"Clean Code",                 author:"Robert Martin",    genre:"Technology",  pages:431,  pubYear:2008, date:new Date("2023-06-22"), dateStr:"2023-06-22", rating:4, status:"Read"         },
+    { title:"1984",                       author:"George Orwell",    genre:"Fiction",     pages:328,  pubYear:1949, date:new Date("2023-07-14"), dateStr:"2023-07-14", rating:5, status:"Read"         },
+    { title:"Thinking, Fast and Slow",    author:"Daniel Kahneman",  genre:"Psychology",  pages:499,  pubYear:2011, date:new Date("2023-08-05"), dateStr:"2023-08-05", rating:4, status:"Read"         },
+    { title:"The Martian",                author:"Andy Weir",        genre:"Sci-Fi",      pages:369,  pubYear:2011, date:new Date("2023-09-12"), dateStr:"2023-09-12", rating:4, status:"Read"         },
+    { title:"Educated",                   author:"Tara Westover",    genre:"Memoir",      pages:334,  pubYear:2018, date:new Date("2023-10-01"), dateStr:"2023-10-01", rating:5, status:"Read"         },
+    { title:"The Psychology of Money",    author:"Morgan Housel",    genre:"Finance",     pages:256,  pubYear:2020, date:new Date("2023-11-08"), dateStr:"2023-11-08", rating:4, status:"Read"         },
+    { title:"Ender's Game",               author:"Orson Scott Card", genre:"Sci-Fi",      pages:352,  pubYear:1985, date:new Date("2023-12-20"), dateStr:"2023-12-20", rating:4, status:"Read"         },
+    { title:"Brave New World",            author:"Aldous Huxley",    genre:"Fiction",     pages:311,  pubYear:1932, date:new Date("2024-01-09"), dateStr:"2024-01-09", rating:4, status:"Read"         },
+    { title:"The Lean Startup",           author:"Eric Ries",        genre:"Business",    pages:299,  pubYear:2011, date:new Date("2024-02-14"), dateStr:"2024-02-14", rating:3, status:"Read"         },
+    { title:"Hyperion",                   author:"Dan Simmons",      genre:"Sci-Fi",      pages:482,  pubYear:1989, date:new Date("2024-03-03"), dateStr:"2024-03-03", rating:5, status:"Read"         },
+    { title:"Mistborn",                   author:"Brandon Sanderson",genre:"Fantasy",     pages:541,  pubYear:2006, date:new Date("2024-04-21"), dateStr:"2024-04-21", rating:5, status:"Read"         },
+    { title:"Zero to One",                author:"Peter Thiel",      genre:"Business",    pages:195,  pubYear:2014, date:new Date("2024-05-17"), dateStr:"2024-05-17", rating:3, status:"Read"         },
+    { title:"The Power of Habit",         author:"Charles Duhigg",   genre:"Self-Help",   pages:371,  pubYear:2012, date:new Date("2024-06-08"), dateStr:"2024-06-08", rating:4, status:"Read"         },
+    { title:"Children of Time",           author:"Adrian Tchaikovsky",genre:"Sci-Fi",     pages:600,  pubYear:2015, date:new Date("2024-07-22"), dateStr:"2024-07-22", rating:5, status:"Read"         },
+    { title:"The Way of Kings",           author:"Brandon Sanderson",genre:"Fantasy",     pages:1007, pubYear:2010, date:new Date("2024-09-01"), dateStr:"2024-09-01", rating:5, status:"Read"         },
+    { title:"Never Split the Difference", author:"Chris Voss",       genre:"Self-Help",   pages:260,  pubYear:2016, date:new Date("2024-10-14"), dateStr:"2024-10-14", rating:4, status:"Read"         },
+    { title:"Recursion",                  author:"Blake Crouch",     genre:"Sci-Fi",      pages:336,  pubYear:2019, date:new Date("2024-11-29"), dateStr:"2024-11-29", rating:4, status:"Read"         },
+    { title:"Words of Radiance",          author:"Brandon Sanderson",genre:"Fantasy",     pages:1087, pubYear:2014, date:new Date("2025-01-15"), dateStr:"2025-01-15", rating:5, status:"Read"         },
+    { title:"The Creative Act",           author:"Rick Rubin",       genre:"Self-Help",   pages:419,  pubYear:2023, date:new Date("2025-02-28"), dateStr:"2025-02-28", rating:4, status:"Read"         },
+    { title:"Piranesi",                   author:"Susanna Clarke",   genre:"Fantasy",     pages:272,  pubYear:2020, date:new Date("2025-03-19"), dateStr:"2025-03-19", rating:5, status:"Read"         },
+    { title:"A Memory Called Empire",     author:"Arkady Martine",   genre:"Sci-Fi",      pages:462,  pubYear:2019, date:new Date("2025-04-07"), dateStr:"2025-04-07", rating:4, status:"Read"         },
+    { title:"Meditations",                author:"Marcus Aurelius",  genre:"Philosophy",  pages:254,  pubYear:180,  date:new Date("2025-05-22"), dateStr:"2025-05-22", rating:5, status:"Read"         },
+    { title:"Oathbringer",                author:"Brandon Sanderson",genre:"Fantasy",     pages:1243, pubYear:2017, date:null,                  dateStr:"",           rating:0, status:"Reading"      },
+    { title:"The Brothers Karamazov",     author:"Fyodor Dostoevsky",genre:"Fiction",     pages:796,  pubYear:1880, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
+    { title:"Gödel, Escher, Bach",        author:"Douglas Hofstadter",genre:"Philosophy", pages:777,  pubYear:1979, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
+    { title:"The Remains of the Day",     author:"Kazuo Ishiguro",   genre:"Fiction",     pages:258,  pubYear:1989, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
+  ];
+
+  document.getElementById('sheet-url').value = '';
+  setSyncStatus('synced', 'Demo data loaded');
+  renderAll();
+  document.getElementById('config-panel').style.display = 'none';
+  showEmptyState(false);
+}
+</script>
+</body>
+</html>
