@@ -736,6 +736,7 @@ function parseCSV(text) {
   const iDate    = col('date');
   const iRating  = col('rating');
   const iStatus  = col('status');
+  const iCover   = col('cover');
 
   if (iTitle === -1) throw new Error('Could not find a "Title" column in your sheet.');
 
@@ -755,14 +756,15 @@ function parseCSV(text) {
 
     books.push({
       title,
-      author:  get(iAuthor) || 'Unknown',
-      genre:   get(iGenre)  || 'Uncategorized',
-      pages:   isNaN(pagesRaw) ? 0 : pagesRaw,
-      pubYear: isNaN(pubYearRaw) ? null : pubYearRaw,
-      dateStr: dateRaw,
-      date:    parseDate(dateRaw),
-      rating:  isNaN(ratingRaw) ? 0 : Math.min(5, Math.max(0, ratingRaw)),
-      status:  normalizeStatus(status),
+      author:   get(iAuthor) || 'Unknown',
+      genre:    get(iGenre)  || 'Uncategorized',
+      pages:    isNaN(pagesRaw) ? 0 : pagesRaw,
+      pubYear:  isNaN(pubYearRaw) ? null : pubYearRaw,
+      dateStr:  dateRaw,
+      date:     parseDate(dateRaw),
+      rating:   isNaN(ratingRaw) ? 0 : Math.min(5, Math.max(0, ratingRaw)),
+      status:   normalizeStatus(status),
+      coverUrl: get(iCover) || null,
     });
   }
   return books;
@@ -821,8 +823,15 @@ async function prefetchCovers() {
   for (const b of allBooks) {
     const key = coverKey(b.title, b.author);
     if (key in coverCache) continue;
+
+    // If the sheet already has a cover URL, use it directly — no API call needed
+    if (b.coverUrl) {
+      coverCache[key] = b.coverUrl;
+      injectCoverPlaceholders(b);
+      continue;
+    }
+
     getCover(b.title, b.author, () => {
-      // Re-inject any placeholders that are currently visible
       injectCoverPlaceholders(b);
     });
     await new Promise(r => setTimeout(r, 120)); // ~8 req/s
