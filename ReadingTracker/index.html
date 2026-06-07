@@ -584,6 +584,14 @@
           <h3>Top 10 Most Read Authors</h3>
           <div class="chart-wrap" style="height:260px"><canvas id="chart-top-authors"></canvas></div>
         </div>
+        <div class="chart-card wide">
+          <h3>Books Read by Genre</h3>
+          <div class="chart-wrap" style="height:260px"><canvas id="chart-genre-bar"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <h3>Re-read Books</h3>
+          <div class="chart-wrap" style="height:260px"><canvas id="chart-reread"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -1214,6 +1222,81 @@ function buildCharts() {
       }
     }
   });
+
+  // ── Books read by genre (horizontal bar) ────
+  const genreBarData = Object.entries(countBy(read, 'genre'))
+    .sort((a, b) => b[1] - a[1]);
+  mkChart('chart-genre-bar', {
+    type: 'bar',
+    data: {
+      labels: genreBarData.map(([g]) => g),
+      datasets: [{
+        label: 'Books Read',
+        data: genreBarData.map(([, c]) => c),
+        backgroundColor: PALETTE,
+        borderRadius: 5,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        ...axisScales(0),
+        x: { ...axisScales(0).x, ticks: { ...axisScales(0).x.ticks, stepSize: 1 } }
+      }
+    }
+  });
+
+  // ── Re-read books ────
+  // Group all Read rows by normalised title, keep only those with >1 entry
+  const readCounts = {};
+  read.forEach(b => {
+    const key = b.title.trim().toLowerCase();
+    if (!readCounts[key]) readCounts[key] = { title: b.title, count: 0 };
+    readCounts[key].count++;
+  });
+  const rereadData = Object.values(readCounts)
+    .filter(r => r.count > 1)
+    .sort((a, b) => b.count - a.count);
+
+  if (rereadData.length) {
+    mkChart('chart-reread', {
+      type: 'bar',
+      data: {
+        labels: rereadData.map(r => r.title),
+        datasets: [{
+          label: 'Times Read',
+          data: rereadData.map(r => r.count),
+          backgroundColor: PALETTE,
+          borderRadius: 5,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        ...CHART_DEFAULTS,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          ...axisScales(0),
+          x: { ...axisScales(0).x, ticks: { ...axisScales(0).x.ticks, stepSize: 1 } }
+        }
+      }
+    });
+  } else {
+    // No re-reads yet — show a friendly empty state on the canvas
+    const ctx = document.getElementById('chart-reread');
+    if (ctx) {
+      if (charts['chart-reread']) charts['chart-reread'].destroy();
+      const c = ctx.getContext('2d');
+      c.clearRect(0, 0, ctx.width, ctx.height);
+      c.fillStyle = '#8b8fa8';
+      c.font = '14px system-ui';
+      c.textAlign = 'center';
+      c.fillText('No re-read books yet', ctx.width / 2, ctx.height / 2);
+    }
+  }
 }
 
 function axisScales(min=0, max=undefined) {
