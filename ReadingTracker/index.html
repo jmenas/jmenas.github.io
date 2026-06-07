@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reading Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
     /* ── Reset & Base ─────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,6 +188,20 @@
       gap: 1.1rem;
     }
 
+    /* Charts tab uses a strict 2-column layout */
+    .charts-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.1rem;
+    }
+    .charts-grid-2col .chart-card.wide {
+      grid-column: span 2;
+    }
+    @media (max-width: 720px) {
+      .charts-grid-2col { grid-template-columns: 1fr; }
+      .charts-grid-2col .chart-card.wide { grid-column: span 1; }
+    }
+
     .chart-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -195,11 +211,10 @@
     .chart-card h3 { font-size: .85rem; color: var(--muted); margin-bottom: 1rem; }
     .chart-wrap { position: relative; height: 220px; }
 
-    .chart-card.wide {
-      grid-column: span 2;
-    }
+    /* Dashboard highlights still uses auto-fill 2-col span */
+    .charts-grid .chart-card.wide { grid-column: span 2; }
     @media (max-width: 720px) {
-      .chart-card.wide { grid-column: span 1; }
+      .charts-grid .chart-card.wide { grid-column: span 1; }
     }
 
     /* ── Book Table ───────────────────────────────────────────── */
@@ -319,6 +334,66 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    /* ── Top Ten List ─────────────────────────────────────────── */
+    .top-ten-list {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+    }
+    .top-ten-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      transition: border-color .2s;
+    }
+    .top-ten-item:hover { border-color: var(--accent); }
+    .top-ten-rank {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 2rem;
+      text-align: center;
+      line-height: 1;
+    }
+    .top-ten-rank.gold   { color: #f7c46a; }
+    .top-ten-rank.silver { color: #b0b8c8; }
+    .top-ten-rank.bronze { color: #cd7f5a; }
+    .top-ten-cover {
+      width: 42px;
+      height: 62px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+    .top-ten-cover-placeholder {
+      width: 42px;
+      height: 62px;
+      border-radius: 4px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--border);
+      flex-shrink: 0;
+    }
+    .top-ten-info { flex: 1; min-width: 0; }
+    .top-ten-title {
+      font-weight: 600;
+      font-size: .95rem;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .top-ten-author { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+    .top-ten-meta   { font-size: .75rem; color: var(--muted); margin-top: .25rem; display: flex; gap: .75rem; flex-wrap: wrap; }
+
     /* ── Currently Reading ────────────────────────────────────── */
     .reading-grid {
       display: grid;
@@ -410,6 +485,36 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Scatter filter controls ──────────────────────────────── */
+    .scatter-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: 1rem;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .scatter-controls label { white-space: nowrap; }
+    .scatter-controls input[type="number"] {
+      width: 72px;
+      padding: .35rem .5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: .82rem;
+    }
+    .scatter-controls input[type="number"]:focus { outline: none; border-color: var(--accent); }
+    .scatter-sep { color: var(--border); }
+    .scatter-hint {
+      font-size: .72rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: .4rem;
+      text-align: center;
+    }
+
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 600px) {
       header { padding: .85rem 1rem; }
@@ -489,7 +594,7 @@
       <div class="charts-grid">
         <div class="chart-card">
           <h3>Books by Genre</h3>
-          <div class="chart-wrap"><canvas id="chart-genre"></canvas></div>
+          <div class="chart-wrap" style="height:300px"><canvas id="chart-genre"></canvas></div>
         </div>
         <div class="chart-card">
           <h3>Rating Distribution</h3>
@@ -499,6 +604,12 @@
           <h3>Books Read per Month</h3>
           <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
         </div>
+      </div>
+
+      <!-- Top Ten Books -->
+      <div id="top-ten-section" style="display:none">
+        <p class="section-title">My Top Ten Books</p>
+        <div class="top-ten-list" id="top-ten-list"></div>
       </div>
 
       <!-- Currently Reading -->
@@ -559,7 +670,7 @@
 
     <!-- ── CHARTS TAB ─────────────────────────────────────────── -->
     <div class="tab-panel" id="tab-charts">
-      <div class="charts-grid">
+      <div class="charts-grid-2col">
         <div class="chart-card">
           <h3>Pages Read per Month</h3>
           <div class="chart-wrap"><canvas id="chart-pages-monthly"></canvas></div>
@@ -585,12 +696,29 @@
           <div class="chart-wrap" style="height:260px"><canvas id="chart-top-authors"></canvas></div>
         </div>
         <div class="chart-card wide">
-          <h3>Books Read by Genre</h3>
+          <h3>Top 10 Books Read by Genre</h3>
           <div class="chart-wrap" style="height:260px"><canvas id="chart-genre-bar"></canvas></div>
         </div>
         <div class="chart-card wide">
           <h3>Re-read Books</h3>
           <div class="chart-wrap" style="height:260px"><canvas id="chart-reread"></canvas></div>
+        </div>
+        <div class="chart-card wide" id="scatter-card">
+          <h3>Publication Year vs. Read Date</h3>
+          <div class="scatter-controls">
+            <label>Published:</label>
+            <input type="number" id="scatter-pub-min" placeholder="from" />
+            <span class="scatter-sep">–</span>
+            <input type="number" id="scatter-pub-max" placeholder="to" />
+            <label style="margin-left:.5rem">Read:</label>
+            <input type="number" id="scatter-read-min" placeholder="from" />
+            <span class="scatter-sep">–</span>
+            <input type="number" id="scatter-read-max" placeholder="to" />
+            <button class="btn btn-accent" onclick="applyScatterFilter()" style="padding:.35rem .8rem;font-size:.8rem">Apply</button>
+            <button class="btn" onclick="resetScatterFilter()" style="padding:.35rem .8rem;font-size:.8rem">Reset</button>
+          </div>
+          <div class="chart-wrap" style="height:340px"><canvas id="chart-scatter"></canvas></div>
+          <p class="scatter-hint">Scroll to zoom · Click and drag to pan · Double-click to reset</p>
         </div>
       </div>
     </div>
@@ -749,6 +877,7 @@ function parseCSV(text) {
   const iRating  = col('rating');
   const iStatus  = col('status');
   const iCover   = col('cover');
+  const iTopTen  = col('top ten');
 
   if (iTitle === -1) throw new Error('Could not find a "Title" column in your sheet.');
 
@@ -777,6 +906,7 @@ function parseCSV(text) {
       rating:   isNaN(ratingRaw) ? 0 : Math.min(5, Math.max(0, ratingRaw)),
       status:   normalizeStatus(status),
       coverUrl: parseCoverCell(get(iCover)),
+      topTen:   parseInt(get(iTopTen), 10) || null,
     });
   }
   return books;
@@ -842,6 +972,7 @@ function renderAll() {
   buildCharts();
   renderCurrentlyReading();
   renderUpNext();
+  renderTopTen();
   // Pre-warm cover cache for all books in the background
   prefetchCovers();
 }
@@ -880,6 +1011,16 @@ function injectCoverPlaceholders(b) {
     img.className = 'cover-thumb';
     img.src = url;
     img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => { img.style.display = 'none'; };
+    el.replaceWith(img);
+  });
+  // Top Ten list (dashboard)
+  document.querySelectorAll(`.top-ten-cover-placeholder[data-cover-key="${CSS.escape(key)}"]`).forEach(el => {
+    const img = document.createElement('img');
+    img.className = 'top-ten-cover';
+    img.src = url;
+    img.alt = b.title + ' cover';
     img.loading = 'lazy';
     img.onerror = () => { img.style.display = 'none'; };
     el.replaceWith(img);
@@ -1062,6 +1203,42 @@ function renderUpNext() {
   `).join('');
 }
 
+function renderTopTen() {
+  const section = document.getElementById('top-ten-section');
+  const books = allBooks
+    .filter(b => b.topTen !== null && !isNaN(b.topTen))
+    .sort((a, b) => a.topTen - b.topTen)
+    .slice(0, 10);
+
+  if (!books.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const rankClass = r => r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
+
+  document.getElementById('top-ten-list').innerHTML = books.map(b => {
+    const key = coverKey(b.title, b.author);
+    const cachedUrl = coverCache[key];
+    const coverHtml = cachedUrl
+      ? `<img class="top-ten-cover" src="${cachedUrl}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.outerHTML='<div class=\\'top-ten-cover-placeholder\\'>📖</div>'">`
+      : `<div class="top-ten-cover-placeholder" data-cover-key="${esc(key)}">📖</div>`;
+
+    return `
+    <div class="top-ten-item">
+      <div class="top-ten-rank ${rankClass(b.topTen)}">${b.topTen}</div>
+      ${coverHtml}
+      <div class="top-ten-info">
+        <div class="top-ten-title">${esc(b.title)}</div>
+        <div class="top-ten-author">${esc(b.author)}</div>
+        <div class="top-ten-meta">
+          ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+          ${b.pubYear ? `<span style="color:var(--muted)">${b.pubYear}</span>` : ''}
+          ${b.rating ? `<span style="color:#f5c842">${'★'.repeat(Math.round(b.rating))}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // Renders a cover img tag (or placeholder) for a book card.
 // Uses cached URL immediately if available; otherwise shows placeholder
 // and the getCover callback will swap it in.
@@ -1104,7 +1281,16 @@ function buildCharts() {
       labels: Object.keys(genreCount),
       datasets: [{ data: Object.values(genreCount), backgroundColor: PALETTE, borderWidth: 0 }]
     },
-    options: { ...CHART_DEFAULTS }
+    options: {
+      ...CHART_DEFAULTS,
+      layout: { padding: { bottom: 8 } },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#8b8fa8', font: { size: 11 }, padding: 14, boxWidth: 12 }
+        }
+      }
+    }
   });
 
   // ── Rating bar ────
@@ -1225,7 +1411,8 @@ function buildCharts() {
 
   // ── Books read by genre (horizontal bar) ────
   const genreBarData = Object.entries(countBy(read, 'genre'))
-    .sort((a, b) => b[1] - a[1]);
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
   mkChart('chart-genre-bar', {
     type: 'bar',
     data: {
@@ -1296,6 +1483,168 @@ function buildCharts() {
       c.textAlign = 'center';
       c.fillText('No re-read books yet', ctx.width / 2, ctx.height / 2);
     }
+  }
+
+  // ── Publication Year vs Read Date scatter ────
+  buildScatterChart();
+}
+
+// Scatter chart data & state
+let scatterAllPoints = [];
+
+function buildScatterChart() {
+  // Collect books with both a read date and a publication year
+  const points = allBooks
+    .filter(b => b.status === 'Read' && b.date && b.pubYear)
+    .map(b => ({
+      x: b.date.getFullYear() + (b.date.getMonth() / 12),  // fractional year for spacing
+      y: b.pubYear,
+      title: b.title,
+      author: b.author,
+      readLabel: b.date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+      pubYear: b.pubYear,
+    }));
+
+  scatterAllPoints = points;
+
+  // Set default filter ranges from the data
+  if (points.length) {
+    const pubYears  = points.map(p => p.y);
+    const readYears = points.map(p => Math.floor(p.x));
+    setScatterDefaults(
+      Math.min(...pubYears),  Math.max(...pubYears),
+      Math.min(...readYears), Math.max(...readYears)
+    );
+  }
+
+  renderScatterChart(points);
+}
+
+function setScatterDefaults(pubMin, pubMax, readMin, readMax) {
+  document.getElementById('scatter-pub-min').value  = pubMin;
+  document.getElementById('scatter-pub-max').value  = pubMax;
+  document.getElementById('scatter-read-min').value = readMin;
+  document.getElementById('scatter-read-max').value = readMax;
+}
+
+function applyScatterFilter() {
+  const pubMin  = parseInt(document.getElementById('scatter-pub-min').value)  || -Infinity;
+  const pubMax  = parseInt(document.getElementById('scatter-pub-max').value)  || Infinity;
+  const readMin = parseInt(document.getElementById('scatter-read-min').value) || -Infinity;
+  const readMax = parseInt(document.getElementById('scatter-read-max').value) || Infinity;
+
+  const filtered = scatterAllPoints.filter(p =>
+    p.y >= pubMin && p.y <= pubMax &&
+    Math.floor(p.x) >= readMin && Math.floor(p.x) <= readMax
+  );
+  renderScatterChart(filtered);
+}
+
+function resetScatterFilter() {
+  if (scatterAllPoints.length) {
+    const pubYears  = scatterAllPoints.map(p => p.y);
+    const readYears = scatterAllPoints.map(p => Math.floor(p.x));
+    setScatterDefaults(
+      Math.min(...pubYears),  Math.max(...pubYears),
+      Math.min(...readYears), Math.max(...readYears)
+    );
+  }
+  renderScatterChart(scatterAllPoints);
+}
+
+function renderScatterChart(points) {
+  mkChart('chart-scatter', {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Books',
+        data: points,
+        backgroundColor: 'rgba(124,106,247,0.75)',
+        pointRadius: 6,
+        pointHoverRadius: 9,
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: () => '',
+            label: ctx => {
+              const p = ctx.raw;
+              return [
+                `Read: ${p.readLabel}`,
+                `Published: ${p.pubYear}`,
+                p.title,
+              ];
+            }
+          },
+          displayColors: false,
+          bodyColor: ctx => {
+            // Last line (title) gets accent color — achieved via afterBody instead
+            return '#e8eaf6';
+          },
+          callbacks: {
+            title: () => '',
+            beforeBody: ctx => {
+              const p = ctx[0]?.raw;
+              return p ? [`Read: ${p.readLabel}`, `Published: ${p.pubYear}`] : [];
+            },
+            label: () => '',
+            afterBody: ctx => {
+              const p = ctx[0]?.raw;
+              return p ? [p.title] : [];
+            }
+          },
+          bodyFont: { size: 12 },
+          padding: 10,
+          backgroundColor: 'rgba(26,29,39,0.97)',
+          borderColor: 'rgba(124,106,247,0.4)',
+          borderWidth: 1,
+        },
+        zoom: {
+          pan:  { enabled: true, mode: 'xy' },
+          zoom: {
+            wheel:  { enabled: true },
+            pinch:  { enabled: true },
+            mode:   'xy',
+          },
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Read Date (Year)', color: '#8b8fa8', font: { size: 11 } },
+          ticks: {
+            color: '#8b8fa8',
+            font: { size: 10 },
+            callback: val => Math.floor(val),
+            maxTicksLimit: 20,
+          },
+          grid: { color: 'rgba(46,50,72,.7)' },
+        },
+        y: {
+          title: { display: true, text: 'Publication Year', color: '#8b8fa8', font: { size: 11 }, padding: { bottom: 8 } },
+          ticks: { color: '#8b8fa8', font: { size: 10 }, maxTicksLimit: 12 },
+          grid: { color: 'rgba(46,50,72,.7)' },
+        }
+      },
+      onClick: (e, elements) => {
+        // Double-click resets zoom
+      },
+      onDblClick: (e) => {
+        if (charts['chart-scatter']) charts['chart-scatter'].resetZoom();
+      },
+    }
+  });
+
+  // Wire up double-click reset on the canvas
+  const canvas = document.getElementById('chart-scatter');
+  if (canvas && !canvas._dblClickBound) {
+    canvas.addEventListener('dblclick', () => {
+      if (charts['chart-scatter']) charts['chart-scatter'].resetZoom();
+    });
+    canvas._dblClickBound = true;
   }
 }
 
