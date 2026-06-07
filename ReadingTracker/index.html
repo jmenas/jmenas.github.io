@@ -322,20 +322,66 @@
     /* ── Currently Reading ────────────────────────────────────── */
     .reading-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 1rem;
     }
     .book-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1rem;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: .5rem;
+      transition: border-color .2s, transform .15s;
     }
-    .book-card .book-title { font-weight: 600; font-size: .95rem; line-height: 1.3; }
-    .book-card .book-author { font-size: .8rem; color: var(--muted); }
+    .book-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .book-card-cover {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: var(--surface2);
+      display: block;
+      flex-shrink: 0;
+    }
+    .book-card-cover.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: var(--border);
+    }
+    .book-card-body {
+      padding: .75rem;
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      flex: 1;
+    }
+    .book-card .book-title { font-weight: 600; font-size: .88rem; line-height: 1.35; }
+    .book-card .book-author { font-size: .75rem; color: var(--muted); }
+
+    /* ── Table cover thumbnail ────────────────────────────────── */
+    .cover-thumb {
+      width: 32px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 3px;
+      background: var(--surface2);
+      display: block;
+      flex-shrink: 0;
+    }
+    .cover-thumb-placeholder {
+      width: 32px;
+      height: 48px;
+      border-radius: 3px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      color: var(--border);
+      flex-shrink: 0;
+    }
 
     /* ── Scrollbar ────────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -493,6 +539,7 @@
           <thead>
             <tr>
               <th>#</th>
+              <th></th>
               <th>Title</th>
               <th>Author</th>
               <th>Genre</th>
@@ -562,6 +609,49 @@ const PALETTE = [
   '#7c6af7','#f76a8c','#6af7c4','#f7c46a','#6ab8f7',
   '#f76af7','#c4f76a','#f79c6a','#6af7f7','#d46af7'
 ];
+
+// ─────────────────────────────────────────────────────────────────
+// Cover image cache & fetcher
+// ─────────────────────────────────────────────────────────────────
+const coverCache = {};  // key: "title|||author" → cover URL or null
+
+function coverKey(title, author) {
+  return `${title}|||${author}`;
+}
+
+// Returns a cover URL from cache, or null if not yet fetched.
+// Kicks off a fetch if not cached, then calls onLoad(url) when ready.
+function getCover(title, author, onLoad) {
+  const key = coverKey(title, author);
+  if (key in coverCache) {
+    if (coverCache[key] && onLoad) onLoad(coverCache[key]);
+    return coverCache[key] || null;
+  }
+  // Mark as pending so we don't double-fetch
+  coverCache[key] = undefined;
+  fetchCover(title, author).then(url => {
+    coverCache[key] = url;
+    if (url && onLoad) onLoad(url);
+  });
+  return null;
+}
+
+async function fetchCover(title, author) {
+  try {
+    const q = encodeURIComponent(`${title} ${author}`);
+    const res = await fetch(
+      `https://openlibrary.org/search.json?q=${q}&limit=1&fields=cover_i,title`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const coverId = data?.docs?.[0]?.cover_i;
+    if (!coverId) return null;
+    return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+  } catch {
+    return null;
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Init
@@ -719,6 +809,48 @@ function renderAll() {
   buildCharts();
   renderCurrentlyReading();
   renderWantToRead();
+  // Pre-warm cover cache for all books in the background
+  prefetchCovers();
+}
+
+// Fetch covers for all books with a small delay between requests
+// to be polite to the Open Library API (rate limiting).
+async function prefetchCovers() {
+  for (const b of allBooks) {
+    const key = coverKey(b.title, b.author);
+    if (key in coverCache) continue;
+    getCover(b.title, b.author, () => {
+      // Re-inject any placeholders that are currently visible
+      injectCoverPlaceholders(b);
+    });
+    await new Promise(r => setTimeout(r, 120)); // ~8 req/s
+  }
+}
+
+function injectCoverPlaceholders(b) {
+  const key = coverKey(b.title, b.author);
+  const url = coverCache[key];
+  if (!url) return;
+  // Book cards (dashboard)
+  document.querySelectorAll(`[data-cover-key="${CSS.escape(key)}"]`).forEach(el => {
+    const img = document.createElement('img');
+    img.className = 'book-card-cover';
+    img.src = url;
+    img.alt = b.title + ' cover';
+    img.loading = 'lazy';
+    img.onerror = () => { img.style.display = 'none'; };
+    el.replaceWith(img);
+  });
+  // Table thumbnails (books tab)
+  document.querySelectorAll(`[data-thumb-key="${CSS.escape(key)}"]`).forEach(el => {
+    const img = document.createElement('img');
+    img.className = 'cover-thumb';
+    img.src = url;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => { img.style.display = 'none'; };
+    el.replaceWith(img);
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -814,9 +946,16 @@ function renderTable() {
   });
 
   const tbody = document.getElementById('book-table-body');
-  tbody.innerHTML = books.map((b, i) => `
+  tbody.innerHTML = books.map((b, i) => {
+    const key = coverKey(b.title, b.author);
+    const cachedUrl = coverCache[key];
+    const thumbHtml = cachedUrl
+      ? `<img class="cover-thumb" src="${cachedUrl}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="cover-thumb-placeholder" data-thumb-key="${esc(key)}">📖</div>`;
+    return `
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
+      <td style="padding:0.4rem 0.6rem">${thumbHtml}</td>
       <td><strong>${esc(b.title)}</strong></td>
       <td>${esc(b.author)}</td>
       <td><span class="badge">${esc(b.genre)}</span></td>
@@ -825,8 +964,8 @@ function renderTable() {
       <td style="white-space:nowrap">${b.date ? formatDate(b.date) : '—'}</td>
       <td>${b.rating ? renderStars(b.rating) : '—'}</td>
       <td><span class="badge" style="${statusColor(b.status)}">${b.status}</span></td>
-    </tr>
-  `).join('') || `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">No books match your filters.</td></tr>`;
+    </tr>`;
+  }).join('') || `<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--muted)">No books match your filters.</td></tr>`;
 
   document.getElementById('table-count').textContent = `Showing ${books.length} of ${allBooks.length} books`;
 }
@@ -860,10 +999,13 @@ function renderCurrentlyReading() {
   section.style.display = '';
   document.getElementById('currently-reading-grid').innerHTML = books.map(b => `
     <div class="book-card">
-      <div class="book-title">${esc(b.title)}</div>
-      <div class="book-author">${esc(b.author)}</div>
-      ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
-      ${b.pages ? `<small style="color:var(--muted)">${b.pages} pages</small>` : ''}
+      ${bookCardCover(b)}
+      <div class="book-card-body">
+        <div class="book-title">${esc(b.title)}</div>
+        <div class="book-author">${esc(b.author)}</div>
+        ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+        ${b.pages ? `<small style="color:var(--muted)">${b.pages} pages</small>` : ''}
+      </div>
     </div>
   `).join('');
 }
@@ -875,12 +1017,30 @@ function renderWantToRead() {
   section.style.display = '';
   document.getElementById('want-to-read-grid').innerHTML = books.map(b => `
     <div class="book-card">
-      <div class="book-title">${esc(b.title)}</div>
-      <div class="book-author">${esc(b.author)}</div>
-      ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+      ${bookCardCover(b)}
+      <div class="book-card-body">
+        <div class="book-title">${esc(b.title)}</div>
+        <div class="book-author">${esc(b.author)}</div>
+        ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+      </div>
     </div>
   `).join('');
 }
+
+// Renders a cover img tag (or placeholder) for a book card.
+// Uses cached URL immediately if available; otherwise shows placeholder
+// and the getCover callback will swap it in.
+function bookCardCover(b) {
+  const key = coverKey(b.title, b.author);
+  const url = coverCache[key];
+  if (url) {
+    return `<img class="book-card-cover" src="${url}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.replaceWith(makePlaceholderEl())">`;
+  }
+  return `<div class="book-card-cover placeholder" data-cover-key="${esc(key)}">📖</div>`;
+}
+
+// After render, fetch the cover and swap the placeholder for a real image.
+// (Covers are injected centrally via injectCoverPlaceholders from prefetchCovers)
 
 // ─────────────────────────────────────────────────────────────────
 // Charts
