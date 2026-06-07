@@ -701,6 +701,10 @@ async function fetchData() {
     const books = parseCSV(csv);
     if (books.length === 0) throw new Error('No data rows found. Check your sheet has a header row and at least one book.');
     allBooks = books;
+    // Seed sheet covers into cache immediately so they render on first paint
+    allBooks.forEach(b => {
+      if (b.coverUrl) coverCache[coverKey(b.title, b.author)] = b.coverUrl;
+    });
     renderAll();
     setSyncStatus('synced', `Synced · ${new Date().toLocaleTimeString()}`);
     document.getElementById('config-panel').style.display = 'none';
@@ -839,19 +843,12 @@ function renderAll() {
 async function prefetchCovers() {
   for (const b of allBooks) {
     const key = coverKey(b.title, b.author);
-    if (key in coverCache) continue;
-
-    // If the sheet already has a cover URL, use it directly — no API call needed
-    if (b.coverUrl) {
-      coverCache[key] = b.coverUrl;
-      injectCoverPlaceholders(b);
-      continue;
-    }
+    if (key in coverCache) continue; // already seeded from sheet or prior fetch
 
     getCover(b.title, b.author, () => {
       injectCoverPlaceholders(b);
     });
-    await new Promise(r => setTimeout(r, 120)); // ~8 req/s
+    await new Promise(r => setTimeout(r, 120)); // ~8 req/s to Open Library
   }
 }
 
