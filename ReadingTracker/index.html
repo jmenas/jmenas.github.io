@@ -764,7 +764,7 @@ function parseCSV(text) {
       date:     parseDate(dateRaw),
       rating:   isNaN(ratingRaw) ? 0 : Math.min(5, Math.max(0, ratingRaw)),
       status:   normalizeStatus(status),
-      coverUrl: get(iCover) || null,
+      coverUrl: parseCoverCell(get(iCover)),
     });
   }
   return books;
@@ -799,6 +799,23 @@ function normalizeStatus(s) {
   if (l === 'up next' || l.includes('up next')) return 'Up Next';
   if (l.includes('want') || l.includes('tbr') || l.includes('wish')) return 'Want to Read';
   return 'Read';
+}
+
+// Google Sheets exports =IMAGE("url") cells as the literal formula string.
+// This strips the IMAGE() wrapper and returns a clean URL, or null if empty.
+function parseCoverCell(raw) {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  // Match =IMAGE("url") or IMAGE("url") with optional extra args
+  const imageMatch = trimmed.match(/^=?IMAGE\s*\(\s*"([^"]+)"/i);
+  if (imageMatch) return imageMatch[1];
+
+  // Already a plain URL
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────
