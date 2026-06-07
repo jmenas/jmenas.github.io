@@ -532,6 +532,10 @@
           <h3>Pages per Book (Read)</h3>
           <div class="chart-wrap" style="height:260px"><canvas id="chart-pages-book"></canvas></div>
         </div>
+        <div class="chart-card wide">
+          <h3>Top 10 Most Read Authors</h3>
+          <div class="chart-wrap" style="height:260px"><canvas id="chart-top-authors"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -992,6 +996,34 @@ function buildCharts() {
       indexAxis: 'y',
       plugins: { legend: { display: false } },
       scales: axisScales()
+    }
+  });
+
+  // ── Top 10 authors by books read ────
+  const authorCount = countBy(read, 'author');
+  const topAuthors = Object.entries(authorCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  mkChart('chart-top-authors', {
+    type: 'bar',
+    data: {
+      labels: topAuthors.map(([a]) => a),
+      datasets: [{
+        label: 'Books Read',
+        data: topAuthors.map(([, c]) => c),
+        backgroundColor: PALETTE,
+        borderRadius: 5,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        ...axisScales(0),
+        x: { ...axisScales(0).x, ticks: { ...axisScales(0).x.ticks, stepSize: 1 } }
+      }
     }
   });
 }
