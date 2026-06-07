@@ -459,7 +459,7 @@
       <code>https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv</code><br><br>
       <strong>Expected columns (in order):</strong>
       <code>Title</code> · <code>Author</code> · <code>Genre</code> · <code>Pages</code> · <code>Publication Year</code> · <code>Date Read</code> · <code>Rating (1-5)</code> · <code>Status</code>
-      — Status options: <code>Read</code>, <code>Reading</code>, <code>Want to Read</code>
+      — Status options: <code>Read</code>, <code>Reading</code>, <code>Up Next</code>, <code>Want to Read</code>
     </p>
     <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
       <button class="btn" onclick="loadDemo()">📖 Load demo data</button>
@@ -507,10 +507,10 @@
         <div class="reading-grid" id="currently-reading-grid"></div>
       </div>
 
-      <!-- Want to Read -->
-      <div id="want-to-read-section" style="display:none">
-        <p class="section-title">Want to Read</p>
-        <div class="reading-grid" id="want-to-read-grid"></div>
+      <!-- Up Next -->
+      <div id="up-next-section" style="display:none">
+        <p class="section-title">To Read Next</p>
+        <div class="reading-grid" id="up-next-grid"></div>
       </div>
     </div>
 
@@ -523,6 +523,7 @@
           <option value="">All Status</option>
           <option value="Read">Read</option>
           <option value="Reading">Reading</option>
+          <option value="Up Next">Up Next</option>
           <option value="Want to Read">Want to Read</option>
         </select>
         <select id="sort-by" onchange="renderTable()">
@@ -793,6 +794,7 @@ function parseDate(str) {
 function normalizeStatus(s) {
   const l = s.toLowerCase();
   if (l.includes('reading') && !l.includes('want')) return 'Reading';
+  if (l === 'up next' || l.includes('up next')) return 'Up Next';
   if (l.includes('want') || l.includes('tbr') || l.includes('wish')) return 'Want to Read';
   return 'Read';
 }
@@ -808,7 +810,7 @@ function renderAll() {
   renderTable();
   buildCharts();
   renderCurrentlyReading();
-  renderWantToRead();
+  renderUpNext();
   // Pre-warm cover cache for all books in the background
   prefetchCovers();
 }
@@ -893,8 +895,9 @@ function renderStats() {
     { icon:'⭐', label:'Avg Rating',      value: avgRating.toFixed(1)+'/5', sub: `${rated.length} rated` },
     { icon:'🎭', label:'Genres',          value: genres,                  sub: `${authors} authors` },
     { icon:'⚡', label:'Reading Pace',    value: pace,                    sub: 'books per month' },
-    { icon:'📖', label:'Currently Reading',value: allBooks.filter(b=>b.status==='Reading').length, sub: '' },
-    { icon:'🔖', label:'Want to Read',    value: allBooks.filter(b=>b.status==='Want to Read').length, sub: '' },
+    { icon:'📖', label:'Currently Reading', value: allBooks.filter(b=>b.status==='Reading').length,      sub: '' },
+    { icon:'🔖', label:'Want to Read',       value: allBooks.filter(b=>b.status==='Want to Read').length, sub: '' },
+    { icon:'⏭',  label:'Up Next',            value: allBooks.filter(b=>b.status==='Up Next').length,      sub: '' },
     { icon:'🏆', label:'5-Star Books',    value: read.filter(b=>b.rating===5).length, sub: best ? `"${best.title.slice(0,20)}…"` : '' },
   ];
 
@@ -977,6 +980,7 @@ function renderStars(r) {
 
 function statusColor(s) {
   if (s === 'Reading')      return 'border-color:var(--accent);color:var(--accent)';
+  if (s === 'Up Next')      return 'border-color:#f7c46a;color:#f7c46a';
   if (s === 'Want to Read') return 'border-color:var(--accent2);color:var(--accent2)';
   return 'border-color:var(--accent3);color:var(--accent3)';
 }
@@ -990,7 +994,7 @@ function esc(s) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Currently Reading & Want to Read
+// Currently Reading & Up Next
 // ─────────────────────────────────────────────────────────────────
 function renderCurrentlyReading() {
   const books = allBooks.filter(b => b.status === 'Reading');
@@ -1010,12 +1014,12 @@ function renderCurrentlyReading() {
   `).join('');
 }
 
-function renderWantToRead() {
-  const books = allBooks.filter(b => b.status === 'Want to Read');
-  const section = document.getElementById('want-to-read-section');
+function renderUpNext() {
+  const books = allBooks.filter(b => b.status === 'Up Next');
+  const section = document.getElementById('up-next-section');
   if (!books.length) { section.style.display = 'none'; return; }
   section.style.display = '';
-  document.getElementById('want-to-read-grid').innerHTML = books.map(b => `
+  document.getElementById('up-next-grid').innerHTML = books.map(b => `
     <div class="book-card">
       ${bookCardCover(b)}
       <div class="book-card-body">
@@ -1134,11 +1138,12 @@ function buildCharts() {
 
   // ── Status donut ────
   const statusCount = countBy(allBooks, 'status');
+  const statusColors = { 'Read': '#6af7c4', 'Reading': '#7c6af7', 'Up Next': '#f7c46a', 'Want to Read': '#f76a8c' };
   mkChart('chart-status', {
     type: 'doughnut',
     data: {
       labels: Object.keys(statusCount),
-      datasets: [{ data: Object.values(statusCount), backgroundColor: ['#7c6af7','#6af7c4','#f76a8c'], borderWidth: 0 }]
+      datasets: [{ data: Object.values(statusCount), backgroundColor: Object.keys(statusCount).map(s => statusColors[s] || '#8b8fa8'), borderWidth: 0 }]
     },
     options: { ...CHART_DEFAULTS }
   });
