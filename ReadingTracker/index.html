@@ -1396,17 +1396,23 @@ function renderCurrentlyReading() {
   const section = document.getElementById('currently-reading-section');
   if (!books.length) { section.style.display = 'none'; return; }
   section.style.display = '';
-  document.getElementById('currently-reading-grid').innerHTML = books.map(b => `
-    <div class="book-card">
+  const grid = document.getElementById('currently-reading-grid');
+  grid.innerHTML = books.map(b => `
+    <div class="book-card" style="cursor:pointer" data-title="${esc(b.title)}">
       ${bookCardCover(b)}
       <div class="book-card-body">
         <div class="book-title">${esc(b.title)}</div>
         <div class="book-author">${esc(b.author)}</div>
         ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
         ${b.pages ? `<small style="color:var(--muted)">${b.pages} pages</small>` : ''}
+        <small style="color:var(--accent);font-size:.72rem;margin-top:.1rem">✏ Click to edit</small>
       </div>
     </div>
   `).join('');
+  grid.onclick = e => {
+    const card = e.target.closest('[data-title]');
+    if (card) openEditModal(card.dataset.title);
+  };
 }
 
 function renderUpNext() {
@@ -1414,16 +1420,22 @@ function renderUpNext() {
   const section = document.getElementById('up-next-section');
   if (!books.length) { section.style.display = 'none'; return; }
   section.style.display = '';
-  document.getElementById('up-next-grid').innerHTML = books.map(b => `
-    <div class="book-card">
+  const grid = document.getElementById('up-next-grid');
+  grid.innerHTML = books.map(b => `
+    <div class="book-card" style="cursor:pointer" data-title="${esc(b.title)}">
       ${bookCardCover(b)}
       <div class="book-card-body">
         <div class="book-title">${esc(b.title)}</div>
         <div class="book-author">${esc(b.author)}</div>
         ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+        <small style="color:var(--accent);font-size:.72rem;margin-top:.1rem">✏ Click to edit</small>
       </div>
     </div>
   `).join('');
+  grid.onclick = e => {
+    const card = e.target.closest('[data-title]');
+    if (card) openEditModal(card.dataset.title);
+  };
 }
 
 function renderTopTen() {
