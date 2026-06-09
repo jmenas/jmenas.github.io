@@ -485,6 +485,87 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Achievements ─────────────────────────────────────────── */
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.1rem;
+    }
+    .achievement-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .9rem;
+      transition: border-color .2s;
+    }
+    .achievement-card:hover { border-color: var(--accent); }
+    .achievement-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .achievement-icon { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+    .achievement-genre { font-weight: 700; font-size: 1rem; }
+    .achievement-count { font-size: .8rem; color: var(--muted); margin-top: .1rem; }
+
+    /* Level badges row */
+    .achievement-levels {
+      display: flex;
+      gap: .5rem;
+    }
+    .achievement-level {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .35rem;
+    }
+    .level-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      transition: transform .15s;
+      position: relative;
+    }
+    .level-badge.earned {
+      border-color: transparent;
+      transform: scale(1.08);
+    }
+    .level-badge.earned-1 { background: linear-gradient(135deg,#a87d4a,#cd9c5e); box-shadow: 0 0 10px rgba(168,125,74,.4); }
+    .level-badge.earned-2 { background: linear-gradient(135deg,#7a8fa6,#b0c4d8); box-shadow: 0 0 10px rgba(176,196,216,.4); }
+    .level-badge.earned-3 { background: linear-gradient(135deg,#c9a227,#f7d76a); box-shadow: 0 0 10px rgba(247,215,106,.4); }
+    .level-badge.earned-4 { background: linear-gradient(135deg,#7c6af7,#b06af7); box-shadow: 0 0 12px rgba(124,106,247,.55); }
+    .level-badge.locked { opacity: .35; }
+
+    .level-name  { font-size: .68rem; color: var(--muted); text-align: center; line-height: 1.2; }
+    .level-req   { font-size: .62rem; color: var(--border); text-align: center; }
+
+    /* Progress bar */
+    .achievement-progress { display: flex; flex-direction: column; gap: .3rem; }
+    .progress-bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+      transition: width .6s ease;
+    }
+    .progress-bar-fill.complete { background: linear-gradient(90deg,#7c6af7,#b06af7); }
+    .progress-label { font-size: .72rem; color: var(--muted); display: flex; justify-content: space-between; }
+
     /* ── Scatter filter controls ──────────────────────────────── */
     .scatter-controls {
       display: flex;
@@ -582,6 +663,7 @@
       <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
       <button class="tab-btn" onclick="switchTab('books')">📚 Books</button>
       <button class="tab-btn" onclick="switchTab('charts')">📈 Charts</button>
+      <button class="tab-btn" onclick="switchTab('achievements')">🏅 Achievements</button>
     </div>
 
     <!-- ── DASHBOARD TAB ──────────────────────────────────────── -->
@@ -688,7 +770,7 @@
           <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
         </div>
         <div class="chart-card wide">
-          <h3>Pages per Book (Read)</h3>
+          <h3>Top 10 Pages per Book (Read)</h3>
           <div class="chart-wrap" style="height:260px"><canvas id="chart-pages-book"></canvas></div>
         </div>
         <div class="chart-card wide">
@@ -721,6 +803,11 @@
           <p class="scatter-hint">Scroll to zoom · Click and drag to pan · Double-click to reset</p>
         </div>
       </div>
+    </div>
+
+    <!-- ── ACHIEVEMENTS TAB ──────────────────────────────────── -->
+    <div class="tab-panel" id="tab-achievements">
+      <div id="achievements-grid"></div>
     </div>
 
   </div><!-- /app-content -->
@@ -973,6 +1060,7 @@ function renderAll() {
   renderCurrentlyReading();
   renderUpNext();
   renderTopTen();
+  renderAchievements();
   // Pre-warm cover cache for all books in the background
   prefetchCovers();
 }
@@ -1365,8 +1453,8 @@ function buildCharts() {
     options: { ...CHART_DEFAULTS }
   });
 
-  // ── Pages per book (horizontal bar, top 20) ────
-  const top = [...read].filter(b=>b.pages>0).sort((a,b)=>b.pages-a.pages).slice(0,20);
+  // ── Pages per book (horizontal bar, top 10) ────
+  const top = [...read].filter(b=>b.pages>0).sort((a,b)=>b.pages-a.pages).slice(0,10);
   mkChart('chart-pages-book', {
     type: 'bar',
     data: {
@@ -1713,6 +1801,92 @@ function yearlyCount(books) {
   });
   const keys = Object.keys(map).sort();
   return { labels: keys, values: keys.map(k=>map[k]) };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Tabs
+// ─────────────────────────────────────────────────────────────────
+// Achievements
+// ─────────────────────────────────────────────────────────────────
+const ACHIEVEMENT_GENRES = [
+  { genre: 'Fantasy',              icon: '🧙',  levels: ['Apprentice','Wanderer','Champion','Legend']       },
+  { genre: 'Sci-Fi',               icon: '🚀',  levels: ['Cadet','Explorer','Commander','Admiral']          },
+  { genre: 'Adventure',            icon: '🗺️',  levels: ['Traveller','Pathfinder','Voyager','Pioneer']      },
+  { genre: 'Mystery',              icon: '🔍',  levels: ['Sleuth','Investigator','Detective','Mastermind']  },
+  { genre: 'Thriller & Suspense',  icon: '🔪',  levels: ['Watcher','Agent','Operative','Shadow']            },
+  { genre: 'Horror',               icon: '👻',  levels: ['Nervous','Spooked','Fearless','Undying']          },
+  { genre: 'Western',              icon: '🤠',  levels: ['Greenhorn','Cowboy','Gunslinger','Outlaw']        },
+  { genre: 'Manga & Comics',       icon: '💬',  levels: ['Reader','Fan','Collector','Otaku']                },
+  { genre: 'Historical Fiction',   icon: '🏰',  levels: ['Chronicler','Historian','Scholar','Sage']         },
+  { genre: 'History',              icon: '📜',  levels: ['Student','Archivist','Curator','Keeper']          },
+];
+
+const LEVELS_PER_BADGE  = 25;   // books needed per level
+const TOTAL_LEVELS      = 4;
+const MAX_BOOKS         = LEVELS_PER_BADGE * TOTAL_LEVELS; // 100
+
+function renderAchievements() {
+  const read = allBooks.filter(b => b.status === 'Read');
+
+  // Count reads per genre (case-insensitive match against the sheet value)
+  const genreCount = {};
+  read.forEach(b => { genreCount[b.genre.trim()] = (genreCount[b.genre.trim()] || 0) + 1; });
+
+  const container = document.getElementById('achievements-grid');
+  container.className = 'achievements-grid';
+
+  container.innerHTML = ACHIEVEMENT_GENRES.map(({ genre, icon, levels }) => {
+    // Flexible match: sheet value may differ slightly in case / spacing
+    const count = Object.entries(genreCount)
+      .filter(([g]) => g.toLowerCase() === genre.toLowerCase())
+      .reduce((s, [, c]) => s + c, 0);
+
+    const levelsEarned = Math.min(Math.floor(count / LEVELS_PER_BADGE), TOTAL_LEVELS);
+    const nextThreshold = levelsEarned < TOTAL_LEVELS ? (levelsEarned + 1) * LEVELS_PER_BADGE : MAX_BOOKS;
+    const progressToNext = levelsEarned < TOTAL_LEVELS
+      ? count - levelsEarned * LEVELS_PER_BADGE
+      : LEVELS_PER_BADGE;
+    const pct = Math.min((progressToNext / LEVELS_PER_BADGE) * 100, 100);
+    const complete = levelsEarned === TOTAL_LEVELS;
+
+    const levelEmojis  = ['🥉','🥈','🥇','💎'];
+    const earnedClass  = ['earned-1','earned-2','earned-3','earned-4'];
+
+    const badgesHtml = levels.map((name, i) => {
+      const lvl = i + 1;
+      const earned = lvl <= levelsEarned;
+      return `
+        <div class="achievement-level">
+          <div class="level-badge ${earned ? 'earned ' + earnedClass[i] : 'locked'}" title="${name} — ${lvl * LEVELS_PER_BADGE} books">
+            ${levelEmojis[i]}
+          </div>
+          <div class="level-name">${name}</div>
+          <div class="level-req">${lvl * LEVELS_PER_BADGE} books</div>
+        </div>`;
+    }).join('');
+
+    const progressLabel = complete
+      ? `<span>🎉 Fully unlocked!</span><span>${count} books</span>`
+      : `<span>${progressToNext} / ${LEVELS_PER_BADGE} towards ${levels[levelsEarned]}</span><span>${count} read</span>`;
+
+    return `
+      <div class="achievement-card">
+        <div class="achievement-header">
+          <div class="achievement-icon">${icon}</div>
+          <div>
+            <div class="achievement-genre">${genre}</div>
+            <div class="achievement-count">${count} book${count !== 1 ? 's' : ''} read · Level ${levelsEarned} / ${TOTAL_LEVELS}</div>
+          </div>
+        </div>
+        <div class="achievement-levels">${badgesHtml}</div>
+        <div class="achievement-progress">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill ${complete ? 'complete' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="progress-label">${progressLabel}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ─────────────────────────────────────────────────────────────────
