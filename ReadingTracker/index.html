@@ -817,7 +817,7 @@
   <div id="empty-state">
     <div class="big">📖</div>
     <h2 style="margin-bottom:.5rem">No books loaded yet</h2>
-    <p>Enter your Google Sheet CSV URL in the settings above and click <strong>Connect Sheet</strong>, or try the demo data to see what the tracker looks like.</p>
+    <p>Enter your Web App URL in the settings above and click <strong>Connect</strong>, or try the demo data to see what the tracker looks like.</p>
   </div>
 
 </main>
@@ -944,8 +944,12 @@ async function fetchCover(title, author) {
 const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx4aC9mmNNyfp3wsz4kS_hrvd14Upcme7Y3VF2og8cpQcklhfQ-ILD5SmyKXGPceUNT/exec';
 
 window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem(STORAGE_KEY) || DEFAULT_SHEET_URL;
-  document.getElementById('sheet-url').value = saved;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  // Migrate: if the stored URL is the old CSV export, replace it with the Web App URL
+  const isOldCsv = saved && (saved.includes('pub?output=csv') || saved.includes('/pub?') || saved.includes('export?format=csv'));
+  const url = (!saved || isOldCsv) ? DEFAULT_SHEET_URL : saved;
+  if (isOldCsv || !saved) localStorage.setItem(STORAGE_KEY, DEFAULT_SHEET_URL);
+  document.getElementById('sheet-url').value = url;
   fetchData();
 });
 
