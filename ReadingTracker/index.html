@@ -683,7 +683,10 @@
           <div class="chart-wrap"><canvas id="chart-rating"></canvas></div>
         </div>
         <div class="chart-card wide">
-          <h3>Books Read per Month</h3>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1rem;">
+            <h3 id="chart-monthly-title" style="margin-bottom:0">Books Read per Month</h3>
+            <span id="chart-monthly-total" style="font-size:1.1rem; font-weight:700; color:var(--accent)"></span>
+          </div>
           <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
         </div>
       </div>
@@ -1540,16 +1543,22 @@ function buildCharts() {
     options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
   });
 
-  // ── Monthly books ────
-  const monthly = monthlyCount(read);
+  // ── Monthly books (current year only) ────
+  const currentYear = new Date().getFullYear();
+  const readThisYear = read.filter(b => b.date && b.date.getFullYear() === currentYear);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthlyCounts = Array(12).fill(0);
+  readThisYear.forEach(b => { monthlyCounts[b.date.getMonth()]++; });
   mkChart('chart-monthly', {
     type: 'bar',
     data: {
-      labels: monthly.labels,
-      datasets: [{ label: 'Books', data: monthly.values, backgroundColor: '#7c6af7', borderRadius: 5, borderWidth: 0 }]
+      labels: months,
+      datasets: [{ label: 'Books', data: monthlyCounts, backgroundColor: '#7c6af7', borderRadius: 5, borderWidth: 0 }]
     },
     options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
   });
+  document.getElementById('chart-monthly-title').textContent = `Books Read per Month (${currentYear})`;
+  document.getElementById('chart-monthly-total').textContent = `${readThisYear.length} book${readThisYear.length !== 1 ? 's' : ''} this year`;
 
   // ── Pages per year (Charts tab) ────
   const pagesY = yearlyCount(read, 'pages');
