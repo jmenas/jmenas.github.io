@@ -755,8 +755,8 @@
     <div class="tab-panel" id="tab-charts">
       <div class="charts-grid-2col">
         <div class="chart-card">
-          <h3>Pages Read per Month</h3>
-          <div class="chart-wrap"><canvas id="chart-pages-monthly"></canvas></div>
+          <h3>Pages Read per Year</h3>
+          <div class="chart-wrap"><canvas id="chart-pages-yearly"></canvas></div>
         </div>
         <div class="chart-card">
           <h3>Books Read per Year</h3>
@@ -1551,19 +1551,18 @@ function buildCharts() {
     options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
   });
 
-  // ── Pages monthly (Charts tab) ────
-  const pagesM = monthlyCount(read, 'pages');
-  mkChart('chart-pages-monthly', {
-    type: 'line',
+  // ── Pages per year (Charts tab) ────
+  const pagesY = yearlyCount(read, 'pages');
+  mkChart('chart-pages-yearly', {
+    type: 'bar',
     data: {
-      labels: pagesM.labels,
+      labels: pagesY.labels,
       datasets: [{
-        label: 'Pages', data: pagesM.values,
-        borderColor: '#6af7c4', backgroundColor: 'rgba(106,247,196,.1)',
-        fill: true, tension: .35, pointRadius: 3
+        label: 'Pages', data: pagesY.values,
+        backgroundColor: '#6af7c4', borderRadius: 5, borderWidth: 0
       }]
     },
-    options: { ...CHART_DEFAULTS, scales: axisScales() }
+    options: { ...CHART_DEFAULTS, plugins: { legend: { display: false } }, scales: axisScales() }
   });
 
   // ── Yearly ────
@@ -1940,11 +1939,11 @@ function monthlyCount(books, sumKey=null) {
   };
 }
 
-function yearlyCount(books) {
+function yearlyCount(books, sumKey = null) {
   const map = {};
   books.filter(b=>b.date).forEach(b => {
     const y = b.date.getFullYear();
-    map[y] = (map[y] || 0) + 1;
+    map[y] = (map[y] || 0) + (sumKey ? (b[sumKey] || 0) : 1);
   });
   const keys = Object.keys(map).sort();
   return { labels: keys, values: keys.map(k=>map[k]) };
