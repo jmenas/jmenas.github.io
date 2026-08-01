@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reading Tracker</title>
+  <title>Biblio the Barbarian</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
@@ -149,7 +149,7 @@
 
     /* ── Section titles ───────────────────────────────────────── */
     .section-title {
-      font-size: .7rem;
+      font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
@@ -162,6 +162,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 1rem;
+      margin: 0 0 .9rem;
     }
 
     .stat-card {
@@ -315,6 +316,8 @@
       margin-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
       overflow-x: auto;
+      position: relative;
+      z-index: 10;
     }
     .tab-btn {
       padding: .55rem 1.1rem;
@@ -322,7 +325,7 @@
       background: none;
       color: var(--muted);
       cursor: pointer;
-      font-size: .9rem;
+      font-size: 2rem;
       border-bottom: 2px solid transparent;
       margin-bottom: -1px;
       white-space: nowrap;
@@ -399,6 +402,9 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .reading-grid { grid-template-columns: repeat(2, 1fr); }
     }
     .book-card {
       background: var(--surface);
@@ -566,6 +572,50 @@
     .progress-bar-fill.complete { background: linear-gradient(90deg,#7c6af7,#b06af7); }
     .progress-label { font-size: .72rem; color: var(--muted); display: flex; justify-content: space-between; }
 
+    /* ── Hero Image ───────────────────────────────────────────── */
+    #dashboard-hero {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      overflow: hidden;
+      margin-top: -1px; /* flush against header */
+    }
+    #dashboard-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    /* Fade into page background at the bottom */
+    #dashboard-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to bottom, transparent, var(--bg));
+      pointer-events: none;
+    }
+    /* Tabs overlay the hero — transparent background */
+    #dashboard-hero ~ main .tabs {
+      background: transparent;
+      border-bottom-color: transparent;
+    }
+    /* When hero is hidden, restore the tab border */
+    #dashboard-hero[style*="display: none"] ~ main .tabs,
+    #dashboard-hero[style*="display:none"] ~ main .tabs {
+      border-bottom-color: var(--border);
+    }
+    /* Pull main content up so tabs sit over the hero */
+    main.hero-active {
+      margin-top: -3.2rem;
+    }
+    @media (max-width: 600px) {
+      #dashboard-hero { height: 240px; }
+    }
+
     /* ── Scatter filter controls ──────────────────────────────── */
     .scatter-controls {
       display: flex;
@@ -612,19 +662,24 @@
 <!-- Header -->
 <header>
   <div class="logo">
-    <span class="logo-icon">📚</span>
-    Reading Tracker
+    <span class="logo-icon">📖</span>
+    Biblio the Barbarian
   </div>
   <div class="header-right">
     <div id="sync-status">
       <span class="dot"></span>
       <span id="sync-text">Not connected</span>
     </div>
-    <button class="btn" onclick="toggleConfig()">⚙ Settings</button>
-    <button class="btn btn-accent" onclick="fetchData()">↻ Refresh</button>
-    <button class="btn" onclick="openAddModal()" id="add-book-btn" style="display:none">＋ Add Book</button>
+    <button class="btn" onclick="toggleConfig()">⚙</button>
+    <button class="btn btn-accent" onclick="fetchData()">↻</button>
+    <button class="btn" onclick="openAddModal()" id="add-book-btn" style="display:none">＋</button>
   </div>
 </header>
+
+<!-- Full-width hero image (per tab) -->
+<div id="dashboard-hero">
+  <img id="hero-img" src="home-img.jpg" alt="" />
+</div>
 
 <main>
 
@@ -660,19 +715,17 @@
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-      <button class="tab-btn" onclick="switchTab('books')">📚 Books</button>
-      <button class="tab-btn" onclick="switchTab('charts')">📈 Charts</button>
-      <button class="tab-btn" onclick="switchTab('achievements')">🏅 Achievements</button>
+      <button class="tab-btn active" onclick="switchTab('dashboard')">🏠</button>
+      <button class="tab-btn" onclick="switchTab('books')">📚</button>
+      <button class="tab-btn" onclick="switchTab('charts')">📈</button>
+      <button class="tab-btn" onclick="switchTab('achievements')">🏅</button>
     </div>
 
     <!-- ── DASHBOARD TAB ──────────────────────────────────────── -->
     <div class="tab-panel active" id="tab-dashboard">
 
-      <p class="section-title">Overview</p>
-      <div class="stat-grid" id="stat-grid"></div>
-
       <p class="section-title">Highlights</p>
+      <div class="stat-grid" id="stat-grid"></div>
       <div class="charts-grid">
         <div class="chart-card">
           <h3>Books by Genre</h3>
@@ -1184,6 +1237,11 @@ function parseCoverCell(raw) {
 function renderAll() {
   showEmptyState(false);
   document.getElementById('app-content').style.display = 'block';
+  // Hero is always shown — ensure tabs float over it
+  const tabs = document.querySelector('.tabs');
+  tabs.style.borderBottomColor = 'transparent';
+  tabs.style.background = 'transparent';
+  document.querySelector('main').classList.add('hero-active');
   renderStats();
   renderGenreFilter();
   renderTable();
@@ -1431,6 +1489,7 @@ function renderUpNext() {
         <div class="book-title">${esc(b.title)}</div>
         <div class="book-author">${esc(b.author)}</div>
         ${b.genre ? `<span class="badge">${esc(b.genre)}</span>` : ''}
+        ${b.pages ? `<small style="color:var(--muted)">${b.pages} pages</small>` : ''}
         <small style="color:var(--accent);font-size:.72rem;margin-top:.1rem">✏ Click to edit</small>
       </div>
     </div>
@@ -2047,9 +2106,28 @@ function renderAchievements() {
 // ─────────────────────────────────────────────────────────────────
 // Tabs
 // ─────────────────────────────────────────────────────────────────
+const HERO_IMAGES = {
+  dashboard:    'home-img.jpg',
+  books:        'books-img.jpg',
+  charts:       'charts-img.jpg',
+  achievements: 'achievements-img.jpg',
+};
+
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(name)));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes(`'${name}'`));
+  });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+
+  // Swap hero image for the active tab
+  document.getElementById('hero-img').src = HERO_IMAGES[name] || 'home-img.jpg';
+
+  // Tabs always float over hero
+  const tabs = document.querySelector('.tabs');
+  tabs.style.borderBottomColor = 'transparent';
+  tabs.style.background = 'transparent';
+  document.querySelector('main').classList.add('hero-active');
+
   // Rebuild charts when Charts tab is activated (canvas sizing)
   if (name === 'charts' && allBooks.length) setTimeout(buildCharts, 50);
 }
