@@ -194,8 +194,11 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--muted);
       margin: 2rem 0 .9rem;
+      background: linear-gradient(135deg, #e8d5a3, #c4a55a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* ── Stat Cards ───────────────────────────────────────────── */
@@ -281,7 +284,7 @@
     }
     #search-input:focus { outline: none; border-color: var(--accent); }
 
-    #filter-genre, #sort-by {
+    #filter-genre, #filter-status {
       padding: .5rem .7rem;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -313,6 +316,13 @@
       letter-spacing: .8px;
       white-space: nowrap;
     }
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    th.sortable:hover { color: var(--text); }
+    th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+    th.sort-desc::after { content: ' ↓'; color: var(--accent); }
     td {
       padding: .7rem 1rem;
       border-top: 1px solid var(--border);
@@ -804,7 +814,7 @@
 
       <!-- Top Ten Books -->
       <div id="top-ten-section" style="display:none">
-        <p class="section-title">My Top Ten Books</p>
+        <p class="section-title">My Top Ten</p>
         <div class="top-ten-list" id="top-ten-list"></div>
       </div>
 
@@ -816,7 +826,7 @@
 
       <!-- Up Next -->
       <div id="up-next-section" style="display:none">
-        <p class="section-title">To Read Next</p>
+        <p class="section-title">To Be Read</p>
         <div class="reading-grid" id="up-next-grid"></div>
       </div>
     </div>
@@ -833,14 +843,6 @@
           <option value="Up Next">Up Next</option>
           <option value="Want to Read">Want to Read</option>
         </select>
-        <select id="sort-by" onchange="renderTable()">
-          <option value="date-desc">Date (newest)</option>
-          <option value="date-asc">Date (oldest)</option>
-          <option value="rating-desc">Rating (high)</option>
-          <option value="rating-asc">Rating (low)</option>
-          <option value="pages-desc">Pages (most)</option>
-          <option value="title-asc">Title (A–Z)</option>
-        </select>
       </div>
       <div class="table-wrap">
         <table>
@@ -848,13 +850,13 @@
             <tr>
               <th>#</th>
               <th></th>
-              <th>Title</th>
-              <th>Author</th>
-              <th>Genre</th>
-              <th>Pages</th>
-              <th>Pub. Year</th>
-              <th>Date Read</th>
-              <th>Rating</th>
+              <th class="sortable" data-col="title">Title</th>
+              <th class="sortable" data-col="author">Author</th>
+              <th class="sortable" data-col="genre">Genre</th>
+              <th class="sortable" data-col="pages">Pages</th>
+              <th class="sortable" data-col="pubYear">Pub. Year</th>
+              <th class="sortable" data-col="date" id="sort-date-col">Date Read</th>
+              <th class="sortable" data-col="rating">Rating</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -1303,6 +1305,7 @@ function renderAll() {
   renderStats();
   renderGenreFilter();
   renderTable();
+  initTableSortHeaders();
   buildCharts();
   renderCurrentlyReading();
   renderUpNext();
@@ -1431,11 +1434,36 @@ function renderGenreFilter() {
 // ─────────────────────────────────────────────────────────────────
 // Book Table
 // ─────────────────────────────────────────────────────────────────
+let tableSort = { col: 'date', dir: 'desc' }; // default: Date Read descending
+
+function initTableSortHeaders() {
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (tableSort.col === col) {
+        tableSort.dir = tableSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        tableSort.col = col;
+        tableSort.dir = 'asc';
+      }
+      renderTable();
+    });
+  });
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === tableSort.col) {
+      th.classList.add(tableSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
 function renderTable() {
   const query  = document.getElementById('search-input').value.toLowerCase();
   const genre  = document.getElementById('filter-genre').value;
   const status = document.getElementById('filter-status').value;
-  const sort   = document.getElementById('sort-by').value;
 
   let books = [...allBooks];
 
@@ -1443,17 +1471,21 @@ function renderTable() {
   if (genre)  books = books.filter(b => b.genre === genre);
   if (status) books = books.filter(b => b.status === status);
 
+  const dir = tableSort.dir === 'asc' ? 1 : -1;
   books.sort((a, b) => {
-    switch(sort) {
-      case 'date-asc':    return (a.date||0) - (b.date||0);
-      case 'date-desc':   return (b.date||0) - (a.date||0);
-      case 'rating-desc': return b.rating - a.rating;
-      case 'rating-asc':  return a.rating - b.rating;
-      case 'pages-desc':  return b.pages - a.pages;
-      case 'title-asc':   return a.title.localeCompare(b.title);
-      default:            return 0;
+    switch(tableSort.col) {
+      case 'title':   return dir * a.title.localeCompare(b.title);
+      case 'author':  return dir * a.author.localeCompare(b.author);
+      case 'genre':   return dir * a.genre.localeCompare(b.genre);
+      case 'pages':   return dir * ((a.pages || 0) - (b.pages || 0));
+      case 'pubYear': return dir * ((a.pubYear || 0) - (b.pubYear || 0));
+      case 'date':    return dir * ((a.date || 0) - (b.date || 0));
+      case 'rating':  return dir * (a.rating - b.rating);
+      default:        return 0;
     }
   });
+
+  updateSortIndicators();
 
   const tbody = document.getElementById('book-table-body');
   tbody.innerHTML = books.map((b, i) => {
