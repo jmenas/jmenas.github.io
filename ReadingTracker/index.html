@@ -136,6 +136,9 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 1.5rem 1.25rem 3rem;
+      min-width: 0;
+      overflow-x: hidden;
+    }
     }
 
     /* ── Config Panel ─────────────────────────────────────────── */
@@ -192,7 +195,7 @@
     /* ── Stat Cards ───────────────────────────────────────────── */
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
       gap: 1rem;
       margin: 0 0 .9rem;
     }
@@ -217,7 +220,7 @@
     /* ── Charts Grid ──────────────────────────────────────────── */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
       gap: 1.1rem;
     }
 
@@ -240,6 +243,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1.25rem;
+      min-width: 0;
     }
     .chart-card h3 { font-size: .85rem; color: var(--muted); margin-bottom: 1rem; }
     .chart-wrap { position: relative; height: 220px; }
@@ -540,7 +544,7 @@
     /* ── Achievements ─────────────────────────────────────────── */
     .achievements-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
       gap: 1.1rem;
     }
     .achievement-card {
