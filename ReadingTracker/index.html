@@ -76,9 +76,10 @@
     }
     .logo-text {
       font-family: 'Skranji', serif;
-      font-size: 1.8rem;
+      font-size: clamp(1rem, 4vw, 1.8rem);
       font-weight: 700;
       letter-spacing: .5px;
+      white-space: nowrap;
       background: linear-gradient(135deg, #e8d5a3, #c4a55a);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -343,14 +344,15 @@
     /* ── Tabs ─────────────────────────────────────────────────── */
     .tabs {
       display: flex;
-      gap: .25rem;
       margin-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
-      overflow-x: auto;
       position: relative;
       z-index: 10;
     }
     .tab-btn {
+      flex: 1;
+      display: flex;
+      justify-content: center;
       padding: .55rem .5rem;
       border: none;
       background: none;
@@ -374,6 +376,9 @@
     }
     .tab-btn.active .tab-icon,
     .tab-btn:hover .tab-icon { opacity: 1; }
+    @media (max-width: 480px) {
+      .tab-icon { width: 42px; height: 42px; }
+    }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
