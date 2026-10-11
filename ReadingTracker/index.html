@@ -2139,7 +2139,14 @@ function renderAchievements() {
   const container = document.getElementById('achievements-grid');
   container.className = 'achievements-grid';
 
-  container.innerHTML = ACHIEVEMENT_GENRES.map(({ genre, icon, levels }) => {
+  // Sort genres by book count descending so most progress appears first
+  const sortedGenres = [...ACHIEVEMENT_GENRES].sort((a, b) => {
+    const countA = Object.entries(genreCount).filter(([g]) => g.toLowerCase() === a.genre.toLowerCase()).reduce((s,[,c])=>s+c,0);
+    const countB = Object.entries(genreCount).filter(([g]) => g.toLowerCase() === b.genre.toLowerCase()).reduce((s,[,c])=>s+c,0);
+    return countB - countA;
+  });
+
+  container.innerHTML = sortedGenres.map(({ genre, icon, levels }) => {
     // Flexible match: sheet value may differ slightly in case / spacing
     const count = Object.entries(genreCount)
       .filter(([g]) => g.toLowerCase() === genre.toLowerCase())
