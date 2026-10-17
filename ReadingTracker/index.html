@@ -558,12 +558,23 @@
     .series-item.open  { border-color: var(--accent); }
     .series-header {
       display: flex;
-      align-items: center;
-      gap: .9rem;
+      flex-direction: column;
+      gap: .45rem;
       padding: .85rem 1.1rem;
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
+    }
+    .series-header-top {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .series-header-bottom {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding-left: 1.6rem; /* indent to align under the series name */
     }
     .series-chevron {
       font-size: .75rem;
@@ -590,8 +601,8 @@
       white-space: nowrap;
     }
     .series-progress-bar-wrap {
-      flex-shrink: 0;
-      width: clamp(80px, 18%, 160px);
+      flex: 1;
+      min-width: 0;
     }
     .series-progress-bar-track {
       height: 7px;
@@ -1930,14 +1941,18 @@ function renderSeriesTracker() {
     return `
     <div class="series-item" id="series-item-${idx}">
       <div class="series-header" onclick="toggleSeriesItem(${idx})">
-        <div class="series-chevron">▶</div>
-        <div class="series-name" title="${esc(s.name)}">${esc(s.name)}</div>
-        <div class="series-progress-bar-wrap">
-          <div class="series-progress-bar-track">
-            <div class="series-progress-bar-fill" style="width:${pct}%"></div>
-          </div>
+        <div class="series-header-top">
+          <div class="series-chevron">▶</div>
+          <div class="series-name" title="${esc(s.name)}">${esc(s.name)}</div>
         </div>
-        <div class="series-count">${countTxt}</div>
+        <div class="series-header-bottom">
+          <div class="series-progress-bar-wrap">
+            <div class="series-progress-bar-track">
+              <div class="series-progress-bar-fill" style="width:${pct}%"></div>
+            </div>
+          </div>
+          <div class="series-count">${countTxt}</div>
+        </div>
       </div>
       <div class="series-body">
         <div class="series-covers-grid">${coversHtml}</div>
