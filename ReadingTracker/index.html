@@ -530,6 +530,186 @@
       flex-shrink: 0;
     }
 
+    /* ── Series Tracker Accordion ────────────────────────────── */
+    .series-section-title {
+      font-family: 'Skranji', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 0 0 .85rem;
+      background: linear-gradient(135deg, #e8d5a3, #c4a55a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .series-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+    .series-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .series-item:hover { border-color: var(--accent); }
+    .series-item.open  { border-color: var(--accent); }
+    .series-header {
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      padding: .85rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .series-chevron {
+      font-size: .75rem;
+      color: var(--muted);
+      transition: transform .25s;
+      flex-shrink: 0;
+      width: 1rem;
+      text-align: center;
+    }
+    .series-item.open .series-chevron { transform: rotate(90deg); }
+    .series-name {
+      font-weight: 600;
+      font-size: .95rem;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .series-count {
+      font-size: .78rem;
+      color: var(--muted);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .series-progress-bar-wrap {
+      flex-shrink: 0;
+      width: clamp(80px, 18%, 160px);
+    }
+    .series-progress-bar-track {
+      height: 7px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .series-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+    .series-body {
+      display: none;
+      padding: 0 1.1rem 1.1rem;
+      border-top: 1px solid var(--border);
+    }
+    .series-item.open .series-body { display: block; }
+    .series-covers-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      padding-top: .9rem;
+    }
+    .series-cover-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+      width: 70px;
+    }
+    .series-cover-img {
+      width: 70px;
+      height: 105px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: var(--surface2);
+      display: block;
+      border: 2px solid transparent;
+      transition: border-color .2s, opacity .2s;
+    }
+    .series-cover-placeholder {
+      width: 70px;
+      height: 105px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: var(--border);
+      flex-shrink: 0;
+    }
+    /* Read books get the accent border; unread are dimmed */
+    .series-cover-wrap.read .series-cover-img,
+    .series-cover-wrap.read .series-cover-placeholder {
+      border-color: var(--accent3);
+      opacity: 1;
+    }
+    .series-cover-wrap.unread .series-cover-img,
+    .series-cover-wrap.unread .series-cover-placeholder {
+      opacity: .38;
+      filter: grayscale(0.5);
+    }
+    .series-cover-wrap.reading .series-cover-img,
+    .series-cover-wrap.reading .series-cover-placeholder {
+      border-color: var(--accent);
+      opacity: 1;
+    }
+    .series-read-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      color: #0f1117;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 1px 4px rgba(0,0,0,.45);
+    }
+    .series-reading-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      color: #fff;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 1px 4px rgba(0,0,0,.45);
+    }
+    .series-cover-order {
+      font-size: .68rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.2;
+      max-width: 70px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     /* ── Scrollbar ────────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -869,6 +1049,7 @@
 
     <!-- ── CHARTS TAB ─────────────────────────────────────────── -->
     <div class="tab-panel" id="tab-charts">
+
       <div class="charts-grid-2col">
         <div class="chart-card">
           <h3>Pages Read per Year</h3>
@@ -919,6 +1100,12 @@
           <div class="chart-wrap" style="height:340px"><canvas id="chart-scatter"></canvas></div>
           <p class="scatter-hint">Scroll to zoom · Click and drag to pan · Double-click to reset</p>
         </div>
+      </div>
+
+      <!-- Series progress tracker -->
+      <div id="series-tracker" style="margin-top:1.5rem;display:none;">
+        <div class="series-section-title">Series Progress</div>
+        <div id="series-accordion" class="series-accordion"></div>
       </div>
     </div>
 
@@ -983,6 +1170,14 @@
         <div class="config-field">
           <label>Rating (1–5)</label>
           <input id="f-rating" type="number" min="1" max="5" step="0.5" />
+        </div>
+        <div class="config-field" style="grid-column:span 2">
+          <label>Series</label>
+          <input id="f-series" type="text" placeholder="e.g. The Stormlight Archive" />
+        </div>
+        <div class="config-field">
+          <label>Series Order</label>
+          <input id="f-series-order" type="number" min="0" step="0.5" placeholder="e.g. 1" />
         </div>
         <div class="config-field" style="grid-column:span 2">
           <label>Cover URL</label>
@@ -1139,25 +1334,28 @@ function parseJSON(rows) {
     const title = get('title');
     if (!title) return null;
 
-    const pagesRaw  = parseInt(get('page'), 10);
-    const ratingRaw = parseFloat(get('rating'));
-    const pubRaw    = parseInt(get('pub'), 10);
-    const dateRaw   = get('date');
-    const status    = get('status') || 'Read';
-    const topTenRaw = parseInt(get('top ten'), 10);
+    const pagesRaw       = parseInt(get('page'), 10);
+    const ratingRaw      = parseFloat(get('rating'));
+    const pubRaw         = parseInt(get('pub'), 10);
+    const dateRaw        = get('date');
+    const status         = get('status') || 'Read';
+    const topTenRaw      = parseInt(get('top ten'), 10);
+    const seriesOrderRaw = parseFloat(get('series order', 'order'));
 
     return {
       title,
-      author:   get('author') || 'Unknown',
-      genre:    get('genre')  || 'Uncategorized',
-      pages:    isNaN(pagesRaw)  ? 0    : pagesRaw,
-      pubYear:  isNaN(pubRaw)    ? null : pubRaw,
-      dateStr:  dateRaw,
-      date:     parseDate(dateRaw),
-      rating:   isNaN(ratingRaw) ? 0    : Math.min(5, Math.max(0, ratingRaw)),
-      status:   normalizeStatus(status),
-      coverUrl: parseCoverCell(get('cover')),
-      topTen:   isNaN(topTenRaw) ? null : topTenRaw,
+      author:      get('author') || 'Unknown',
+      genre:       get('genre')  || 'Uncategorized',
+      pages:       isNaN(pagesRaw)       ? 0    : pagesRaw,
+      pubYear:     isNaN(pubRaw)         ? null : pubRaw,
+      dateStr:     dateRaw,
+      date:        parseDate(dateRaw),
+      rating:      isNaN(ratingRaw)      ? 0    : Math.min(5, Math.max(0, ratingRaw)),
+      status:      normalizeStatus(status),
+      coverUrl:    parseCoverCell(get('cover')),
+      topTen:      isNaN(topTenRaw)      ? null : topTenRaw,
+      series:      get('series')         || '',
+      seriesOrder: isNaN(seriesOrderRaw) ? null : seriesOrderRaw,
     };
   }).filter(Boolean);
 }
@@ -1210,8 +1408,10 @@ function openEditModal(title) {
   document.getElementById('f-pages').value   = b.pages || '';
   document.getElementById('f-pubyear').value = b.pubYear || '';
   document.getElementById('f-date').value    = b.dateStr ? b.dateStr.slice(0, 10) : '';
-  document.getElementById('f-rating').value  = b.rating || '';
-  document.getElementById('f-cover').value   = b.coverUrl || '';
+  document.getElementById('f-rating').value       = b.rating || '';
+  document.getElementById('f-cover').value        = b.coverUrl || '';
+  document.getElementById('f-series').value       = b.series || '';
+  document.getElementById('f-series-order').value = b.seriesOrder ?? '';
   showModal(true);
 }
 
@@ -1241,6 +1441,8 @@ async function submitBookForm(e) {
     'Status':              document.getElementById('f-status').value,
     'Cover':               document.getElementById('f-cover').value.trim(),
     'Top Ten':             '',
+    'Series':              document.getElementById('f-series').value.trim(),
+    'Series Order':        document.getElementById('f-series-order').value.trim(),
   };
 
   try {
@@ -1307,6 +1509,7 @@ function renderAll() {
   renderTable();
   initTableSortHeaders();
   buildCharts();
+  renderSeriesTracker();
   renderCurrentlyReading();
   renderUpNext();
   renderTopTen();
@@ -1350,6 +1553,17 @@ function injectCoverPlaceholders(b) {
     img.src = url;
     img.alt = '';
     img.loading = 'lazy';
+    img.onerror = () => { img.style.display = 'none'; };
+    el.replaceWith(img);
+  });
+  // Series tracker covers
+  document.querySelectorAll(`.series-cover-placeholder[data-series-cover-key="${CSS.escape(key)}"]`).forEach(el => {
+    const img = document.createElement('img');
+    img.className = 'series-cover-img';
+    img.src = url;
+    img.alt = b.title + ' cover';
+    img.loading = 'lazy';
+    img.title = b.title;
     img.onerror = () => { img.style.display = 'none'; };
     el.replaceWith(img);
   });
@@ -1640,6 +1854,113 @@ function bookCardCover(b) {
 
 // After render, fetch the cover and swap the placeholder for a real image.
 // (Covers are injected centrally via injectCoverPlaceholders from prefetchCovers)
+
+// ─────────────────────────────────────────────────────────────────
+// Series Tracker (Charts tab accordion)
+// ─────────────────────────────────────────────────────────────────
+function renderSeriesTracker() {
+  const wrapper = document.getElementById('series-tracker');
+  const container = document.getElementById('series-accordion');
+
+  // Collect all books that have a series name
+  const seriesBooks = allBooks.filter(b => b.series && b.series.trim() !== '');
+  if (!seriesBooks.length) { wrapper.style.display = 'none'; return; }
+
+  // Group by series name. De-duplicate by title (keep the one with status
+  // closest to "Read"; if same, keep the first occurrence).
+  const statusRank = s => s === 'Read' ? 0 : s === 'Reading' ? 1 : s === 'Up Next' ? 2 : 3;
+  const seriesMap = {};
+  seriesBooks.forEach(b => {
+    const sName = b.series.trim();
+    if (!seriesMap[sName]) seriesMap[sName] = {};
+    const key = b.title.trim().toLowerCase();
+    const existing = seriesMap[sName][key];
+    if (!existing || statusRank(b.status) < statusRank(existing.status)) {
+      seriesMap[sName][key] = b;
+    }
+  });
+
+  // Build sorted series list
+  const series = Object.entries(seriesMap)
+    .map(([name, booksObj]) => {
+      const books = Object.values(booksObj).sort((a, b) => {
+        // Sort by seriesOrder (nulls last), then title
+        if (a.seriesOrder !== null && b.seriesOrder !== null) return a.seriesOrder - b.seriesOrder;
+        if (a.seriesOrder !== null) return -1;
+        if (b.seriesOrder !== null) return 1;
+        return a.title.localeCompare(b.title);
+      });
+      const total   = books.length;
+      const read    = books.filter(b => b.status === 'Read').length;
+      const reading = books.filter(b => b.status === 'Reading').length;
+      return { name, books, total, read, reading };
+    })
+    // Sort series: incomplete first (most-read % desc), then completed
+    .sort((a, b) => {
+      const aPct = a.read / a.total;
+      const bPct = b.read / b.total;
+      if (aPct === 1 && bPct < 1) return 1;
+      if (bPct === 1 && aPct < 1) return -1;
+      return bPct - aPct;
+    });
+
+  container.innerHTML = series.map((s, idx) => {
+    const pct     = s.total > 0 ? Math.round((s.read / s.total) * 100) : 0;
+    const countTxt = s.reading > 0
+      ? `${s.read} / ${s.total} read · ${s.reading} reading`
+      : `${s.read} / ${s.total} read`;
+
+    const coversHtml = s.books.map(b => {
+      const key = coverKey(b.title, b.author);
+      const url = coverCache[key];
+      const statusClass = b.status === 'Read' ? 'read' : b.status === 'Reading' ? 'reading' : 'unread';
+      const badge = b.status === 'Read'
+        ? `<div class="series-read-badge" title="Read">✓</div>`
+        : b.status === 'Reading'
+          ? `<div class="series-reading-badge" title="Currently Reading">▶</div>`
+          : '';
+      const orderLabel = b.seriesOrder !== null
+        ? `#${b.seriesOrder}`
+        : esc(b.title.length > 12 ? b.title.slice(0, 11) + '…' : b.title);
+      const coverEl = url
+        ? `<img class="series-cover-img" src="${url}" alt="${esc(b.title)}" loading="lazy"
+              title="${esc(b.title)}"
+              onerror="this.outerHTML='<div class=\\'series-cover-placeholder\\' data-series-cover-key=\\'${esc(key)}\\'>📖</div>'">`
+        : `<div class="series-cover-placeholder" data-series-cover-key="${esc(key)}" title="${esc(b.title)}">📖</div>`;
+
+      return `<div class="series-cover-wrap ${statusClass}">
+        ${badge}
+        ${coverEl}
+        <div class="series-cover-order">${orderLabel}</div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="series-item" id="series-item-${idx}">
+      <div class="series-header" onclick="toggleSeriesItem(${idx})">
+        <div class="series-chevron">▶</div>
+        <div class="series-name" title="${esc(s.name)}">${esc(s.name)}</div>
+        <div class="series-progress-bar-wrap">
+          <div class="series-progress-bar-track">
+            <div class="series-progress-bar-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="series-count">${countTxt}</div>
+      </div>
+      <div class="series-body">
+        <div class="series-covers-grid">${coversHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrapper.style.display = '';
+}
+
+function toggleSeriesItem(idx) {
+  const el = document.getElementById(`series-item-${idx}`);
+  if (!el) return;
+  el.classList.toggle('open');
+}
 
 // ─────────────────────────────────────────────────────────────────
 // Charts
@@ -2280,19 +2601,23 @@ function loadDemo() {
     { title:"Brave New World",            author:"Aldous Huxley",    genre:"Fiction",     pages:311,  pubYear:1932, date:new Date("2024-01-09"), dateStr:"2024-01-09", rating:4, status:"Read"         },
     { title:"The Lean Startup",           author:"Eric Ries",        genre:"Business",    pages:299,  pubYear:2011, date:new Date("2024-02-14"), dateStr:"2024-02-14", rating:3, status:"Read"         },
     { title:"Hyperion",                   author:"Dan Simmons",      genre:"Sci-Fi",      pages:482,  pubYear:1989, date:new Date("2024-03-03"), dateStr:"2024-03-03", rating:5, status:"Read"         },
-    { title:"Mistborn",                   author:"Brandon Sanderson",genre:"Fantasy",     pages:541,  pubYear:2006, date:new Date("2024-04-21"), dateStr:"2024-04-21", rating:5, status:"Read"         },
+    { title:"Mistborn",                   author:"Brandon Sanderson",genre:"Fantasy",     pages:541,  pubYear:2006, date:new Date("2024-04-21"), dateStr:"2024-04-21", rating:5, status:"Read",         series:"Mistborn: The Original Trilogy", seriesOrder:1 },
     { title:"Zero to One",                author:"Peter Thiel",      genre:"Business",    pages:195,  pubYear:2014, date:new Date("2024-05-17"), dateStr:"2024-05-17", rating:3, status:"Read"         },
     { title:"The Power of Habit",         author:"Charles Duhigg",   genre:"Self-Help",   pages:371,  pubYear:2012, date:new Date("2024-06-08"), dateStr:"2024-06-08", rating:4, status:"Read"         },
     { title:"Children of Time",           author:"Adrian Tchaikovsky",genre:"Sci-Fi",     pages:600,  pubYear:2015, date:new Date("2024-07-22"), dateStr:"2024-07-22", rating:5, status:"Read"         },
-    { title:"The Way of Kings",           author:"Brandon Sanderson",genre:"Fantasy",     pages:1007, pubYear:2010, date:new Date("2024-09-01"), dateStr:"2024-09-01", rating:5, status:"Read"         },
+    { title:"The Way of Kings",           author:"Brandon Sanderson",genre:"Fantasy",     pages:1007, pubYear:2010, date:new Date("2024-09-01"), dateStr:"2024-09-01", rating:5, status:"Read",         series:"The Stormlight Archive",         seriesOrder:1 },
     { title:"Never Split the Difference", author:"Chris Voss",       genre:"Self-Help",   pages:260,  pubYear:2016, date:new Date("2024-10-14"), dateStr:"2024-10-14", rating:4, status:"Read"         },
     { title:"Recursion",                  author:"Blake Crouch",     genre:"Sci-Fi",      pages:336,  pubYear:2019, date:new Date("2024-11-29"), dateStr:"2024-11-29", rating:4, status:"Read"         },
-    { title:"Words of Radiance",          author:"Brandon Sanderson",genre:"Fantasy",     pages:1087, pubYear:2014, date:new Date("2025-01-15"), dateStr:"2025-01-15", rating:5, status:"Read"         },
+    { title:"Words of Radiance",          author:"Brandon Sanderson",genre:"Fantasy",     pages:1087, pubYear:2014, date:new Date("2025-01-15"), dateStr:"2025-01-15", rating:5, status:"Read",         series:"The Stormlight Archive",         seriesOrder:2 },
     { title:"The Creative Act",           author:"Rick Rubin",       genre:"Self-Help",   pages:419,  pubYear:2023, date:new Date("2025-02-28"), dateStr:"2025-02-28", rating:4, status:"Read"         },
     { title:"Piranesi",                   author:"Susanna Clarke",   genre:"Fantasy",     pages:272,  pubYear:2020, date:new Date("2025-03-19"), dateStr:"2025-03-19", rating:5, status:"Read"         },
-    { title:"A Memory Called Empire",     author:"Arkady Martine",   genre:"Sci-Fi",      pages:462,  pubYear:2019, date:new Date("2025-04-07"), dateStr:"2025-04-07", rating:4, status:"Read"         },
+    { title:"A Memory Called Empire",     author:"Arkady Martine",   genre:"Sci-Fi",      pages:462,  pubYear:2019, date:new Date("2025-04-07"), dateStr:"2025-04-07", rating:4, status:"Read",         series:"Teixcalaan",                      seriesOrder:1 },
     { title:"Meditations",                author:"Marcus Aurelius",  genre:"Philosophy",  pages:254,  pubYear:180,  date:new Date("2025-05-22"), dateStr:"2025-05-22", rating:5, status:"Read"         },
-    { title:"Oathbringer",                author:"Brandon Sanderson",genre:"Fantasy",     pages:1243, pubYear:2017, date:null,                  dateStr:"",           rating:0, status:"Reading"      },
+    { title:"Oathbringer",                author:"Brandon Sanderson",genre:"Fantasy",     pages:1243, pubYear:2017, date:null,                  dateStr:"",           rating:0, status:"Reading",      series:"The Stormlight Archive",         seriesOrder:3 },
+    { title:"The Well of Ascension",      author:"Brandon Sanderson",genre:"Fantasy",     pages:590,  pubYear:2007, date:null,                  dateStr:"",           rating:0, status:"Want to Read", series:"Mistborn: The Original Trilogy", seriesOrder:2 },
+    { title:"The Hero of Ages",           author:"Brandon Sanderson",genre:"Fantasy",     pages:572,  pubYear:2008, date:null,                  dateStr:"",           rating:0, status:"Want to Read", series:"Mistborn: The Original Trilogy", seriesOrder:3 },
+    { title:"Rhythm of War",              author:"Brandon Sanderson",genre:"Fantasy",     pages:1232, pubYear:2020, date:null,                  dateStr:"",           rating:0, status:"Want to Read", series:"The Stormlight Archive",         seriesOrder:4 },
+    { title:"A Desolation Called Peace",  author:"Arkady Martine",   genre:"Sci-Fi",      pages:496,  pubYear:2021, date:null,                  dateStr:"",           rating:0, status:"Want to Read", series:"Teixcalaan",                      seriesOrder:2 },
     { title:"The Brothers Karamazov",     author:"Fyodor Dostoevsky",genre:"Fiction",     pages:796,  pubYear:1880, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
     { title:"Gödel, Escher, Bach",        author:"Douglas Hofstadter",genre:"Philosophy", pages:777,  pubYear:1979, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
     { title:"The Remains of the Day",     author:"Kazuo Ishiguro",   genre:"Fiction",     pages:258,  pubYear:1989, date:null,                  dateStr:"",           rating:0, status:"Want to Read" },
