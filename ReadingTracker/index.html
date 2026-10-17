@@ -145,7 +145,6 @@
       min-width: 0;
       overflow-x: hidden;
     }
-    }
 
     /* ── Config Panel ─────────────────────────────────────────── */
     #config-panel {
@@ -649,7 +648,6 @@
       color: var(--border);
       flex-shrink: 0;
     }
-    /* Read books get the accent border; unread are dimmed */
     .series-cover-wrap.read .series-cover-img,
     .series-cover-wrap.read .series-cover-placeholder {
       border-color: var(--accent3);
@@ -1104,7 +1102,7 @@
 
       <!-- Series progress tracker -->
       <div id="series-tracker" style="margin-top:1.5rem;display:none;">
-        <div class="series-section-title">Series Progress</div>
+        <div class="section-title">Series Progress</div>
         <div id="series-accordion" class="series-accordion"></div>
       </div>
     </div>
@@ -1895,14 +1893,8 @@ function renderSeriesTracker() {
       const reading = books.filter(b => b.status === 'Reading').length;
       return { name, books, total, read, reading };
     })
-    // Sort series: incomplete first (most-read % desc), then completed
-    .sort((a, b) => {
-      const aPct = a.read / a.total;
-      const bPct = b.read / b.total;
-      if (aPct === 1 && bPct < 1) return 1;
-      if (bPct === 1 && aPct < 1) return -1;
-      return bPct - aPct;
-    });
+    // Sort series: most books read (absolute count) descending, then by name
+    .sort((a, b) => b.read - a.read || a.name.localeCompare(b.name));
 
   container.innerHTML = series.map((s, idx) => {
     const pct     = s.total > 0 ? Math.round((s.read / s.total) * 100) : 0;
