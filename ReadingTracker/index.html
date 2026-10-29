@@ -24,6 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Skranji:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
@@ -506,6 +507,25 @@
     .book-card .book-title { font-weight: 600; font-size: .88rem; line-height: 1.35; }
     .book-card .book-author { font-size: .75rem; color: var(--muted); }
 
+    /* ── To Be Read: drag-and-drop ordering ───────────────────── */
+    .tbr-hint { font-size: .78rem; color: var(--muted); margin: -.4rem 0 .9rem; }
+    .tbr-card { position: relative; cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    .tbr-card:active { cursor: grabbing; }
+    .tbr-card img { -webkit-user-drag: none; pointer-events: none; }
+    .tbr-num {
+      position: absolute; top: .45rem; left: .45rem; z-index: 2;
+      min-width: 1.6rem; height: 1.6rem; padding: 0 .4rem;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 999px;
+      background: rgba(15,17,23,.85);
+      border: 1px solid #c4a55a;
+      color: #e8d5a3;
+      font-family: 'Skranji', serif; font-size: .85rem;
+      pointer-events: none;
+    }
+    .tbr-ghost  { opacity: .35; border-color: var(--accent) !important; border-style: dashed; }
+    .tbr-chosen { border-color: var(--accent); box-shadow: 0 8px 28px rgba(0,0,0,.55); }
+
     /* ── Table cover thumbnail ────────────────────────────────── */
     .cover-thumb {
       width: 32px;
@@ -628,6 +648,9 @@
       gap: .75rem;
       padding-top: .9rem;
     }
+    .series-cover-wrap { cursor: pointer; }
+    .series-cover-wrap:hover .series-cover-img,
+    .series-cover-wrap:hover .series-cover-placeholder { outline: 2px solid var(--accent); outline-offset: 1px; }
     .series-cover-wrap {
       position: relative;
       display: flex;
@@ -1016,6 +1039,7 @@
       <!-- Up Next -->
       <div id="up-next-section" style="display:none">
         <p class="section-title">To Be Read</p>
+        <p class="tbr-hint">Drag books to set your reading order — it saves to your sheet automatically.</p>
         <div class="reading-grid" id="up-next-grid"></div>
       </div>
     </div>
@@ -1349,7 +1373,8 @@ function parseJSON(rows) {
     const dateRaw        = get('date');
     const status         = get('status') || 'Read';
     const topTenRaw      = parseInt(get('top ten'), 10);
-    const seriesOrderRaw = parseFloat(get('series order', 'order'));
+    const seriesOrderRaw = parseFloat(get('series order') || row['order'] || '');
+    const tbrOrderRaw    = parseFloat(get('tbr order'));
 
     return {
       title,
@@ -1365,6 +1390,7 @@ function parseJSON(rows) {
       topTen:      isNaN(topTenRaw)      ? null : topTenRaw,
       series:      get('series')         || '',
       seriesOrder: isNaN(seriesOrderRaw) ? null : seriesOrderRaw,
+      tbrOrder:    isNaN(tbrOrderRaw)    ? null : tbrOrderRaw,
     };
   }).filter(Boolean);
 }
@@ -1452,6 +1478,9 @@ async function submitBookForm(e) {
     'Top Ten':             '',
     'Series':              document.getElementById('f-series').value.trim(),
     'Series Order':        document.getElementById('f-series-order').value.trim(),
+    // Preserve the existing TBR position when editing a book
+    'TBR Order':           (modalMode === 'edit' && (allBooks.find(x => x.title === editingTitle)?.tbrOrder ?? null) !== null)
+                             ? String(allBooks.find(x => x.title === editingTitle).tbrOrder) : '',
   };
 
   try {
@@ -1789,14 +1818,35 @@ function renderCurrentlyReading() {
   };
 }
 
+// Books in the To Be Read list, in the user's chosen order.
+// Books without a TBR Order number go to the end, in sheet order.
+function getUpNextBooks() {
+  return allBooks
+    .map((b, i) => ({ b, i }))
+    .filter(x => x.b.status === 'Up Next')
+    .sort((x, y) => {
+      const a = x.b.tbrOrder, c = y.b.tbrOrder;
+      if (a === null && c === null) return x.i - y.i;
+      if (a === null) return 1;
+      if (c === null) return -1;
+      return a - c || x.i - y.i;
+    })
+    .map(x => x.b);
+}
+
+let upNextSortable = null;
+let tbrSaveChain = Promise.resolve();
+
 function renderUpNext() {
-  const books = allBooks.filter(b => b.status === 'Up Next');
+  const books = getUpNextBooks();
   const section = document.getElementById('up-next-section');
+  if (upNextSortable) { upNextSortable.destroy(); upNextSortable = null; }
   if (!books.length) { section.style.display = 'none'; return; }
   section.style.display = '';
   const grid = document.getElementById('up-next-grid');
-  grid.innerHTML = books.map(b => `
-    <div class="book-card" style="cursor:pointer" data-title="${esc(b.title)}">
+  grid.innerHTML = books.map((b, i) => `
+    <div class="book-card tbr-card" data-title="${esc(b.title)}">
+      <span class="tbr-num">${i + 1}</span>
       ${bookCardCover(b)}
       <div class="book-card-body">
         <div class="book-title">${esc(b.title)}</div>
@@ -1811,6 +1861,62 @@ function renderUpNext() {
     const card = e.target.closest('[data-title]');
     if (card) openEditModal(card.dataset.title);
   };
+
+  if (typeof Sortable !== 'undefined') {
+    upNextSortable = Sortable.create(grid, {
+      animation: 150,
+      draggable: '.tbr-card',
+      ghostClass: 'tbr-ghost',
+      chosenClass: 'tbr-chosen',
+      delay: 180,              // press-and-hold on touch screens so scrolling still works
+      delayOnTouchOnly: true,
+      touchStartThreshold: 6,
+      onEnd: evt => {
+        if (evt.oldIndex === evt.newIndex) return;
+        saveTbrOrder();
+      },
+    });
+  }
+}
+
+// Reads the new order from the DOM, updates local data, and saves to the sheet.
+function saveTbrOrder() {
+  const grid = document.getElementById('up-next-grid');
+  const titles = [...grid.querySelectorAll('.tbr-card')].map(el => el.dataset.title);
+
+  // Remember old values so we can roll back if the save fails
+  const previous = new Map(allBooks.map(b => [b, b.tbrOrder]));
+
+  // Apply locally right away and refresh the number badges
+  titles.forEach((t, i) => {
+    const b = allBooks.find(x => x.status === 'Up Next' && x.title === t);
+    if (b) b.tbrOrder = i + 1;
+  });
+  grid.querySelectorAll('.tbr-num').forEach((el, i) => { el.textContent = i + 1; });
+
+  // Demo mode / no sheet connected: keep the order for this session only
+  if (!document.getElementById('sheet-url').value.trim()) return;
+
+  setSyncStatus('loading', 'Saving order…');
+  // Chain saves so rapid drags are written to the sheet in order
+  tbrSaveChain = tbrSaveChain
+    .then(() => postToSheet({ action: 'reorder', column: 'TBR Order', titles }))
+    .then(() => {
+      clearError();
+      setSyncStatus('synced', `Order saved · ${new Date().toLocaleTimeString()}`);
+    })
+    .catch(err => {
+      previous.forEach((val, b) => { b.tbrOrder = val; });
+      renderUpNext();
+      injectAllCovers();
+      setSyncStatus('error', 'Save failed');
+      showError(`Could not save reading order: ${err.message}`);
+    });
+}
+
+// Re-apply any already-fetched covers after a re-render
+function injectAllCovers() {
+  allBooks.forEach(b => injectCoverPlaceholders(b));
 }
 
 function renderTopTen() {
@@ -1931,7 +2037,7 @@ function renderSeriesTracker() {
               onerror="this.outerHTML='<div class=\\'series-cover-placeholder\\' data-series-cover-key=\\'${esc(key)}\\'>📖</div>'">`
         : `<div class="series-cover-placeholder" data-series-cover-key="${esc(key)}" title="${esc(b.title)}">📖</div>`;
 
-      return `<div class="series-cover-wrap ${statusClass}">
+      return `<div class="series-cover-wrap ${statusClass}" data-title="${esc(b.title)}">
         ${badge}
         ${coverEl}
         <div class="series-cover-order">${orderLabel}</div>
@@ -1959,6 +2065,12 @@ function renderSeriesTracker() {
       </div>
     </div>`;
   }).join('');
+
+  // Clicking a cover opens the Edit Book modal for that book
+  container.onclick = e => {
+    const wrap = e.target.closest('.series-cover-wrap[data-title]');
+    if (wrap) openEditModal(wrap.dataset.title);
+  };
 
   wrapper.style.display = '';
 }
@@ -2345,7 +2457,13 @@ function renderScatterChart(points) {
         },
         y: {
           title: { display: true, text: 'Publication Year', color: '#8b8fa8', font: { size: 11 }, padding: { bottom: 8 } },
-          ticks: { color: '#8b8fa8', font: { size: 10 }, maxTicksLimit: 12 },
+          ticks: {
+            color: '#8b8fa8',
+            font: { size: 10 },
+            maxTicksLimit: 12,
+            precision: 0,                       // whole-year steps only (no decimals)
+            callback: val => String(Math.round(val)),  // plain year, no thousands separator
+          },
           grid: { color: 'rgba(46,50,72,.7)' },
         }
       },
