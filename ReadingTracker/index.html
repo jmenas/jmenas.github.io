@@ -1213,8 +1213,8 @@
           <input id="f-series-order" type="number" min="0" step="0.5" placeholder="e.g. 1" />
         </div>
         <div class="config-field" style="grid-column:span 2">
-          <label>Cover URL</label>
-          <input id="f-cover" type="url" placeholder="https://…" />
+          <label>Cover Image Filename</label>
+          <input id="f-cover" type="text" placeholder="e.g. dune.jpg (leave blank for default)" />
         </div>
       </div>
       <div id="modal-error" style="display:none; color:var(--accent2); font-size:.82rem; margin-top:.75rem;"></div>
@@ -1240,46 +1240,17 @@ const PALETTE = [
 ];
 
 // ─────────────────────────────────────────────────────────────────
-// Cover image cache & fetcher
+// Cover path helper
 // ─────────────────────────────────────────────────────────────────
-const coverCache = {};  // key: "title|||author" → cover URL or null
+const DEFAULT_COVER = 'covers/book-cover.jpg';
 
-function coverKey(title, author) {
-  return `${title}|||${author}`;
-}
-
-// Returns a cover URL from cache, or null if not yet fetched.
-// Kicks off a fetch if not cached, then calls onLoad(url) when ready.
-function getCover(title, author, onLoad) {
-  const key = coverKey(title, author);
-  if (key in coverCache) {
-    if (coverCache[key] && onLoad) onLoad(coverCache[key]);
-    return coverCache[key] || null;
-  }
-  // Mark as pending so we don't double-fetch
-  coverCache[key] = undefined;
-  fetchCover(title, author).then(url => {
-    coverCache[key] = url;
-    if (url && onLoad) onLoad(url);
-  });
-  return null;
-}
-
-async function fetchCover(title, author) {
-  try {
-    const q = encodeURIComponent(`${title} ${author}`);
-    const res = await fetch(
-      `https://openlibrary.org/search.json?q=${q}&limit=1&fields=cover_i,title`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const coverId = data?.docs?.[0]?.cover_i;
-    if (!coverId) return null;
-    return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-  } catch {
-    return null;
-  }
+function coverPath(filename) {
+  if (!filename) return DEFAULT_COVER;
+  const f = filename.trim();
+  if (!f) return DEFAULT_COVER;
+  // If it already has the folder prefix, use as-is
+  if (f.startsWith('covers/')) return f;
+  return 'covers/' + f;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1331,9 +1302,6 @@ async function fetchData() {
     const books = parseJSON(json.data);
     if (books.length === 0) throw new Error('No data rows found. Check your sheet has a header row and at least one book.');
     allBooks = books;
-    allBooks.forEach(b => {
-      if (b.coverUrl) coverCache[coverKey(b.title, b.author)] = b.coverUrl;
-    });
     renderAll();
     setSyncStatus('synced', `Synced · ${new Date().toLocaleTimeString()}`);
     document.getElementById('config-panel').style.display = 'none';
@@ -1444,7 +1412,7 @@ function openEditModal(title) {
   document.getElementById('f-pubyear').value = b.pubYear || '';
   document.getElementById('f-date').value    = b.dateStr ? b.dateStr.slice(0, 10) : '';
   document.getElementById('f-rating').value       = b.rating || '';
-  document.getElementById('f-cover').value        = b.coverUrl || '';
+  document.getElementById('f-cover').value        = b.coverUrl ? b.coverUrl.replace(/^covers\//, '') : '';
   document.getElementById('f-series').value       = b.series || '';
   document.getElementById('f-series-order').value = b.seriesOrder ?? '';
   showModal(true);
@@ -1514,21 +1482,27 @@ function normalizeStatus(s) {
   return 'Read';
 }
 
-// Google Sheets exports =IMAGE("url") cells as the literal formula string.
-// This strips the IMAGE() wrapper and returns a clean URL, or null if empty.
+// Parse the Cover field from the sheet — just a filename like "dune.jpg"
 function parseCoverCell(raw) {
   if (!raw) return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;
 
-  // Match =IMAGE("url") or IMAGE("url") with optional extra args
+  // Strip legacy =IMAGE("url") wrapper if someone has it
   const imageMatch = trimmed.match(/^=?IMAGE\s*\(\s*"([^"]+)"/i);
-  if (imageMatch) return imageMatch[1];
+  if (imageMatch) {
+    // Extract just the filename from the URL
+    const urlPart = imageMatch[1];
+    return urlPart.split('/').pop() || null;
+  }
 
-  // Already a plain URL
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  // Full URL — extract just the filename
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed.split('/').pop() || null;
+  }
 
-  return null;
+  // Plain filename (expected format)
+  return trimmed;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -1552,70 +1526,8 @@ function renderAll() {
   renderUpNext();
   renderTopTen();
   renderAchievements();
-  // Pre-warm cover cache for all books in the background
-  prefetchCovers();
 }
 
-// Fetch covers for all books with a small delay between requests
-// to be polite to the Open Library API (rate limiting).
-async function prefetchCovers() {
-  for (const b of allBooks) {
-    const key = coverKey(b.title, b.author);
-    if (key in coverCache) continue; // already seeded from sheet or prior fetch
-
-    getCover(b.title, b.author, () => {
-      injectCoverPlaceholders(b);
-    });
-    await new Promise(r => setTimeout(r, 120)); // ~8 req/s to Open Library
-  }
-}
-
-function injectCoverPlaceholders(b) {
-  const key = coverKey(b.title, b.author);
-  const url = coverCache[key];
-  if (!url) return;
-  // Book cards (dashboard)
-  document.querySelectorAll(`[data-cover-key="${CSS.escape(key)}"]`).forEach(el => {
-    const img = document.createElement('img');
-    img.className = 'book-card-cover';
-    img.src = url;
-    img.alt = b.title + ' cover';
-    img.loading = 'lazy';
-    img.onerror = () => { img.style.display = 'none'; };
-    el.replaceWith(img);
-  });
-  // Table thumbnails (books tab)
-  document.querySelectorAll(`[data-thumb-key="${CSS.escape(key)}"]`).forEach(el => {
-    const img = document.createElement('img');
-    img.className = 'cover-thumb';
-    img.src = url;
-    img.alt = '';
-    img.loading = 'lazy';
-    img.onerror = () => { img.style.display = 'none'; };
-    el.replaceWith(img);
-  });
-  // Series tracker covers
-  document.querySelectorAll(`.series-cover-placeholder[data-series-cover-key="${CSS.escape(key)}"]`).forEach(el => {
-    const img = document.createElement('img');
-    img.className = 'series-cover-img';
-    img.src = url;
-    img.alt = b.title + ' cover';
-    img.loading = 'lazy';
-    img.title = b.title;
-    img.onerror = () => { img.style.display = 'none'; };
-    el.replaceWith(img);
-  });
-  // Top Ten list (dashboard)
-  document.querySelectorAll(`.top-ten-cover-placeholder[data-cover-key="${CSS.escape(key)}"]`).forEach(el => {
-    const img = document.createElement('img');
-    img.className = 'top-ten-cover';
-    img.src = url;
-    img.alt = b.title + ' cover';
-    img.loading = 'lazy';
-    img.onerror = () => { img.style.display = 'none'; };
-    el.replaceWith(img);
-  });
-}
 
 // ─────────────────────────────────────────────────────────────────
 // Stats
@@ -1741,11 +1653,7 @@ function renderTable() {
 
   const tbody = document.getElementById('book-table-body');
   tbody.innerHTML = books.map((b, i) => {
-    const key = coverKey(b.title, b.author);
-    const cachedUrl = coverCache[key];
-    const thumbHtml = cachedUrl
-      ? `<img class="cover-thumb" src="${cachedUrl}" alt="" loading="lazy" onerror="this.style.display='none'">`
-      : `<div class="cover-thumb-placeholder" data-thumb-key="${esc(key)}">📖</div>`;
+    const thumbHtml = `<img class="cover-thumb" src="${coverPath(b.coverUrl)}" alt="" loading="lazy" onerror="this.src='${DEFAULT_COVER}'">`;
     return `
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
@@ -1908,15 +1816,9 @@ function saveTbrOrder() {
     .catch(err => {
       previous.forEach((val, b) => { b.tbrOrder = val; });
       renderUpNext();
-      injectAllCovers();
       setSyncStatus('error', 'Save failed');
       showError(`Could not save reading order: ${err.message}`);
     });
-}
-
-// Re-apply any already-fetched covers after a re-render
-function injectAllCovers() {
-  allBooks.forEach(b => injectCoverPlaceholders(b));
 }
 
 function renderTopTen() {
@@ -1932,11 +1834,7 @@ function renderTopTen() {
   const rankClass = r => r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
 
   document.getElementById('top-ten-list').innerHTML = books.map(b => {
-    const key = coverKey(b.title, b.author);
-    const cachedUrl = coverCache[key];
-    const coverHtml = cachedUrl
-      ? `<img class="top-ten-cover" src="${cachedUrl}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.outerHTML='<div class=\\'top-ten-cover-placeholder\\'>📖</div>'">`
-      : `<div class="top-ten-cover-placeholder" data-cover-key="${esc(key)}">📖</div>`;
+    const coverHtml = `<img class="top-ten-cover" src="${coverPath(b.coverUrl)}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.src='${DEFAULT_COVER}'">`;
 
     return `
     <div class="top-ten-item">
@@ -1955,20 +1853,11 @@ function renderTopTen() {
   }).join('');
 }
 
-// Renders a cover img tag (or placeholder) for a book card.
-// Uses cached URL immediately if available; otherwise shows placeholder
-// and the getCover callback will swap it in.
+// Renders a cover img for a book card, always using the local covers folder.
 function bookCardCover(b) {
-  const key = coverKey(b.title, b.author);
-  const url = coverCache[key];
-  if (url) {
-    return `<img class="book-card-cover" src="${url}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.replaceWith(makePlaceholderEl())">`;
-  }
-  return `<div class="book-card-cover placeholder" data-cover-key="${esc(key)}">📖</div>`;
+  const src = coverPath(b.coverUrl);
+  return `<img class="book-card-cover" src="${src}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.src='${DEFAULT_COVER}'">`;
 }
-
-// After render, fetch the cover and swap the placeholder for a real image.
-// (Covers are injected centrally via injectCoverPlaceholders from prefetchCovers)
 
 // ─────────────────────────────────────────────────────────────────
 // Series Tracker (Charts tab accordion)
@@ -2020,8 +1909,6 @@ function renderSeriesTracker() {
       : `${s.read} / ${s.total} read`;
 
     const coversHtml = s.books.map(b => {
-      const key = coverKey(b.title, b.author);
-      const url = coverCache[key];
       const statusClass = b.status === 'Read' ? 'read' : b.status === 'Reading' ? 'reading' : 'unread';
       const badge = b.status === 'Read'
         ? `<div class="series-read-badge" title="Read">✓</div>`
@@ -2031,11 +1918,8 @@ function renderSeriesTracker() {
       const orderLabel = b.seriesOrder !== null
         ? `#${b.seriesOrder}`
         : esc(b.title.length > 12 ? b.title.slice(0, 11) + '…' : b.title);
-      const coverEl = url
-        ? `<img class="series-cover-img" src="${url}" alt="${esc(b.title)}" loading="lazy"
-              title="${esc(b.title)}"
-              onerror="this.outerHTML='<div class=\\'series-cover-placeholder\\' data-series-cover-key=\\'${esc(key)}\\'>📖</div>'">`
-        : `<div class="series-cover-placeholder" data-series-cover-key="${esc(key)}" title="${esc(b.title)}">📖</div>`;
+      const coverEl = `<img class="series-cover-img" src="${coverPath(b.coverUrl)}" alt="${esc(b.title)}" loading="lazy"
+            title="${esc(b.title)}" onerror="this.src='${DEFAULT_COVER}'">`;
 
       return `<div class="series-cover-wrap ${statusClass}" data-title="${esc(b.title)}">
         ${badge}
