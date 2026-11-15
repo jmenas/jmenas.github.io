@@ -156,6 +156,25 @@
       margin-bottom: 1.5rem;
     }
     #config-panel h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    /* ── Cover upload (Add/Edit Book modal) ───────────────────── */
+    .cover-drop {
+      display: flex; align-items: center; gap: 1rem;
+      padding: .75rem; cursor: pointer;
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      background: var(--surface2);
+      transition: border-color .15s, background .15s;
+    }
+    .cover-drop:hover, .cover-drop:focus-visible, .cover-drop.dragover {
+      border-color: var(--accent); background: rgba(124,106,247,.10); outline: none;
+    }
+    .cover-preview {
+      width: 60px; height: 90px; flex-shrink: 0;
+      object-fit: cover; border-radius: 6px; background: var(--surface);
+    }
+    .cover-drop-text { display: flex; flex-direction: column; gap: .2rem; font-size: .85rem; min-width: 0; }
+    .cover-drop-text span, .cover-drop-text small { color: var(--muted); }
+    .cover-drop-text small { font-size: .74rem; overflow-wrap: anywhere; }
+    .cover-drop-text small.ready { color: #6af7c4; }
     .config-row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
     .config-field { flex: 1; min-width: 220px; }
     .config-field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .35rem; }
@@ -975,6 +994,17 @@
         <button class="btn btn-accent" onclick="saveAndFetch()">Connect</button>
       </div>
     </div>
+    <div class="config-row" style="margin-top:.9rem">
+      <div class="config-field" style="flex:2">
+        <label for="github-token">GitHub Token (for cover uploads)</label>
+        <input id="github-token" type="password" name="gh-token" autocomplete="new-password" placeholder="Paste a fine-grained token…" />
+      </div>
+      <div style="display:flex; gap:.5rem;">
+        <button class="btn btn-accent" onclick="saveGithubToken()">Save</button>
+        <button class="btn" onclick="clearGithubToken()">Clear</button>
+      </div>
+    </div>
+    <p class="help-text" id="github-token-status" style="margin-top:.5rem"></p>
     <p class="help-text">
       <strong>Connected via Google Apps Script.</strong>
       Paste your Web App URL above (Extensions → Apps Script → Deploy → Web App).<br><br>
@@ -1213,8 +1243,17 @@
           <input id="f-series-order" type="number" min="0" step="0.5" placeholder="e.g. 1" />
         </div>
         <div class="config-field" style="grid-column:span 2">
-          <label>Cover Image Filename</label>
-          <input id="f-cover" type="text" placeholder="e.g. dune.jpg (leave blank for default)" />
+          <label>Cover Image</label>
+          <div id="cover-drop" class="cover-drop" tabindex="0" role="button" aria-label="Upload a cover image">
+            <img id="cover-preview" class="cover-preview" src="covers/book-cover.jpg" alt="" />
+            <div class="cover-drop-text">
+              <strong id="cover-drop-main">Drag &amp; drop an image here</strong>
+              <span>or click to choose a file</span>
+              <small id="cover-drop-info"></small>
+            </div>
+          </div>
+          <input id="f-cover-file" type="file" accept="image/*" hidden />
+          <input id="f-cover" type="hidden" />
         </div>
       </div>
       <div id="modal-error" style="display:none; color:var(--accent2); font-size:.82rem; margin-top:.75rem;"></div>
@@ -1244,18 +1283,237 @@ const PALETTE = [
 // ─────────────────────────────────────────────────────────────────
 const DEFAULT_COVER = 'covers/book-cover.jpg';
 
+// Covers uploaded this session: filename -> local blob URL. GitHub Pages takes
+// a minute or two to publish a new commit, so we show the local copy meanwhile
+// (and it avoids the browser showing an older cached version of the same file).
+const localCoverUrls = {};
+
 function coverPath(filename) {
   if (!filename) return DEFAULT_COVER;
   const f = filename.trim();
   if (!f) return DEFAULT_COVER;
-  // If it already has the folder prefix, use as-is
-  if (f.startsWith('covers/')) return f;
-  return 'covers/' + f;
+  const name = f.startsWith('covers/') ? f.slice('covers/'.length) : f;
+  if (localCoverUrls[name]) return localCoverUrls[name];
+  return 'covers/' + name;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Cover upload: resize → JPEG → commit to GitHub
+// ─────────────────────────────────────────────────────────────────
+const GITHUB_OWNER      = 'jmenas';
+const GITHUB_REPO       = 'jmenas.github.io';
+const GITHUB_COVERS_DIR = 'ReadingTracker/covers';   // uses the repo's default branch
+const GITHUB_TOKEN_KEY  = 'biblio-github-token';
+const COVER_HEIGHT      = 400;
+const COVER_QUALITY     = 0.85;
+
+let pendingCover = null; // { blob, url, width, height } – chosen but not yet uploaded
+
+// "The Hobbit" -> "the-hobbit.jpg"
+function makeCoverFilename(title) {
+  const slug = String(title || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // strip accents
+    .toLowerCase()
+    .replace(/['’`]/g, '')                               // drop apostrophes
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+    .replace(/-+$/, '');
+  return (slug || 'cover') + '.jpg';
+}
+
+function loadImageElement(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that image.')); };
+    img.src = url;
+  });
+}
+
+// Resizes to COVER_HEIGHT tall (width keeps the aspect ratio), flattens
+// transparency onto white, and encodes as an 85%-quality JPEG.
+async function processCoverFile(file) {
+  if (!file || !file.type.startsWith('image/')) throw new Error('Please choose an image file.');
+  let src;
+  try { src = await createImageBitmap(file); }
+  catch { src = await loadImageElement(file); }
+
+  const srcW = src.width, srcH = src.height;
+  if (!srcW || !srcH) throw new Error('Could not read that image.');
+  const outH = COVER_HEIGHT;
+  const outW = Math.max(1, Math.round(srcW * outH / srcH));
+
+  // Step down by halves for large photos so the result stays sharp
+  let cur = src, curW = srcW, curH = srcH;
+  while (curH / 2 > outH) {
+    const nw = Math.round(curW / 2), nh = Math.round(curH / 2);
+    const c = document.createElement('canvas');
+    c.width = nw; c.height = nh;
+    const cx = c.getContext('2d');
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(cur, 0, 0, nw, nh);
+    cur = c; curW = nw; curH = nh;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW; canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';                // transparent PNGs become white
+  ctx.fillRect(0, 0, outW, outH);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(cur, 0, 0, outW, outH);
+  if (src.close) src.close();
+
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', COVER_QUALITY));
+  if (!blob) throw new Error('Could not convert that image to JPEG.');
+  return { blob, width: outW, height: outH };
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload  = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = () => reject(new Error('Could not read the converted image.'));
+    r.readAsDataURL(blob);
+  });
+}
+
+// Commits covers/<filename> to the repo, overwriting it if it already exists.
+async function uploadCoverToGitHub(filename, blob) {
+  const token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) throw new Error('Add your GitHub token in the settings panel first (⚙ at the top of the page).');
+
+  const api = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_COVERS_DIR}/${encodeURIComponent(filename)}`;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  // Look up the existing file (if any): GitHub needs its sha to overwrite it
+  let sha;
+  const existing = await fetch(api, { headers, cache: 'no-store' });
+  if (existing.status === 200) sha = (await existing.json()).sha;
+  else if (existing.status === 401) throw new Error('GitHub rejected the token. It may have expired or been revoked.');
+  else if (existing.status !== 404) throw new Error(`GitHub error while checking for an existing cover (HTTP ${existing.status}).`);
+
+  const body = {
+    message: `${sha ? 'Update' : 'Add'} cover: ${filename}`,
+    content: await blobToBase64(blob),
+  };
+  if (sha) body.sha = sha;
+
+  const res = await fetch(api, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) return;
+  if (res.status === 401) throw new Error('GitHub rejected the token. It may have expired or been revoked.');
+  if (res.status === 403 || res.status === 404)
+    throw new Error('GitHub would not accept the upload. Check that the token has "Contents: Read and write" access to jmenas.github.io.');
+  if (res.status === 409) throw new Error('GitHub reported a conflict. Please try saving again.');
+  throw new Error(`GitHub upload failed (HTTP ${res.status}).`);
+}
+
+// ── Token settings ───────────────────────────────────────────────
+function refreshGithubTokenStatus() {
+  const has = !!localStorage.getItem(GITHUB_TOKEN_KEY);
+  const el = document.getElementById('github-token-status');
+  const input = document.getElementById('github-token');
+  if (!el || !input) return;
+  input.value = '';
+  input.placeholder = has ? 'Token saved on this device ✓ (paste a new one to replace it)' : 'Paste a fine-grained token…';
+  el.innerHTML = has
+    ? '✅ A GitHub token is saved in this browser. Cover uploads are enabled.'
+    : 'Needed only for uploading covers. Create a <strong>fine-grained personal access token</strong> limited to the <code>jmenas.github.io</code> repo with <code>Contents: Read and write</code> permission, then paste it here. It is stored only in this browser.';
+}
+function saveGithubToken() {
+  const v = document.getElementById('github-token').value.trim();
+  if (!v) { showError('Paste a GitHub token first.'); return; }
+  localStorage.setItem(GITHUB_TOKEN_KEY, v);
+  clearError();
+  refreshGithubTokenStatus();
+}
+function clearGithubToken() {
+  localStorage.removeItem(GITHUB_TOKEN_KEY);
+  refreshGithubTokenStatus();
+}
+
+// ── Cover picker UI (drag/drop + file chooser) ───────────────────
+function discardPendingCover() {
+  if (pendingCover) URL.revokeObjectURL(pendingCover.url);
+  pendingCover = null;
+}
+
+function resetCoverUI(filename) {
+  discardPendingCover();
+  document.getElementById('f-cover').value = filename || '';
+  document.getElementById('f-cover-file').value = '';
+  const img = document.getElementById('cover-preview');
+  img.onerror = () => { img.onerror = null; img.src = DEFAULT_COVER; };
+  img.src = coverPath(filename);
+  document.getElementById('cover-drop-main').textContent = filename ? 'Drag & drop to replace the cover' : 'Drag & drop an image here';
+  const info = document.getElementById('cover-drop-info');
+  info.className = '';
+  info.textContent = filename ? `Current file: ${filename}` : 'No cover yet — the default cover will be used.';
+}
+
+async function handleCoverFile(file) {
+  const errEl = document.getElementById('modal-error');
+  errEl.style.display = 'none';
+  const info = document.getElementById('cover-drop-info');
+  info.className = '';
+  info.textContent = 'Converting…';
+  try {
+    const out = await processCoverFile(file);
+    discardPendingCover();
+    pendingCover = { ...out, url: URL.createObjectURL(out.blob) };
+    const img = document.getElementById('cover-preview');
+    img.onerror = null;
+    img.src = pendingCover.url;
+    document.getElementById('cover-drop-main').textContent = 'New cover ready';
+    info.className = 'ready';
+    info.textContent = `${out.width}×${out.height} JPEG · ${Math.round(out.blob.size / 1024)} KB — uploads when you save`;
+  } catch (err) {
+    info.textContent = '';
+    errEl.textContent = '⚠ ' + err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function initCoverUpload() {
+  const drop  = document.getElementById('cover-drop');
+  const input = document.getElementById('f-cover-file');
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+  });
+  input.addEventListener('change', () => { if (input.files[0]) handleCoverFile(input.files[0]); });
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.add('dragover');
+  }));
+  ['dragleave', 'dragend'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('dragover')));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleCoverFile(file);
+  });
+  // A missed drop elsewhere on the page shouldn't navigate away to the image
+  ['dragover', 'drop'].forEach(ev => window.addEventListener(ev, e => {
+    if (e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files')) e.preventDefault();
+  }));
+  refreshGithubTokenStatus();
 }
 
 // ─────────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────────
+initCoverUpload();
+
 const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx4aC9mmNNyfp3wsz4kS_hrvd14Upcme7Y3VF2og8cpQcklhfQ-ILD5SmyKXGPceUNT/exec';
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1392,6 +1650,7 @@ function openAddModal() {
   document.getElementById('modal-submit-btn').textContent = 'Add Book';
   document.getElementById('book-form').reset();
   document.getElementById('modal-error').style.display = 'none';
+  resetCoverUI('');
   showModal(true);
 }
 
@@ -1412,13 +1671,13 @@ function openEditModal(title) {
   document.getElementById('f-pubyear').value = b.pubYear || '';
   document.getElementById('f-date').value    = b.dateStr ? b.dateStr.slice(0, 10) : '';
   document.getElementById('f-rating').value       = b.rating || '';
-  document.getElementById('f-cover').value        = b.coverUrl ? b.coverUrl.replace(/^covers\//, '') : '';
+  resetCoverUI(b.coverUrl ? b.coverUrl.replace(/^covers\//, '') : '');
   document.getElementById('f-series').value       = b.series || '';
   document.getElementById('f-series-order').value = b.seriesOrder ?? '';
   showModal(true);
 }
 
-function closeModal() { showModal(false); }
+function closeModal() { discardPendingCover(); showModal(false); }
 
 function showModal(show) {
   const m = document.getElementById('book-modal');
@@ -1432,6 +1691,25 @@ async function submitBookForm(e) {
   const btn = document.getElementById('modal-submit-btn');
   btn.disabled = true;
   btn.textContent = 'Saving…';
+
+  try {
+    // 1) If a new cover was chosen, convert → commit to GitHub, named after the title
+    if (pendingCover) {
+      const filename = makeCoverFilename(document.getElementById('f-title').value);
+      btn.textContent = 'Uploading cover…';
+      await uploadCoverToGitHub(filename, pendingCover.blob);
+      localCoverUrls[filename] = pendingCover.url;   // keep the blob alive for this session
+      pendingCover = null;                            // (so closeModal doesn't revoke it)
+      document.getElementById('f-cover').value = filename;
+      btn.textContent = 'Saving…';
+    }
+  } catch (err) {
+    errEl.textContent = '⚠ ' + err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = modalMode === 'add' ? 'Add Book' : 'Save Changes';
+    return;   // keep the modal open so nothing is lost; the sheet is not touched
+  }
 
   const row = {
     'Title':               document.getElementById('f-title').value.trim(),
