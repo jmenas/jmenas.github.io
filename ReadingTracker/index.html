@@ -175,6 +175,120 @@
     .cover-drop-text span, .cover-drop-text small { color: var(--muted); }
     .cover-drop-text small { font-size: .74rem; overflow-wrap: anywhere; }
     .cover-drop-text small.ready { color: #6af7c4; }
+
+    /* ── "Book conquered" celebration ─────────────────────────── */
+    #conquest-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 45%, rgba(58,18,6,.92) 0%, rgba(10,5,5,.96) 70%);
+      cursor: pointer; overflow: hidden; touch-action: manipulation;
+      animation: cq-fade-in .25s ease-out both;
+    }
+    #conquest-overlay.cq-out { animation: cq-fade-out .35s ease-in forwards; }
+    #conquest-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+    .cq-flash {
+      position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0;
+      background: radial-gradient(circle at 50% 45%, rgba(255,244,210,.95) 0%, rgba(255,150,50,.45) 45%, transparent 75%);
+      animation: cq-flash .4s ease-out .65s both;
+    }
+    .cq-stage {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 1.1rem;
+      padding: 1rem; max-width: 100%; text-align: center;
+      animation: cq-shake .38s linear .65s both;
+    }
+    .cq-cover {
+      position: relative;
+      height: min(46vh, 360px); aspect-ratio: var(--cq-ar, 2 / 3);
+      animation: cq-pop .5s cubic-bezier(.2,1.4,.4,1) both;
+    }
+    .cq-cover::before {                       /* fiery glow: flares with the slash, fades with the cover */
+      content: ''; position: absolute; inset: -50%; z-index: -1; pointer-events: none; opacity: 0;
+      background: radial-gradient(ellipse closest-side,
+        rgba(255,160,60,.80) 0%, rgba(255,120,35,.55) 25%, rgba(255,85,22,.28) 50%,
+        rgba(255,60,15,.09) 75%, rgba(255,60,15,0) 100%);
+      animation: cq-glow 1.6s ease-out .65s both;
+    }
+    .cq-half {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; border-radius: 8px; will-change: transform, opacity;
+    }
+    /* Cut runs from (60%,0) to (40%,100%) of the cover */
+    .cq-left  { clip-path: polygon(0 0, 60% 0, 40% 100%, 0 100%);
+                transform-origin: 20% 100%; animation: cq-left  1.6s cubic-bezier(.3,.1,.6,1) .65s both; }
+    .cq-right { clip-path: polygon(60% 0, 100% 0, 100% 100%, 40% 100%);
+                transform-origin: 80% 100%; animation: cq-right 1.6s cubic-bezier(.3,.1,.6,1) .65s both; }
+    .cq-slash {
+      position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none;
+      clip-path: inset(-25% -60% 125% -60%);   /* zero-height: nothing shows before the slash starts */
+      opacity: 0;
+      animation: cq-slash .55s cubic-bezier(.5,0,.2,1) .42s both;
+    }
+    .cq-slash line { vector-effect: non-scaling-stroke; stroke-linecap: round; }
+    .cq-slash .glow { stroke: #ff8a2a; stroke-width: 16px; filter: blur(5px); }
+    .cq-slash .core { stroke: #fff6dc; stroke-width: 3.5px; }
+    .cq-text {
+      position: absolute; inset: 0; z-index: 3; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .7rem;
+    }
+    .cq-banner {
+      white-space: nowrap;
+      font-family: 'Skranji', serif; font-size: clamp(1.9rem, 8vw, 3.4rem); line-height: 1.05;
+      color: #ffd27a; letter-spacing: .02em;
+      text-shadow: 0 0 6px #ff9a2a, 0 0 18px #ff5a14, 0 0 36px #c8260a, 0 3px 0 #5a1604;
+      animation: cq-banner .55s cubic-bezier(.2,1.5,.4,1) .9s both, cq-flicker .18s steps(2) 1.5s infinite alternate;
+    }
+    .cq-title {
+      font-size: clamp(.95rem, 3.6vw, 1.2rem); color: #f1dfc4; width: max-content; max-width: min(88vw, 520px);
+      text-shadow: 0 2px 6px #000, 0 0 14px #000, 0 0 24px rgba(0,0,0,.8);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      animation: cq-rise .5s ease-out 1.15s both;
+    }
+    @keyframes cq-fade-in  { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes cq-fade-out { from { opacity: 1 } to { opacity: 0 } }
+    @keyframes cq-pop   { from { opacity: 0; transform: scale(.55) rotate(-4deg) } to { opacity: 1; transform: none } }
+    @keyframes cq-glow {
+      0%   { opacity: 0; transform: scale(.7); }
+      8%   { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.15); }
+    }
+    @keyframes cq-slash {
+      0%   { opacity: 0; clip-path: inset(-25% -60% 125% -60%); }
+      1%   { opacity: 1; clip-path: inset(-25% -60% 125% -60%); }
+      40%  { opacity: 1; clip-path: inset(-25% -60% -25% -60%); }
+      100% { opacity: 0; clip-path: inset(-25% -60% -25% -60%); }
+    }
+    @keyframes cq-flash { 0% { opacity: 0 } 15% { opacity: .9 } 100% { opacity: 0 } }
+    @keyframes cq-shake {
+      0% { transform: translate(0,0) } 15% { transform: translate(-7px,4px) } 30% { transform: translate(6px,-5px) }
+      45% { transform: translate(-5px,-3px) } 60% { transform: translate(4px,3px) } 80% { transform: translate(-2px,1px) }
+      100% { transform: translate(0,0) }
+    }
+    @keyframes cq-left {
+      0%   { transform: translate(0,0) rotate(0); opacity: 1; }
+      18%  { transform: translate(-16px,3px) rotate(-2.5deg); opacity: 1; }
+      100% { transform: translate(-90px,170px) rotate(-16deg); opacity: 0; }
+    }
+    @keyframes cq-right {
+      0%   { transform: translate(0,0) rotate(0); opacity: 1; }
+      18%  { transform: translate(16px,3px) rotate(2.5deg); opacity: 1; }
+      100% { transform: translate(90px,170px) rotate(16deg); opacity: 0; }
+    }
+    @keyframes cq-banner { from { opacity: 0; transform: scale(2.4) } to { opacity: 1; transform: scale(1) } }
+    @keyframes cq-flicker { from { filter: brightness(1) } to { filter: brightness(1.25) } }
+    @keyframes cq-rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+
+    /* Reduced motion: no slash, shake or particles — just a gentle fade */
+    #conquest-overlay.cq-reduced .cq-stage,
+    #conquest-overlay.cq-reduced .cq-cover { animation: none; }
+    #conquest-overlay.cq-reduced .cq-cover::before { animation: cq-fade-in .5s ease-out .5s both; }
+    #conquest-overlay.cq-reduced .cq-half { clip-path: none; animation: cq-fade-out .5s ease-in .5s forwards; }
+    #conquest-overlay.cq-reduced .cq-right { display: none; }
+    #conquest-overlay.cq-reduced .cq-slash,
+    #conquest-overlay.cq-reduced .cq-flash,
+    #conquest-overlay.cq-reduced #conquest-canvas { display: none; }
+    #conquest-overlay.cq-reduced .cq-banner { animation: cq-fade-in .5s ease-out .8s both; }
+    #conquest-overlay.cq-reduced .cq-title  { animation: cq-fade-in .5s ease-out 1s both; }
     .config-row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
     .config-field { flex: 1; min-width: 220px; }
     .config-field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .35rem; }
@@ -1014,6 +1128,10 @@
     </p>
     <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
       <button class="btn" onclick="loadDemo()">📖 Load demo data</button>
+      <button class="btn" onclick="previewConquest()">⚔ Preview celebration</button>
+      <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; color:var(--muted); cursor:pointer;">
+        <input type="checkbox" id="sound-toggle" /> 🔊 Celebration sound
+      </label>
       <span style="font-size:.78rem;color:var(--muted)">Try the app with sample data before connecting your sheet.</span>
     </div>
   </div>
@@ -1512,7 +1630,194 @@ function initCoverUpload() {
 // ─────────────────────────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+// Sound effects (synthesized with Web Audio — no audio files needed)
+// ─────────────────────────────────────────────────────────────────
+const SOUND_KEY = 'biblio-sound';      // 'off' when muted; anything else = on
+let audioCtx = null;
+let noiseBufWhite = null, noiseBufBrown = null;
+
+function soundEnabled() {
+  try { return localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) { return true; }
+}
+
+// Browsers only allow audio after a tap/click, so this is called from user actions
+// (Save, Preview, the sound checkbox) before anything async happens.
+function unlockAudio() {
+  if (!soundEnabled()) return;
+  try {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) { /* audio is optional */ }
+}
+
+function initSoundToggle() {
+  const box = document.getElementById('sound-toggle');
+  if (box) {
+    box.checked = soundEnabled();
+    box.addEventListener('change', () => {
+      try { localStorage.setItem(SOUND_KEY, box.checked ? 'on' : 'off'); } catch (e) {}
+      if (box.checked) unlockAudio();
+    });
+  }
+  window.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
+}
+
+function makeNoiseBuffer(ctx, brown) {
+  const len = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) {
+    const w = Math.random() * 2 - 1;
+    if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }   // deeper, rumbly noise
+    else d[i] = w;
+  }
+  return buf;
+}
+
+function makeSoundOutput(ctx) {
+  const master = ctx.createGain();
+  master.gain.value = 0.5;                       // overall volume
+  const limiter = ctx.createDynamicsCompressor(); // keeps the layered effects from clipping
+  limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 12;
+  limiter.attack.value = 0.003;  limiter.release.value = 0.2;
+  master.connect(limiter); limiter.connect(ctx.destination);
+  return { master, limiter };
+}
+
+// Schedules every layer of the celebration sound, relative to t0 (seconds on ctx's clock).
+//   0.45s slash "shhhink"  ·  0.65s fire burst + crackling  ·  0.90s low thud as the banner lands
+function buildConquestSound(ctx, out, t0) {
+  const white = noiseBufWhite || (noiseBufWhite = makeNoiseBuffer(ctx, false));
+  const brown = noiseBufBrown || (noiseBufBrown = makeNoiseBuffer(ctx, true));
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  const noise = (buf, when, dur, offset) => {
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    src.start(when, offset || 0); src.stop(when + dur);
+    return src;
+  };
+  const filter = (type, freq, q) => {
+    const f = ctx.createBiquadFilter();
+    f.type = type; f.frequency.value = freq; if (q) f.Q.value = q;
+    return f;
+  };
+  const gainEnv = (points) => {                    // [[time, value], ...] linear ramps
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(points[0][1], points[0][0]);
+    for (let i = 1; i < points.length; i++) g.gain.linearRampToValueAtTime(points[i][1], points[i][0]);
+    return g;
+  };
+
+  // ── 1. Slash: a rising noise sweep ("shhh") ending in a metallic ring ("ink") ──
+  const S = t0 + 0.45;
+  {
+    const bp = filter('bandpass', 700, 1.4);
+    bp.frequency.setValueAtTime(700, S);
+    bp.frequency.exponentialRampToValueAtTime(7000, S + 0.2);
+    const g = gainEnv([[S, 0], [S + 0.05, 0.9], [S + 0.18, 0.7], [S + 0.3, 0]]);
+    noise(white, S, 0.4).connect(bp); bp.connect(g); g.connect(out);
+
+    const ringStart = S + 0.17;
+    [[2350, 0.16], [3590, 0.10], [5120, 0.07], [6890, 0.05]].forEach(([f, a], i) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const og = ctx.createGain();
+      og.gain.setValueAtTime(0, ringStart);
+      og.gain.linearRampToValueAtTime(a, ringStart + 0.008);
+      og.gain.exponentialRampToValueAtTime(0.0001, ringStart + 0.65 - i * 0.1);
+      o.connect(og); og.connect(out);
+      o.start(ringStart); o.stop(ringStart + 0.7);
+    });
+  }
+
+  // ── 2. Fire burst at the moment of impact ──
+  const F = t0 + 0.65;
+  {
+    // low "whump"
+    const boom = ctx.createOscillator(); boom.type = 'sine';
+    boom.frequency.setValueAtTime(95, F);
+    boom.frequency.exponentialRampToValueAtTime(38, F + 0.35);
+    const bg = gainEnv([[F, 0.5], [F + 0.4, 0]]);
+    boom.connect(bg); bg.connect(out); boom.start(F); boom.stop(F + 0.45);
+
+    // whoosh: noise whose pitch swells up and falls away
+    const wf = filter('bandpass', 400, 0.8);
+    wf.frequency.setValueAtTime(400, F);
+    wf.frequency.exponentialRampToValueAtTime(2200, F + 0.18);
+    wf.frequency.exponentialRampToValueAtTime(500, F + 1.0);
+    const wg = gainEnv([[F, 0], [F + 0.07, 0.85], [F + 0.5, 0.35], [F + 1.2, 0]]);
+    noise(white, F, 1.3).connect(wf); wf.connect(wg); wg.connect(out);
+
+    // roaring flame bed: deep noise that swells with the wall of fire, flickers, then dies down
+    const lp = filter('lowpass', 600);
+    lp.frequency.setValueAtTime(600, F);
+    lp.frequency.linearRampToValueAtTime(1100, F + 0.5);
+    const pts = [[F, 0], [F + 0.1, 0], [F + 0.55, 0.45]];
+    for (let k = 1; F + 0.55 + k * 0.07 < F + 1.65; k++) pts.push([F + 0.55 + k * 0.07, rnd(0.32, 0.52)]);
+    pts.push([F + 2.2, 0]);
+    const rg = gainEnv(pts);
+    noise(brown, F, 2.3).connect(lp); lp.connect(rg); rg.connect(out);
+
+    // crackles: tiny random noise ticks
+    for (let i = 0; i < 55; i++) {
+      const when = F + 0.1 + Math.pow(Math.random(), 1.2) * 1.9;
+      const dur  = rnd(0.004, 0.014);
+      const cf = filter('bandpass', rnd(1500, 5200), 1.5);
+      const cg = ctx.createGain();
+      cg.gain.setValueAtTime(rnd(0.12, 0.5), when);
+      cg.gain.exponentialRampToValueAtTime(0.001, when + dur + 0.012);
+      noise(white, when, dur + 0.02, rnd(0, 1.5)).connect(cf); cf.connect(cg); cg.connect(out);
+    }
+  }
+
+  // ── 3. Thud as "BOOK CONQUERED!" slams in ──
+  const B = t0 + 0.9;
+  {
+    const o = ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(120, B);
+    o.frequency.exponentialRampToValueAtTime(42, B + 0.3);
+    const g = gainEnv([[B, 0.55], [B + 0.45, 0]]);
+    o.connect(g); g.connect(out); o.start(B); o.stop(B + 0.5);
+
+    const lf = filter('lowpass', 500);
+    const cg = gainEnv([[B, 0.35], [B + 0.12, 0]]);
+    noise(brown, B, 0.15).connect(lf); lf.connect(cg); cg.connect(out);
+  }
+}
+
+// Starts the celebration sound now; returns a handle with stop() (used when skipped), or null.
+function startConquestSound() {
+  if (!soundEnabled() || !audioCtx) return null;
+  if (audioCtx.state !== 'running') {            // not unlocked: stay silent rather than play out of sync
+    try { audioCtx.resume(); } catch (e) {}
+    return null;
+  }
+  try {
+    const ctx = audioCtx;
+    const { master, limiter } = makeSoundOutput(ctx);
+    buildConquestSound(ctx, master, ctx.currentTime + 0.03);
+    return {
+      stop() {
+        try {
+          const now = ctx.currentTime;
+          master.gain.cancelScheduledValues(now);
+          master.gain.setValueAtTime(master.gain.value, now);
+          master.gain.linearRampToValueAtTime(0, now + 0.15);
+          setTimeout(() => { try { master.disconnect(); limiter.disconnect(); } catch (e) {} }, 400);
+        } catch (e) {}
+      }
+    };
+  } catch (e) { return null; }
+}
+
 initCoverUpload();
+initSoundToggle();
 
 const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx4aC9mmNNyfp3wsz4kS_hrvd14Upcme7Y3VF2og8cpQcklhfQ-ILD5SmyKXGPceUNT/exec';
 
@@ -1640,6 +1945,194 @@ async function postToSheet(payload) {
 // ─────────────────────────────────────────────────────────────────
 // Add / Edit modal
 // ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+// "Book conquered" celebration: sword slash → cover splits → fire & sparks
+// ─────────────────────────────────────────────────────────────────
+function previewConquest() {
+  unlockAudio();
+  const withCover = allBooks.filter(b => b.coverUrl);
+  const b = withCover.length ? withCover[Math.floor(Math.random() * withCover.length)] : null;
+  playConquestAnimation({ title: b ? b.title : 'Your Next Great Adventure', cover: coverPath(b ? b.coverUrl : '') });
+}
+
+function loadCoverForAnimation(src) {
+  return new Promise(resolve => {
+    const tryLoad = (url, fallback) => {
+      const img = new Image();
+      img.onload  = () => resolve(img);
+      img.onerror = () => fallback ? tryLoad(DEFAULT_COVER, false) : resolve(null);
+      img.src = url;
+    };
+    tryLoad(src, src !== DEFAULT_COVER);
+    setTimeout(() => resolve(null), 2500);   // never hold the celebration hostage to a slow image
+  });
+}
+
+async function playConquestAnimation({ title = '', cover = DEFAULT_COVER } = {}) {
+  document.getElementById('conquest-overlay')?.remove();
+  const reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const img = await loadCoverForAnimation(cover);
+  document.getElementById('conquest-overlay')?.remove();   // in case two were queued
+
+  const overlay = document.createElement('div');
+  overlay.id = 'conquest-overlay';
+  overlay.setAttribute('role', 'status');
+  overlay.setAttribute('aria-label', `Book conquered: ${title}`);
+  if (reduced) overlay.classList.add('cq-reduced');
+  overlay.innerHTML = `
+    <canvas id="conquest-canvas"></canvas>
+    <div class="cq-flash"></div>
+    <div class="cq-stage">
+      <div class="cq-cover">
+        <img class="cq-half cq-left"  alt="" />
+        <img class="cq-half cq-right" alt="" />
+        <svg class="cq-slash" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <line class="glow" x1="63" y1="-15" x2="37" y2="115" />
+          <line class="core" x1="63" y1="-15" x2="37" y2="115" />
+        </svg>
+        <div class="cq-text">
+          <div class="cq-banner">BOOK CONQUERED!</div>
+          <div class="cq-title"></div>
+        </div>
+      </div>
+    </div>`;
+  overlay.querySelector('.cq-title').textContent = title;
+  const coverBox = overlay.querySelector('.cq-cover');
+  if (img) {
+    coverBox.style.setProperty('--cq-ar', `${img.naturalWidth} / ${img.naturalHeight}`);
+    overlay.querySelectorAll('.cq-half').forEach(h => { h.src = img.src; });
+  } else {
+    overlay.querySelectorAll('.cq-half').forEach(h => { h.style.visibility = 'hidden'; });
+  }
+  document.body.appendChild(overlay);
+
+  // ── cleanup / skip ──
+  let raf = 0, finishing = false, sfx = null;
+  const onKey = e => { if (e.key === 'Escape') finish(); };
+  const timers = [];
+  function finish() {
+    if (finishing) return;
+    finishing = true;
+    timers.forEach(clearTimeout);
+    if (sfx) sfx.stop();
+    overlay.classList.add('cq-out');
+    setTimeout(() => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', sizeCanvas);
+      overlay.remove();
+    }, 360);
+  }
+  overlay.addEventListener('click', finish);
+  window.addEventListener('keydown', onKey);
+  timers.push(setTimeout(finish, reduced ? 2000 : 3100));
+  if (reduced) return;
+
+  // ── particles (canvas) ──
+  const canvas = overlay.querySelector('#conquest-canvas');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  function sizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  sizeCanvas();
+  window.addEventListener('resize', sizeCanvas);
+
+  function sprite(stops) {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    stops.forEach(([o, col]) => gr.addColorStop(o, col));
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return c;
+  }
+  const FLAME = [
+    sprite([[0, 'rgba(255,250,210,1)'], [.35, 'rgba(255,200,70,.8)'],  [1, 'rgba(255,140,30,0)']]),
+    sprite([[0, 'rgba(255,190,70,.95)'], [.4, 'rgba(255,110,25,.7)'],  [1, 'rgba(230,60,10,0)']]),
+    sprite([[0, 'rgba(255,100,30,.8)'],  [.45, 'rgba(200,40,10,.55)'], [1, 'rgba(120,15,5,0)']]),
+  ];
+
+  const parts = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const CAP = 460;
+
+  function spawnFlame() {
+    parts.push({ k: 'f', x: rnd(-20, W + 20), y: H + 20, vx: rnd(-18, 18), vy: -rnd(110, 260),
+                 life: 0, max: rnd(.8, 1.5), size: rnd(.55, 1.15) * Math.min(150, W * .3), ph: rnd(0, 6.28) });
+  }
+  function spawnEmber() {
+    parts.push({ k: 'e', x: rnd(0, W), y: rnd(H * .55, H * 1.05), vx: rnd(-20, 20), vy: -rnd(60, 200),
+                 life: 0, max: rnd(1.2, 2.4), size: rnd(1, 2.8), ph: rnd(0, 6.28) });
+  }
+  function cutBurst() {
+    const r = coverBox.getBoundingClientRect();
+    const dx = -.2 * r.width, dy = r.height, len = Math.hypot(dx, dy);
+    const nx = dy / len, ny = -dx / len;            // unit normal to the cut line
+    for (let i = 0; i < 90; i++) {
+      const t = Math.random(), side = Math.random() < .5 ? -1 : 1, sp = rnd(160, 620);
+      parts.push({ k: 's', x: r.left + r.width * (.6 - .2 * t), y: r.top + r.height * t,
+                   vx: nx * side * sp + rnd(-50, 50), vy: ny * side * sp * .35 - rnd(60, 320),
+                   life: 0, max: rnd(.5, 1.1), size: rnd(1.4, 2.8) });
+    }
+    for (let i = 0; i < 26; i++) {                  // a burst of flame along the cut
+      const t = Math.random();
+      parts.push({ k: 'f', x: r.left + r.width * (.6 - .2 * t), y: r.top + r.height * t, vx: rnd(-60, 60), vy: -rnd(60, 200),
+                   life: 0, max: rnd(.5, .9), size: rnd(40, 90), ph: rnd(0, 6.28) });
+    }
+  }
+
+  const IMPACT = 0.65;
+  let impacted = false, last = performance.now(), start = last, flameAcc = 0, emberAcc = 0;
+  function frame(now) {
+    if (!overlay.isConnected) return;
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const t = (now - start) / 1000;
+
+    if (!impacted && t >= IMPACT) { impacted = true; cutBurst(); }
+
+    // wall of fire along the bottom edge: ramps up after the impact, dies down before the end
+    const fire = t < IMPACT ? 0 : t < 1.1 ? (t - IMPACT) / .45 : t < 2.3 ? 1 : Math.max(0, 1 - (t - 2.3) / .5);
+    flameAcc += fire * (W / 6) * dt;
+    emberAcc += (t > .25 ? 70 : 0) * dt;
+    while (flameAcc >= 1) { flameAcc--; if (parts.length < CAP) spawnFlame(); }
+    while (emberAcc >= 1) { emberAcc--; if (parts.length < CAP) spawnEmber(); }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.life += dt;
+      const u = p.life / p.max;
+      if (u >= 1) { parts.splice(i, 1); continue; }
+      if (p.k === 's') {                            // spark: gravity + drag, drawn as a streak
+        p.vy += 900 * dt; p.vx *= (1 - 1.6 * dt); p.vy *= (1 - .6 * dt);
+        const px = p.x, py = p.y; p.x += p.vx * dt; p.y += p.vy * dt;
+        ctx.strokeStyle = `rgba(255,${Math.round(220 - 110 * u)},${Math.round(120 - 90 * u)},${1 - u})`;
+        ctx.lineWidth = p.size * (1 - u * .5);
+        ctx.beginPath(); ctx.moveTo(px - p.vx * .025, py - p.vy * .025); ctx.lineTo(p.x, p.y); ctx.stroke();
+      } else if (p.k === 'f') {                     // flame: rises, wobbles, cools yellow → orange → red
+        p.x += (p.vx + Math.sin(p.life * 7 + p.ph) * 26) * dt; p.y += p.vy * dt;
+        const sz = p.size * (u < .25 ? .55 + u * 1.8 : 1 - (u - .25) * .75);
+        ctx.globalAlpha = Math.min(1, (1 - u) * 1.3) * .7;
+        ctx.drawImage(FLAME[u < .3 ? 0 : u < .65 ? 1 : 2], p.x - sz / 2, p.y - sz / 2, sz, sz);
+      } else {                                      // ember
+        p.x += (p.vx + Math.sin(p.life * 4 + p.ph) * 22) * dt; p.y += p.vy * dt;
+        ctx.globalAlpha = (1 - u) * (.55 + .45 * Math.sin(p.life * 22 + p.ph));
+        ctx.fillStyle = u < .5 ? '#ffd27a' : '#ff8a2a';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    raf = requestAnimationFrame(frame);
+  }
+  sfx = startConquestSound();
+  raf = requestAnimationFrame(frame);
+}
+
 let modalMode = 'add'; // 'add' | 'edit'
 let editingTitle = null;
 
@@ -1686,6 +2179,7 @@ function showModal(show) {
 
 async function submitBookForm(e) {
   e.preventDefault();
+  unlockAudio();   // must happen during the tap, before any network waiting
   const errEl = document.getElementById('modal-error');
   errEl.style.display = 'none';
   const btn = document.getElementById('modal-submit-btn');
@@ -1729,6 +2223,10 @@ async function submitBookForm(e) {
                              ? String(allBooks.find(x => x.title === editingTitle).tbrOrder) : '',
   };
 
+  // Celebrate only when the book *becomes* Read (new as Read, or changed to Read)
+  const prevBook = modalMode === 'edit' ? allBooks.find(x => x.title === editingTitle) : null;
+  const becameRead = row['Status'] === 'Read' && prevBook?.status !== 'Read';
+
   try {
     if (modalMode === 'add') {
       await postToSheet({ action: 'append', row });
@@ -1736,6 +2234,7 @@ async function submitBookForm(e) {
       await postToSheet({ action: 'update', title: editingTitle, row });
     }
     closeModal();
+    if (becameRead) playConquestAnimation({ title: row['Title'], cover: coverPath(row['Cover']) });
     await fetchData(); // refresh from sheet
   } catch (err) {
     errEl.textContent = '⚠ ' + err.message;
