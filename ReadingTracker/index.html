@@ -154,8 +154,6 @@
       border-radius: var(--radius);
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      position: relative;   /* sit above the hero image, which overlaps the top of <main> */
-      z-index: 10;          /* (same layer as the tab bar; the header is z-index 20) */
     }
     #config-panel h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     /* ── Cover upload (Add/Edit Book modal) ───────────────────── */
@@ -555,6 +553,9 @@
       transition: border-color .2s;
     }
     .top-ten-item:hover { border-color: var(--accent); }
+    .top-ten-item { cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    .top-ten-item:active { cursor: grabbing; }
+    .top-ten-item img { -webkit-user-drag: none; pointer-events: none; }
     .top-ten-rank {
       font-size: 1.4rem;
       font-weight: 800;
@@ -1177,6 +1178,7 @@
       <!-- Top Ten Books -->
       <div id="top-ten-section" style="display:none">
         <p class="section-title">My Top Ten</p>
+        <p class="tbr-hint">Drag books to rank them — it saves to your sheet automatically. Click a book to edit it.</p>
         <div class="top-ten-list" id="top-ten-list"></div>
       </div>
 
@@ -1361,6 +1363,10 @@
         <div class="config-field">
           <label>Series Order</label>
           <input id="f-series-order" type="number" min="0" step="0.5" placeholder="e.g. 1" />
+        </div>
+        <div class="config-field">
+          <label>My Top Ten Rank</label>
+          <input id="f-topten" type="number" min="1" max="10" step="1" placeholder="1–10 (blank = none)" />
         </div>
         <div class="config-field" style="grid-column:span 2">
           <label>Cover Image</label>
@@ -1945,6 +1951,40 @@ async function postToSheet(payload) {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// My Top Ten: set a book's rank and shift the other books to match
+// ─────────────────────────────────────────────────────────────────
+const TOP_TEN_SIZE = 10;
+
+// Works out the new Top Ten after `newRank` (1–10, or null for "not in the list")
+// is applied to the book being saved. Books at or below that rank move down one
+// place; a book pushed past #10 drops off the list; leaving the list closes the gap.
+//   books     – all books (as parsed from the sheet)
+//   prevBook  – the book being edited (null when adding)
+// Returns { changed, editedRank, titles }:
+//   changed    – false when the rank wasn't touched (nothing else needs updating)
+//   editedRank – the saved book's final rank, or null
+//   titles     – full Top Ten in order (index 0 = #1), using the saved book's new title
+function planTopTen(books, prevBook, newTitle, newRank) {
+  const origRank = prevBook ? (prevBook.topTen ?? null) : null;
+  if (newRank === origRank) return { changed: false, editedRank: origRank, titles: null };
+
+  const ranked = books
+    .map((b, i) => ({ b, i }))
+    .filter(x => x.b.topTen !== null && !isNaN(x.b.topTen))
+    .sort((x, y) => x.b.topTen - y.b.topTen || x.i - y.i)
+    .map(x => x.b);
+
+  const titles = ranked.filter(b => b !== prevBook).map(b => b.title);
+  let editedRank = null;
+  if (newRank !== null) {
+    const at = Math.min(newRank - 1, titles.length);   // never leave a gap in the list
+    titles.splice(at, 0, newTitle);
+    editedRank = at + 1;
+  }
+  return { changed: true, editedRank, titles: titles.slice(0, TOP_TEN_SIZE) };
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Add / Edit modal
 // ─────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────
@@ -2169,6 +2209,7 @@ function openEditModal(title) {
   resetCoverUI(b.coverUrl ? b.coverUrl.replace(/^covers\//, '') : '');
   document.getElementById('f-series').value       = b.series || '';
   document.getElementById('f-series-order').value = b.seriesOrder ?? '';
+  document.getElementById('f-topten').value       = b.topTen ?? '';
   showModal(true);
 }
 
@@ -2184,6 +2225,19 @@ async function submitBookForm(e) {
   unlockAudio();   // must happen during the tap, before any network waiting
   const errEl = document.getElementById('modal-error');
   errEl.style.display = 'none';
+
+  // Validate the Top Ten rank first, so nothing is uploaded or saved if it's invalid
+  const rankText = document.getElementById('f-topten').value.trim();
+  let newRank = null;
+  if (rankText !== '') {
+    newRank = Number(rankText);
+    if (!Number.isInteger(newRank) || newRank < 1 || newRank > TOP_TEN_SIZE) {
+      errEl.textContent = `⚠ My Top Ten Rank must be a whole number from 1 to ${TOP_TEN_SIZE}, or left blank.`;
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
   const btn = document.getElementById('modal-submit-btn');
   btn.disabled = true;
   btn.textContent = 'Saving…';
@@ -2217,7 +2271,7 @@ async function submitBookForm(e) {
     'Rating':              document.getElementById('f-rating').value.trim(),
     'Status':              document.getElementById('f-status').value,
     'Cover':               document.getElementById('f-cover').value.trim(),
-    'Top Ten':             '',
+    'Top Ten':             '',   // filled in below once the new ranking is worked out
     'Series':              document.getElementById('f-series').value.trim(),
     'Series Order':        document.getElementById('f-series-order').value.trim(),
     // Preserve the existing TBR position when editing a book
@@ -2229,6 +2283,11 @@ async function submitBookForm(e) {
   const prevBook = modalMode === 'edit' ? allBooks.find(x => x.title === editingTitle) : null;
   const becameRead = row['Status'] === 'Read' && prevBook?.status !== 'Read';
 
+  // Top Ten: this book's own cell, plus (if its rank changed) the whole renumbered list
+  const topTenPlan = planTopTen(allBooks, prevBook, row['Title'], newRank);
+  row['Top Ten'] = topTenPlan.editedRank === null ? '' : String(topTenPlan.editedRank);
+  let rankingError = null;
+
   try {
     if (modalMode === 'add') {
       await postToSheet({ action: 'append', row });
@@ -2237,7 +2296,13 @@ async function submitBookForm(e) {
     }
     closeModal();
     if (becameRead) playConquestAnimation({ title: row['Title'], cover: coverPath(row['Cover']) });
+    if (topTenPlan.changed) {
+      try {
+        await postToSheet({ action: 'reorder', column: 'Top Ten', titles: topTenPlan.titles, clearOthers: true });
+      } catch (err) { rankingError = err; }
+    }
     await fetchData(); // refresh from sheet
+    if (rankingError) showError(`The book was saved, but the Top Ten ranks could not be updated: ${rankingError.message}. Check that your Apps Script has the latest reorder code.`);
   } catch (err) {
     errEl.textContent = '⚠ ' + err.message;
     errEl.style.display = 'block';
@@ -2600,8 +2665,13 @@ function saveTbrOrder() {
     });
 }
 
+let topTenSortable = null;
+let topTenSaveChain = Promise.resolve();
+const topTenRankClass = r => r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
+
 function renderTopTen() {
   const section = document.getElementById('top-ten-section');
+  if (topTenSortable) { topTenSortable.destroy(); topTenSortable = null; }
   const books = allBooks
     .filter(b => b.topTen !== null && !isNaN(b.topTen))
     .sort((a, b) => a.topTen - b.topTen)
@@ -2610,14 +2680,13 @@ function renderTopTen() {
   if (!books.length) { section.style.display = 'none'; return; }
   section.style.display = '';
 
-  const rankClass = r => r === 1 ? 'gold' : r === 2 ? 'silver' : r === 3 ? 'bronze' : '';
-
-  document.getElementById('top-ten-list').innerHTML = books.map(b => {
+  const list = document.getElementById('top-ten-list');
+  list.innerHTML = books.map(b => {
     const coverHtml = `<img class="top-ten-cover" src="${coverPath(b.coverUrl)}" alt="${esc(b.title)} cover" loading="lazy" onerror="this.src='${DEFAULT_COVER}'">`;
 
     return `
-    <div class="top-ten-item">
-      <div class="top-ten-rank ${rankClass(b.topTen)}">${b.topTen}</div>
+    <div class="top-ten-item" data-title="${esc(b.title)}">
+      <div class="top-ten-rank ${topTenRankClass(b.topTen)}">${b.topTen}</div>
       ${coverHtml}
       <div class="top-ten-info">
         <div class="top-ten-title">${esc(b.title)}</div>
@@ -2630,6 +2699,68 @@ function renderTopTen() {
       </div>
     </div>`;
   }).join('');
+
+  // Click a book to open its Edit Book modal
+  list.onclick = e => {
+    const item = e.target.closest('[data-title]');
+    if (item) openEditModal(item.dataset.title);
+  };
+
+  // Drag to reorder (press-and-hold on touch screens so scrolling still works)
+  if (typeof Sortable !== 'undefined') {
+    topTenSortable = Sortable.create(list, {
+      animation: 150,
+      draggable: '.top-ten-item',
+      ghostClass: 'tbr-ghost',
+      chosenClass: 'tbr-chosen',
+      delay: 180,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 6,
+      onEnd: evt => {
+        if (evt.oldIndex === evt.newIndex) return;
+        saveTopTenOrder();
+      },
+    });
+  }
+}
+
+// Reads the new order from the DOM, updates local data, and saves to the sheet.
+function saveTopTenOrder() {
+  const list = document.getElementById('top-ten-list');
+  const items = [...list.querySelectorAll('.top-ten-item')];
+  const titles = items.map(el => el.dataset.title);
+
+  // Remember old values so we can roll back if the save fails
+  const previous = new Map(allBooks.map(b => [b, b.topTen]));
+
+  // Apply locally right away and refresh the rank numbers and gold/silver/bronze colours
+  titles.forEach((t, i) => {
+    const b = allBooks.find(x => x.topTen !== null && !isNaN(x.topTen) && x.title === t);
+    if (b) b.topTen = i + 1;
+  });
+  items.forEach((el, i) => {
+    const rank = el.querySelector('.top-ten-rank');
+    rank.textContent = i + 1;
+    rank.className = 'top-ten-rank ' + topTenRankClass(i + 1);
+  });
+
+  // Demo mode / no sheet connected: keep the order for this session only
+  if (!document.getElementById('sheet-url').value.trim()) return;
+
+  setSyncStatus('loading', 'Saving Top Ten…');
+  // Chain saves so rapid drags are written to the sheet in order
+  topTenSaveChain = topTenSaveChain
+    .then(() => postToSheet({ action: 'reorder', column: 'Top Ten', titles, clearOthers: true }))
+    .then(() => {
+      clearError();
+      setSyncStatus('synced', `Top Ten saved · ${new Date().toLocaleTimeString()}`);
+    })
+    .catch(err => {
+      previous.forEach((val, b) => { b.topTen = val; });
+      renderTopTen();
+      setSyncStatus('error', 'Save failed');
+      showError(`Could not save Top Ten order: ${err.message}`);
+    });
 }
 
 // Renders a cover img for a book card, always using the local covers folder.
