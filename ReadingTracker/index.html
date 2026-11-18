@@ -154,6 +154,8 @@
       border-radius: var(--radius);
       padding: 1.5rem;
       margin-bottom: 1.5rem;
+      position: relative;   /* sit above the hero image, which overlaps the top of <main> */
+      z-index: 10;          /* (same layer as the tab bar; the header is z-index 20) */
     }
     #config-panel h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     /* ── Cover upload (Add/Edit Book modal) ───────────────────── */
